@@ -1,10 +1,5 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import math
-import unittest
+import pytest
 import sumy.summarizers.lex_rank as lex_rank_module
 
 from sumy.summarizers.lex_rank import LexRankSummarizer
@@ -15,14 +10,15 @@ from sumy.utils import get_stop_words
 from ..utils import build_document, load_resource
 
 
-class TestLexRank(unittest.TestCase):
+class TestLexRank:
     def test_numpy_not_installed(self):
         summarizer = LexRankSummarizer()
 
         numpy = lex_rank_module.numpy
         lex_rank_module.numpy = None
 
-        self.assertRaises(ValueError, summarizer, build_document(), 10)
+        with pytest.raises(ValueError):
+            summarizer(build_document(), 10)
 
         lex_rank_module.numpy = numpy
 
@@ -39,7 +35,7 @@ class TestLexRank(unittest.TestCase):
             {"this": 1/2, "is": 1/2, "simple": 1/2, "sentence": 1.0},
             {"this": 1/3, "is": 2/3, "yes": 1/3, "simple": 1/3, "sentence": 1/3, "too": 1.0},
         ]
-        self.assertEqual(expected, metrics)
+        assert expected == metrics
 
     def test_idf_metrics(self):
         summarizer = LexRankSummarizer()
@@ -92,7 +88,7 @@ class TestLexRank(unittest.TestCase):
 
         expected = numerator / (denominator1 * denominator2)
         cosine = summarizer._compute_cosine(sentence1, sentence2, tf1, tf2, idf)
-        self.assertEqual(expected, cosine)
+        assert expected == cosine
 
     def test_article_example(self):
         """Source: http://www.prevko.cz/dite/skutecne-pribehy-deti"""
@@ -104,4 +100,4 @@ class TestLexRank(unittest.TestCase):
         summarizer.stop_words = get_stop_words("czech")
 
         sentences = summarizer(parser.document, 20)
-        self.assertEqual(len(sentences), 20)
+        assert len(sentences) == 20

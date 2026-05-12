@@ -1,9 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
-import unittest
 import pytest
 import sumy.summarizers.lsa as lsa_module
 
@@ -12,18 +6,18 @@ from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.nlp.stemmers import Stemmer
 from sumy.utils import get_stop_words
-from sumy._compat import to_unicode
 from ..utils import build_document, load_resource
 
 
-class TestLsa(unittest.TestCase):
+class TestLsa:
     def test_numpy_not_installed(self):
         summarizer = LsaSummarizer()
 
         numpy = lsa_module.numpy
         lsa_module.numpy = None
 
-        self.assertRaises(ValueError, summarizer, build_document(), 10)
+        with pytest.raises(ValueError):
+            summarizer(build_document(), 10)
 
         lsa_module.numpy = numpy
 
@@ -39,14 +33,14 @@ class TestLsa(unittest.TestCase):
 
         expected = frozenset(["some", "more", "relevant", "sentence"])
         dictionary = summarizer._create_dictionary(document)
-        self.assertEqual(expected, frozenset(dictionary.keys()))
+        assert expected == frozenset(dictionary.keys())
 
     def test_empty_document(self):
         document = build_document()
         summarizer = LsaSummarizer()
 
         sentences = summarizer(document, 10)
-        self.assertEqual(len(sentences), 0)
+        assert len(sentences) == 0
 
     def test_single_sentence(self):
         document = build_document(("I am the sentence you like",))
@@ -54,8 +48,8 @@ class TestLsa(unittest.TestCase):
         summarizer.stopwords = ("I", "am", "the",)
 
         sentences = summarizer(document, 10)
-        self.assertEqual(len(sentences), 1)
-        self.assertEqual(to_unicode(sentences[0]), "I am the sentence you like")
+        assert len(sentences) == 1
+        assert str(sentences[0]) == "I am the sentence you like"
 
     def test_document(self):
         document = build_document(
@@ -68,9 +62,9 @@ class TestLsa(unittest.TestCase):
         )
 
         sentences = summarizer(document, 2)
-        self.assertEqual(len(sentences), 2)
-        self.assertEqual(to_unicode(sentences[0]), "I am the sentence you like")
-        self.assertEqual(to_unicode(sentences[1]), "This sentence is better than that above")
+        assert len(sentences) == 2
+        assert str(sentences[0]) == "I am the sentence you like"
+        assert str(sentences[1]) == "This sentence is better than that above"
 
     def test_real_example(self):
         """Source: http://www.prevko.cz/dite/skutecne-pribehy-deti"""
@@ -82,7 +76,7 @@ class TestLsa(unittest.TestCase):
         summarizer.stop_words = get_stop_words("czech")
 
         sentences = summarizer(parser.document, 2)
-        self.assertEqual(len(sentences), 2)
+        assert len(sentences) == 2
 
     def test_article_example(self):
         """Source: http://www.prevko.cz/dite/skutecne-pribehy-deti"""
@@ -94,7 +88,7 @@ class TestLsa(unittest.TestCase):
         summarizer.stop_words = get_stop_words("czech")
 
         sentences = summarizer(parser.document, 20)
-        self.assertEqual(len(sentences), 20)
+        assert len(sentences) == 20
 
     def test_issue_5_svd_converges(self):
         """Source: https://github.com/miso-belica/sumy/issues/5"""
@@ -108,4 +102,4 @@ class TestLsa(unittest.TestCase):
         summarizer.stop_words = get_stop_words("english")
 
         sentences = summarizer(parser.document, 20)
-        self.assertEqual(len(sentences), 20)
+        assert len(sentences) == 20
