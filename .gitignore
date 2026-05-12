@@ -1,12 +1,21 @@
 # Python
 __pycache__/
 *.py[co]
-*.egg-info
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
 
-# tests
+# Virtual environments
+.venv/
+venv/
+
+# Tests
 .coverage
+.pytest_cache/
 
-# working folders
+# Working folders
 /experiments/
 
 # IDE files
