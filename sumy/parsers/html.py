@@ -1,10 +1,20 @@
 from urllib.request import urlopen
 
-from breadability.readable import Article
-
 from ..utils import cached_property
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
+
+
+def _get_article_class():
+    """Lazy import of breadability Article class."""
+    try:
+        from breadability.readable import Article
+    except ImportError:
+        raise ImportError(
+            "HtmlParser requires 'breadability' package. "
+            "HTML parsing support will be replaced with 'readability-lxml' in a future release."
+        )
+    return Article
 
 
 class HtmlParser(DocumentParser):
@@ -37,6 +47,7 @@ class HtmlParser(DocumentParser):
 
     def __init__(self, html_content, tokenizer, url=None):
         super().__init__(tokenizer)
+        Article = _get_article_class()
         self._article = Article(html_content, url)
 
     @cached_property

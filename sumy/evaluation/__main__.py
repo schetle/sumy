@@ -1,41 +1,13 @@
-# -*- coding: utf8 -*-
-
-"""
-Sumy - evaluation of automatic text summary.
-
-Usage:
-    sumy_eval (random | luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) <reference_summary> [--length=<length>] [--language=<lang>]
-    sumy_eval (random | luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) <reference_summary> [--length=<length>] [--language=<lang>] --url=<url>
-    sumy_eval (random | luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) <reference_summary> [--length=<length>] [--language=<lang>] --file=<file_path> --format=<file_format>
-    sumy_eval --version
-    sumy_eval --help
-
-Options:
-    <reference_summary>  Path to the file with reference summary.
-    --url=<url>          URL address of summarizied message.
-    --file=<file>        Path to file with summarizied text.
-    --format=<format>    Format of input file. [default: plaintext]
-    --length=<length>    Length of summarizied text. It may be count of sentences
-                         or percentage of input text. [default: 20%]
-    --language=<lang>    Natural language of summarizied text. [default: english]
-    --version            Displays version of application.
-    --help               Displays this text.
-
-"""
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
+import argparse
 import sys
 
 from itertools import chain
-from docopt import docopt
+from urllib.request import Request, urlopen
+
 from .. import __version__
 from ..utils import ItemsCount, get_stop_words
 from ..models import TfDocumentModel
-from .._compat import urllib, to_string
 from ..nlp.tokenizers import Tokenizer
-from ..parsers.html import HtmlParser
 from ..parsers.plaintext import PlaintextParser
 from ..summarizers.random import RandomSummarizer
 from ..summarizers.luhn import LuhnSummarizer
@@ -47,14 +19,18 @@ from ..summarizers.sum_basic import SumBasicSummarizer
 from ..summarizers.kl import KLSummarizer
 from ..nlp.stemmers import Stemmer
 from . import precision, recall, f_score, cosine_similarity, unit_overlap
-from . import rouge_1, rouge_2, rouge_l_sentence_level, rouge_l_summary_level 
+from . import rouge_1, rouge_2, rouge_l_sentence_level, rouge_l_summary_level
 
 
 HEADERS = {
-    "User-Agent": "Sumy (Automatic text summarizer) Version/%s" % __version__,
+    "User-Agent": f"Sumy (Automatic text summarizer) Version/{__version__}",
 }
+def _get_html_parser():
+    from ..parsers.html import HtmlParser
+    return HtmlParser
+
+
 PARSERS = {
-    "html": HtmlParser,
     "plaintext": PlaintextParser,
 }
 
@@ -154,17 +130,67 @@ AVAILABLE_EVALUATIONS = (
     ("Rouge-1", False, rouge_1),
     ("Rouge-2", False, rouge_2),
     ("Rouge-L (Sentence Level)", False, rouge_l_sentence_level),
-    ("Rouge-L (Summary Level)", False, rouge_l_summary_level)
+    ("Rouge-L (Summary Level)", False, rouge_l_summary_level),
 )
 
 
+def build_parser():
+    parser = argparse.ArgumentParser(
+        prog="sumy_eval",
+        description="Sumy - evaluation of automatic text summary.",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
+    )
+    parser.add_argument(
+        "method",
+        choices=list(AVAILABLE_METHODS.keys()),
+        help="Summarization method to evaluate.",
+    )
+    parser.add_argument(
+        "reference_summary",
+        help="Path to the file with reference summary.",
+    )
+    parser.add_argument(
+        "--length",
+        default="20%",
+        help="Length of summarized text. It may be count of sentences "
+             "or percentage of input text. (default: 20%%)",
+    )
+    parser.add_argument(
+        "--language",
+        default="english",
+        help="Natural language of summarized text. (default: english)",
+    )
+    parser.add_argument(
+        "--url",
+        default=None,
+        help="URL address of the web page to summarize.",
+    )
+    parser.add_argument(
+        "--file",
+        default=None,
+        help="Path to file with summarized text.",
+    )
+    parser.add_argument(
+        "--format",
+        default="plaintext",
+        dest="format",
+        help="Format of input file. (default: plaintext)",
+    )
+    return parser
+
+
 def main(args=None):
-    args = docopt(to_string(__doc__), args, version=__version__)
-    summarizer, document, items_count, reference_summary = handle_arguments(args)
+    parser = build_parser()
+    parsed_args = parser.parse_args(args)
+    summarizer, document, items_count, reference_summary = handle_arguments(parsed_args)
 
     evaluated_sentences = summarizer(document, items_count)
     reference_document = PlaintextParser.from_string(reference_summary,
-        Tokenizer(args["--language"]))
+        Tokenizer(parsed_args.language))
     reference_sentences = reference_document.document.sentences
 
     for name, evaluate_document, evaluate in AVAILABLE_EVALUATIONS:
@@ -172,44 +198,47 @@ def main(args=None):
             result = evaluate(evaluated_sentences, document.sentences)
         else:
             result = evaluate(evaluated_sentences, reference_sentences)
-        print("%s: %f" % (name, result))
+        print(f"{name}: {result:f}")
 
 
 def handle_arguments(args):
-    document_format = args["--format"]
+    document_format = args.format
     if document_format is not None and document_format not in PARSERS:
-        raise ValueError("Unsupported format of input document. Possible values are: %s. Given: %s." % (
-            ", ".join(PARSERS.keys()),
-            document_format,
-        ))
+        raise ValueError(
+            f"Unsupported format of input document. "
+            f"Possible values are: {', '.join(PARSERS.keys())}. Given: {document_format}."
+        )
 
     parser = PARSERS["plaintext"]
     input_stream = sys.stdin
 
-    if args["--url"] is not None:
-        parser = PARSERS["html"]
-        request = urllib.Request(args["--url"], headers=HEADERS)
-        input_stream = urllib.urlopen(request)
-    elif args["--file"] is not None:
-        parser = PARSERS.get(document_format, PlaintextParser)
-        input_stream = open(args["--file"], "rb")
+    if args.url is not None:
+        parser = _get_html_parser()
+        request = Request(args.url, headers=HEADERS)
+        input_stream = urlopen(request)
+    elif args.file is not None:
+        if document_format == "html":
+            parser = _get_html_parser()
+        else:
+            parser = PARSERS.get(document_format, PlaintextParser)
+        input_stream = open(args.file, "rb")
 
     summarizer_builder = AVAILABLE_METHODS["luhn"]
     for method, builder in AVAILABLE_METHODS.items():
-        if args[method]:
+        if args.method == method:
             summarizer_builder = builder
             break
 
-    items_count = ItemsCount(args["--length"])
+    items_count = ItemsCount(args.length)
 
-    parser = parser(input_stream.read(), Tokenizer(args["--language"]))
+    parser = parser(input_stream.read(), Tokenizer(args.language))
     if input_stream is not sys.stdin:
         input_stream.close()
 
-    with open(args["<reference_summary>"], "rb") as file:
-        reference_summmary = file.read().decode("utf8")
+    with open(args.reference_summary, "rb") as file:
+        reference_summary = file.read().decode("utf-8")
 
-    return summarizer_builder(parser, args["--language"]), parser.document, items_count, reference_summmary
+    return summarizer_builder(parser, args.language), parser.document, items_count, reference_summary
 
 
 if __name__ == "__main__":
