@@ -1,15 +1,11 @@
-# -*- coding: utf8 -*-
+from collections import Counter
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
-from .._compat import Counter
 from ._summarizer import AbstractSummarizer
 
 
 class EdmundsonKeyMethod(AbstractSummarizer):
     def __init__(self, stemmer, bonus_words):
-        super(EdmundsonKeyMethod, self).__init__(stemmer)
+        super().__init__(stemmer)
         self._bonus_words = bonus_words
 
     def __call__(self, document, sentences_count, weight):
@@ -34,7 +30,7 @@ class EdmundsonKeyMethod(AbstractSummarizer):
         # return only words greater than weight
         max_word_frequency = max(word_frequencies)
         return tuple(word for word, frequency in word_counts.items()
-            if frequency/max_word_frequency > weight)
+            if frequency / max_word_frequency > weight)
 
     def _is_bonus_word(self, word):
         return word in self._bonus_words

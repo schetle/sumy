@@ -1,34 +1,29 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import math
 
 from pprint import pformat
-from collections import Sequence
-from .._compat import to_unicode, unicode, string_types, Counter
+from collections import Counter
+from collections.abc import Sequence
 
 
-class TfDocumentModel(object):
+class TfDocumentModel:
     """Term-Frequency document model (term = word)."""
     def __init__(self, words, tokenizer=None):
-        if isinstance(words, string_types) and tokenizer is None:
+        if isinstance(words, str) and tokenizer is None:
             raise ValueError(
                 "Tokenizer has to be given if ``words`` is not a sequence.")
-        elif isinstance(words, string_types):
-            words = tokenizer.to_words(to_unicode(words))
+        elif isinstance(words, str):
+            words = tokenizer.to_words(words)
         elif not isinstance(words, Sequence):
             raise ValueError(
                 "Parameter ``words`` has to be sequence or string with tokenizer given.")
 
-        self._terms = Counter(map(unicode.lower, words))
+        self._terms = Counter(map(str.lower, words))
         self._max_frequency = max(self._terms.values()) if self._terms else 1
 
     @property
     def magnitude(self):
         """
-        Lenght/norm/magnitude of vector representation of document.
+        Length/norm/magnitude of vector representation of document.
         This is usually denoted by ||d||.
         """
         return math.sqrt(sum(t**2 for t in self._terms.values()))
@@ -78,11 +73,11 @@ class TfDocumentModel(object):
             It may be viewed as a scaling down of TF by the largest TF
             value in document.
         :returns float:
-            0.0 <= frequency <= 1.0, where 0 means no occurence in document
+            0.0 <= frequency <= 1.0, where 0 means no occurrence in document
             and 1 the most frequent term in document.
         """
         frequency = self.term_frequency(term) / self._max_frequency
-        return smooth + (1.0 - smooth)*frequency
+        return smooth + (1.0 - smooth) * frequency
 
     def __repr__(self):
-        return "<TfDocumentModel %s>" % pformat(self._terms)
+        return f"<TfDocumentModel {pformat(self._terms)}>"

@@ -1,9 +1,5 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 from collections import defaultdict
+
 from ..nlp.stemmers import null_stemmer
 from ._summarizer import AbstractSummarizer
 from .edmundson_cue import EdmundsonCueMethod
@@ -22,7 +18,7 @@ class EdmundsonSummarizer(AbstractSummarizer):
 
     def __init__(self, stemmer=null_stemmer, cue_weight=1.0, key_weight=0.0,
             title_weight=1.0, location_weight=1.0):
-        super(EdmundsonSummarizer, self).__init__(stemmer)
+        super().__init__(stemmer)
 
         self._ensure_correct_weights(cue_weight, key_weight, title_weight,
             location_weight)
@@ -35,7 +31,7 @@ class EdmundsonSummarizer(AbstractSummarizer):
     def _ensure_correct_weights(self, *weights):
         for w in weights:
             if w < 0.0:
-                raise ValueError("Negative wights are not allowed.")
+                raise ValueError("Negative weights are not allowed.")
 
     @property
     def bonus_words(self):
@@ -105,7 +101,7 @@ class EdmundsonSummarizer(AbstractSummarizer):
     def _build_key_method_instance(self):
         self.__check_bonus_words()
 
-        return  EdmundsonKeyMethod(self._stemmer, self._bonus_words)
+        return EdmundsonKeyMethod(self._stemmer, self._bonus_words)
 
     def title_method(self, document, sentences_count):
         summarization_method = self._build_title_method_instance()

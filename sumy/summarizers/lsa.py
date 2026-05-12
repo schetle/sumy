@@ -1,8 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import math
 
 from warnings import warn
@@ -21,7 +16,7 @@ from ._summarizer import AbstractSummarizer
 
 class LsaSummarizer(AbstractSummarizer):
     MIN_DIMENSIONS = 3
-    REDUCTION_RATIO = 1/1
+    REDUCTION_RATIO = 1 / 1
     _stop_words = frozenset()
 
     @property
@@ -33,7 +28,7 @@ class LsaSummarizer(AbstractSummarizer):
         self._stop_words = frozenset(map(self.normalize_word, words))
 
     def __call__(self, document, sentences_count):
-        self._ensure_dependecies_installed()
+        self._ensure_dependencies_installed()
 
         dictionary = self._create_dictionary(document)
         # empty document
@@ -48,7 +43,7 @@ class LsaSummarizer(AbstractSummarizer):
         return self._get_best_sentences(document.sentences, sentences_count,
             lambda s: next(ranks))
 
-    def _ensure_dependecies_installed(self):
+    def _ensure_dependencies_installed(self):
         if numpy is None:
             raise ValueError("LSA summarizer requires NumPy. Please, install it by command 'pip install numpy'.")
 
@@ -62,7 +57,7 @@ class LsaSummarizer(AbstractSummarizer):
     def _create_matrix(self, document, dictionary):
         """
         Creates matrix of shape |unique words|×|sentences| where cells
-        contains number of occurences of words (rows) in senteces (cols).
+        contains number of occurrences of words (rows) in sentences (cols).
         """
         sentences = document.sentences
 
@@ -100,8 +95,8 @@ class LsaSummarizer(AbstractSummarizer):
             for col in range(cols):
                 max_word_frequency = max_word_frequencies[col]
                 if max_word_frequency != 0:
-                    frequency = matrix[row, col]/max_word_frequency
-                    matrix[row, col] = smooth + (1.0 - smooth)*frequency
+                    frequency = matrix[row, col] / max_word_frequency
+                    matrix[row, col] = smooth + (1.0 - smooth) * frequency
 
         return matrix
 
@@ -109,14 +104,14 @@ class LsaSummarizer(AbstractSummarizer):
         assert len(sigma) == v_matrix.shape[0], "Matrices should be multiplicable"
 
         dimensions = max(LsaSummarizer.MIN_DIMENSIONS,
-            int(len(sigma)*LsaSummarizer.REDUCTION_RATIO))
+            int(len(sigma) * LsaSummarizer.REDUCTION_RATIO))
         powered_sigma = tuple(s**2 if i < dimensions else 0.0
             for i, s in enumerate(sigma))
 
         ranks = []
         # iterate over columns of matrix (rows of transposed matrix)
         for column_vector in v_matrix.T:
-            rank = sum(s*v**2 for s, v in zip(powered_sigma, column_vector))
+            rank = sum(s * v**2 for s, v in zip(powered_sigma, column_vector))
             ranks.append(math.sqrt(rank))
 
         return ranks

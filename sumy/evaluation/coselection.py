@@ -1,9 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
-
 def f_score(evaluated_sentences, reference_sentences, weight=1.0):
     """
     Computation of F-Score measure. It is computed as
@@ -27,7 +21,7 @@ def f_score(evaluated_sentences, reference_sentences, weight=1.0):
     p = precision(evaluated_sentences, reference_sentences)
     r = recall(evaluated_sentences, reference_sentences)
 
-    weight **= 2 # weight = weight^2
+    weight **= 2  # weight = weight^2
     denominator = weight * p + r
     if denominator == 0.0:
         return 0.0
@@ -79,7 +73,7 @@ def _divide_evaluation(numerator_sentences, denominator_sentences):
         raise ValueError("Both collections have to contain at least 1 sentence.")
 
     common_count = len(denominator_sentences & numerator_sentences)
-    choosen_count = len(denominator_sentences)
+    chosen_count = len(denominator_sentences)
 
-    assert choosen_count != 0
-    return common_count / choosen_count
+    assert chosen_count != 0
+    return common_count / chosen_count

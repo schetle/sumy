@@ -1,14 +1,9 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 from ._summarizer import AbstractSummarizer
 
 
 class EdmundsonCueMethod(AbstractSummarizer):
     def __init__(self, stemmer, bonus_words, stigma_words):
-        super(EdmundsonCueMethod, self).__init__(stemmer)
+        super().__init__(stemmer)
         self._bonus_words = bonus_words
         self._stigma_words = stigma_words
 
@@ -18,13 +13,13 @@ class EdmundsonCueMethod(AbstractSummarizer):
             stigma_word_weight)
 
     def _rate_sentence(self, sentence, bunus_word_weight, stigma_word_weight):
-        # count number of bonus/stigma words in sentece
+        # count number of bonus/stigma words in sentence
         words = map(self.stem_word, sentence.words)
         bonus_words_count, stigma_words_count = self._count_words(words)
 
         # compute positive & negative rating
-        bonus_rating = bonus_words_count*bunus_word_weight
-        stigma_rating = stigma_words_count*stigma_word_weight
+        bonus_rating = bonus_words_count * bunus_word_weight
+        stigma_rating = stigma_words_count * stigma_word_weight
 
         # rating of sentence is (positive - negative) rating
         return bonus_rating - stigma_rating
@@ -43,7 +38,7 @@ class EdmundsonCueMethod(AbstractSummarizer):
 
         for word in words:
             if word in self._bonus_words:
-                bonus_words_count +=1
+                bonus_words_count += 1
             if word in self._stigma_words:
                 stigma_words_count += 1
 

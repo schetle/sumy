@@ -1,8 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 from ..models import TfDocumentModel
 from ._summarizer import AbstractSummarizer
 
@@ -45,7 +40,7 @@ class LuhnSummarizer(AbstractSummarizer):
 
     def _get_chunk_ratings(self, sentence, significant_stems):
         chunks = []
-        NONSIGNIFICANT_CHUNK = [0]*self.max_gap_size
+        NONSIGNIFICANT_CHUNK = [0] * self.max_gap_size
 
         in_chunk = False
         for order, word in enumerate(sentence.words):

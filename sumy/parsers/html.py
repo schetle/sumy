@@ -1,10 +1,7 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+from urllib.request import urlopen
 
 from breadability.readable import Article
-from .._compat import urllib
+
 from ..utils import cached_property
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
@@ -32,14 +29,14 @@ class HtmlParser(DocumentParser):
 
     @classmethod
     def from_url(cls, url, tokenizer):
-        response = urllib.urlopen(url)
+        response = urlopen(url)
         data = response.read()
         response.close()
 
         return cls(data, tokenizer, url)
 
     def __init__(self, html_content, tokenizer, url=None):
-        super(HtmlParser, self).__init__(tokenizer)
+        super().__init__(tokenizer)
         self._article = Article(html_content, url)
 
     @cached_property
@@ -80,11 +77,6 @@ class HtmlParser(DocumentParser):
 
     @cached_property
     def document(self):
-        # "a", "abbr", "acronym", "b", "big", "blink", "blockquote", "cite", "code",
-        # "dd", "del", "dfn", "dir", "dl", "dt", "em", "h", "h1", "h2", "h3", "h4",
-        # "h5", "h6", "i", "ins", "kbd", "li", "marquee", "menu", "ol", "pre", "q",
-        # "s", "samp", "strike", "strong", "sub", "sup", "tt", "u", "ul", "var",
-
         annotated_text = self._article.main_text
 
         paragraphs = []

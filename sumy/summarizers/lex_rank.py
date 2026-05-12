@@ -1,9 +1,6 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import math
+
+from collections import Counter
 
 try:
     import numpy
@@ -11,7 +8,6 @@ except ImportError:
     numpy = None
 
 from ._summarizer import AbstractSummarizer
-from .._compat import Counter
 
 
 class LexRankSummarizer(AbstractSummarizer):
@@ -92,7 +88,7 @@ class LexRankSummarizer(AbstractSummarizer):
         # create matrix |sentences|×|sentences| filled with zeroes
         sentences_count = len(sentences)
         matrix = numpy.zeros((sentences_count, sentences_count))
-        degrees = numpy.zeros((sentences_count, ))
+        degrees = numpy.zeros((sentences_count,))
 
         for row, (sentence1, tf1) in enumerate(zip(sentences, tf_metrics)):
             for col, (sentence2, tf2) in enumerate(zip(sentences, tf_metrics)):
@@ -119,10 +115,10 @@ class LexRankSummarizer(AbstractSummarizer):
 
         numerator = 0.0
         for term in common_words:
-            numerator += tf1[term]*tf2[term] * idf_metrics[term]**2
+            numerator += tf1[term] * tf2[term] * idf_metrics[term]**2
 
-        denominator1 = sum((tf1[t]*idf_metrics[t])**2 for t in sentence1)
-        denominator2 = sum((tf2[t]*idf_metrics[t])**2 for t in sentence2)
+        denominator1 = sum((tf1[t] * idf_metrics[t])**2 for t in sentence1)
+        denominator2 = sum((tf2[t] * idf_metrics[t])**2 for t in sentence2)
 
         if denominator1 > 0 and denominator2 > 0:
             return numerator / (math.sqrt(denominator1) * math.sqrt(denominator2))

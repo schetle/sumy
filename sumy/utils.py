@@ -1,13 +1,7 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import sys
 
 from functools import wraps
-from os.path import dirname, abspath, join, exists
-from ._compat import to_string, to_unicode, string_types
+from pathlib import Path
 
 
 def cached_property(getter):
@@ -15,6 +9,10 @@ def cached_property(getter):
     Decorator that converts a method into memoized property.
     The decorator works as expected only for classes with
     attribute '__dict__' and immutable properties.
+
+    Note: This custom implementation is needed because the classes
+    Sentence and Paragraph use __slots__ (no __dict__), so
+    functools.cached_property cannot be used for them.
     """
     @wraps(getter)
     def decorator(self):
@@ -29,41 +27,40 @@ def cached_property(getter):
 
 
 def expand_resource_path(path):
-    directory = dirname(sys.modules["sumy"].__file__)
-    directory = abspath(directory)
-    return join(directory, to_string("data"), to_string(path))
+    directory = Path(sys.modules["sumy"].__file__).parent.resolve()
+    return str(directory / "data" / path)
 
 
 def get_stop_words(language):
-    path = expand_resource_path("stopwords/%s.txt" % language)
-    if not exists(path):
-        raise LookupError("Stop-words are not available for language %s." % language)
+    path = expand_resource_path(f"stopwords/{language}.txt")
+    if not Path(path).exists():
+        raise LookupError(f"Stop-words are not available for language {language}.")
     return read_stop_words(path)
 
 
 def read_stop_words(filename):
     with open(filename, "rb") as open_file:
-        return frozenset(to_unicode(w.rstrip()) for w in open_file.readlines())
+        return frozenset(w.decode("utf-8").rstrip() for w in open_file.readlines())
 
 
-class ItemsCount(object):
+class ItemsCount:
     def __init__(self, value):
         self._value = value
 
     def __call__(self, sequence):
-        if isinstance(self._value, string_types):
+        if isinstance(self._value, str):
             if self._value.endswith("%"):
                 total_count = len(sequence)
                 percentage = int(self._value[:-1])
-                # at least one sentence should be choosen
-                count = max(1, total_count*percentage // 100)
+                # at least one sentence should be chosen
+                count = max(1, total_count * percentage // 100)
                 return sequence[:count]
             else:
                 return sequence[:int(self._value)]
         elif isinstance(self._value, (int, float)):
             return sequence[:int(self._value)]
         else:
-            ValueError("Unsuported value of items count '%s'." % self._value)
+            raise ValueError(f"Unsupported value of items count '{self._value}'.")
 
     def __repr__(self):
-        return to_string("<ItemsCount: %r>" % self._value)
+        return f"<ItemsCount: {self._value!r}>"
