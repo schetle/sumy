@@ -1,401 +1,449 @@
-# -*- coding: utf8 -*-
+"""Tests for the Edmundson summarizer."""
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
-import unittest
+import pytest
 
 from sumy.summarizers.edmundson import EdmundsonSummarizer
-from sumy._compat import to_unicode
 from ..utils import build_document, build_document_from_string
 
 
-class TestEdmundson(unittest.TestCase):
-    def test_bonus_words_property(self):
-        summarizer = EdmundsonSummarizer()
+def test_bonus_words_property():
+    """Test the bonus_words property getter and setter."""
+    summarizer = EdmundsonSummarizer()
 
-        self.assertEqual(summarizer.bonus_words, frozenset())
+    assert summarizer.bonus_words == frozenset()
 
-        words = ("word", "another", "and", "some", "next",)
-        summarizer.bonus_words = words
-        self.assertTrue(isinstance(summarizer.bonus_words, frozenset))
-        self.assertEqual(summarizer.bonus_words, frozenset(words))
+    words = ("word", "another", "and", "some", "next",)
+    summarizer.bonus_words = words
+    assert isinstance(summarizer.bonus_words, frozenset)
+    assert summarizer.bonus_words == frozenset(words)
 
-    def test_stigma_words_property(self):
-        summarizer = EdmundsonSummarizer()
 
-        self.assertEqual(summarizer.stigma_words, frozenset())
+def test_stigma_words_property():
+    """Test the stigma_words property getter and setter."""
+    summarizer = EdmundsonSummarizer()
 
-        words = ("word", "another", "and", "some", "next",)
-        summarizer.stigma_words = words
-        self.assertTrue(isinstance(summarizer.stigma_words, frozenset))
-        self.assertEqual(summarizer.stigma_words, frozenset(words))
+    assert summarizer.stigma_words == frozenset()
 
-    def test_null_words_property(self):
-        summarizer = EdmundsonSummarizer()
+    words = ("word", "another", "and", "some", "next",)
+    summarizer.stigma_words = words
+    assert isinstance(summarizer.stigma_words, frozenset)
+    assert summarizer.stigma_words == frozenset(words)
 
-        self.assertEqual(summarizer.null_words, frozenset())
 
-        words = ("word", "another", "and", "some", "next",)
-        summarizer.null_words = words
-        self.assertTrue(isinstance(summarizer.null_words, frozenset))
-        self.assertEqual(summarizer.null_words, frozenset(words))
+def test_null_words_property():
+    """Test the null_words property getter and setter."""
+    summarizer = EdmundsonSummarizer()
 
-    def test_empty_document(self):
-        summarizer = EdmundsonSummarizer(cue_weight=0, key_weight=0,
-            title_weight=0, location_weight=0)
+    assert summarizer.null_words == frozenset()
 
-        sentences = summarizer(build_document(), 10)
-        self.assertEqual(len(sentences), 0)
+    words = ("word", "another", "and", "some", "next",)
+    summarizer.null_words = words
+    assert isinstance(summarizer.null_words, frozenset)
+    assert summarizer.null_words == frozenset(words)
 
-    def test_mixed_cue_key(self):
-        document = build_document_from_string("""
-            # This is cool heading
-            Because I am sentence I like words
-            And because I am string I like characters
 
-            # blank and heading
-            This is next paragraph because of blank line above
-            Here is the winner because contains words like cool and heading
-        """)
+def test_empty_document():
+    """Test Edmundson summarizer with an empty document."""
+    summarizer = EdmundsonSummarizer(cue_weight=0, key_weight=0,
+        title_weight=0, location_weight=0)
 
-        summarizer = EdmundsonSummarizer(cue_weight=1, key_weight=1,
-            title_weight=0, location_weight=0)
-        summarizer.bonus_words = ("cool", "heading", "sentence", "words", "like", "because")
-        summarizer.stigma_words = ("this", "is", "I", "am", "and",)
+    sentences = summarizer(build_document(), 10)
+    assert len(sentences) == 0
 
-        sentences = summarizer(document, 2)
-        self.assertEqual(len(sentences), 2)
-        self.assertEqual(to_unicode(sentences[0]),
-            "Because I am sentence I like words")
-        self.assertEqual(to_unicode(sentences[1]),
-            "Here is the winner because contains words like cool and heading")
 
-    def test_cue_with_no_words(self):
-        summarizer = EdmundsonSummarizer()
+def test_mixed_cue_key():
+    """Test Edmundson with combined cue and key methods."""
+    document = build_document_from_string("""
+        # This is cool heading
+        Because I am sentence I like words
+        And because I am string I like characters
 
-        self.assertRaises(ValueError, summarizer.cue_method, build_document(), 10)
+        # blank and heading
+        This is next paragraph because of blank line above
+        Here is the winner because contains words like cool and heading
+    """)
 
-    def test_cue_with_no_stigma_words(self):
-        summarizer = EdmundsonSummarizer()
-        summarizer.bonus_words = ("great", "very", "beautiful",)
+    summarizer = EdmundsonSummarizer(cue_weight=1, key_weight=1,
+        title_weight=0, location_weight=0)
+    summarizer.bonus_words = ("cool", "heading", "sentence", "words", "like", "because")
+    summarizer.stigma_words = ("this", "is", "I", "am", "and",)
 
-        self.assertRaises(ValueError, summarizer.cue_method, build_document(), 10)
+    sentences = summarizer(document, 2)
+    assert len(sentences) == 2
+    assert str(sentences[0]) == "Because I am sentence I like words"
+    assert str(sentences[1]) == \
+        "Here is the winner because contains words like cool and heading"
 
-    def test_cue_with_no_bonus_words(self):
-        summarizer = EdmundsonSummarizer()
-        summarizer.stigma_words = ("useless", "bad", "spinach",)
 
-        self.assertRaises(ValueError, summarizer.cue_method, build_document(), 10)
+def test_cue_with_no_words():
+    """Test that cue method raises ValueError when no words are set."""
+    summarizer = EdmundsonSummarizer()
+    with pytest.raises(ValueError):
+        summarizer.cue_method(build_document(), 10)
 
-    def test_cue_empty(self):
-        summarizer = EdmundsonSummarizer()
-        summarizer.bonus_words = ("ba", "bb", "bc",)
-        summarizer.stigma_words = ("sa", "sb", "sc",)
 
-        sentences = summarizer.cue_method(build_document(), 10)
-        self.assertEqual(len(sentences), 0)
+def test_cue_with_no_stigma_words():
+    """Test that cue method raises ValueError when stigma words are missing."""
+    summarizer = EdmundsonSummarizer()
+    summarizer.bonus_words = ("great", "very", "beautiful",)
+    with pytest.raises(ValueError):
+        summarizer.cue_method(build_document(), 10)
 
-    def test_cue_letters_case(self):
-        document = build_document(
-            ("X X X", "x x x x",),
-            ("w w w", "W W W W",)
+
+def test_cue_with_no_bonus_words():
+    """Test that cue method raises ValueError when bonus words are missing."""
+    summarizer = EdmundsonSummarizer()
+    summarizer.stigma_words = ("useless", "bad", "spinach",)
+    with pytest.raises(ValueError):
+        summarizer.cue_method(build_document(), 10)
+
+
+def test_cue_empty():
+    """Test cue method with an empty document."""
+    summarizer = EdmundsonSummarizer()
+    summarizer.bonus_words = ("ba", "bb", "bc",)
+    summarizer.stigma_words = ("sa", "sb", "sc",)
+
+    sentences = summarizer.cue_method(build_document(), 10)
+    assert len(sentences) == 0
+
+
+def test_cue_letters_case():
+    """Test that cue method is case-insensitive."""
+    document = build_document(
+        ("X X X", "x x x x",),
+        ("w w w", "W W W W",)
+    )
+
+    summarizer = EdmundsonSummarizer()
+    summarizer.bonus_words = ("X", "w",)
+    summarizer.stigma_words = ("stigma",)
+
+    sentences = summarizer.cue_method(document, 2)
+    assert len(sentences) == 2
+    assert str(sentences[0]) == "x x x x"
+    assert str(sentences[1]) == "W W W W"
+
+
+def test_cue_1():
+    """Test cue method with a single sentence containing bonus and stigma words."""
+    document = build_document(
+        ("ba bb bc bb unknown ľščťžýáíé sb sc sb",)
+    )
+
+    summarizer = EdmundsonSummarizer()
+    summarizer.bonus_words = ("ba", "bb", "bc",)
+    summarizer.stigma_words = ("sa", "sb", "sc",)
+
+    sentences = summarizer.cue_method(document, 10)
+    assert len(sentences) == 1
+
+
+def test_cue_2():
+    """Test cue method with two sentences, scoring and selecting by cue value."""
+    document = build_document(
+        ("ba bb bc bb unknown ľščťžýáíé sb sc sb",),
+        ("Pepek likes spinach",)
+    )
+
+    summarizer = EdmundsonSummarizer()
+    summarizer.bonus_words = ("ba", "bb", "bc",)
+    summarizer.stigma_words = ("sa", "sb", "sc",)
+
+    sentences = summarizer.cue_method(document, 10)
+    assert len(sentences) == 2
+    assert str(sentences[0]) == "ba bb bc bb unknown ľščťžýáíé sb sc sb"
+    assert str(sentences[1]) == "Pepek likes spinach"
+
+    sentences = summarizer.cue_method(document, 1)
+    assert len(sentences) == 1
+    assert str(sentences[0]) == "ba bb bc bb unknown ľščťžýáíé sb sc sb"
+
+
+def test_cue_3():
+    """Test cue method with a complex multi-paragraph document."""
+    document = build_document(
+        (
+            "ba " * 10,
+            "bb " * 10,
+            " sa" * 8 + " bb" * 10,
+            "bb bc ba",
+        ),
+        (),
+        (
+            "babbbc " * 10,
+            "na nb nc nd sa" + " bc" * 10,
+            " ba n" * 10,
         )
+    )
 
-        summarizer = EdmundsonSummarizer()
-        summarizer.bonus_words = ("X", "w",)
-        summarizer.stigma_words = ("stigma",)
+    summarizer = EdmundsonSummarizer()
+    summarizer.bonus_words = ("ba", "bb", "bc",)
+    summarizer.stigma_words = ("sa", "sb", "sc",)
 
-        sentences = summarizer.cue_method(document, 2)
-        self.assertEqual(len(sentences), 2)
-        self.assertEqual(to_unicode(sentences[0]), "x x x x")
-        self.assertEqual(to_unicode(sentences[1]), "W W W W")
+    sentences = summarizer.cue_method(document, 5)
+    assert len(sentences) == 5
+    assert str(sentences[0]) == ("ba " * 10).strip()
+    assert str(sentences[1]) == ("bb " * 10).strip()
+    assert str(sentences[2]) == "bb bc ba"
+    assert str(sentences[3]) == \
+        "na nb nc nd sa bc bc bc bc bc bc bc bc bc bc"
+    assert str(sentences[4]) == ("ba n " * 10).strip()
 
-    def test_cue_1(self):
-        document = build_document(
-            ("ba bb bc bb unknown ľščťžýáíé sb sc sb",)
-        )
 
-        summarizer = EdmundsonSummarizer()
-        summarizer.bonus_words = ("ba", "bb", "bc",)
-        summarizer.stigma_words = ("sa", "sb", "sc",)
+def test_key_empty():
+    """Test key method with an empty document."""
+    summarizer = EdmundsonSummarizer()
+    summarizer.bonus_words = ("ba", "bb", "bc",)
 
-        sentences = summarizer.cue_method(document, 10)
-        self.assertEqual(len(sentences), 1)
+    sentences = summarizer.key_method(build_document(), 10)
+    assert len(sentences) == 0
 
-    def test_cue_2(self):
-        document = build_document(
-            ("ba bb bc bb unknown ľščťžýáíé sb sc sb",),
-            ("Pepek likes spinach",)
-        )
 
-        summarizer = EdmundsonSummarizer()
-        summarizer.bonus_words = ("ba", "bb", "bc",)
-        summarizer.stigma_words = ("sa", "sb", "sc",)
+def test_key_without_bonus_words():
+    """Test that key method raises ValueError when bonus words are missing."""
+    summarizer = EdmundsonSummarizer()
+    with pytest.raises(ValueError):
+        summarizer.key_method(build_document(), 10)
 
-        sentences = summarizer.cue_method(document, 10)
-        self.assertEqual(len(sentences), 2)
-        self.assertEqual(to_unicode(sentences[0]),
-            "ba bb bc bb unknown ľščťžýáíé sb sc sb")
-        self.assertEqual(to_unicode(sentences[1]), "Pepek likes spinach")
 
-        sentences = summarizer.cue_method(document, 1)
-        self.assertEqual(len(sentences), 1)
-        self.assertEqual(to_unicode(sentences[0]),
-            "ba bb bc bb unknown ľščťžýáíé sb sc sb")
+def test_key_no_bonus_words_in_document():
+    """Test key method when no bonus words appear in the document."""
+    document = build_document(
+        ("wa wb wc wd", "I like music",),
+        ("This is test sentence with some extra words",)
+    )
+    summarizer = EdmundsonSummarizer()
+    summarizer.bonus_words = ("ba", "bb", "bc", "bonus",)
 
-    def test_cue_3(self):
-        document = build_document(
-            (
-                "ba "*10,
-                "bb "*10,
-                " sa"*8 + " bb"*10,
-                "bb bc ba",
-            ),
-            (),
-            (
-                "babbbc "*10,
-                "na nb nc nd sa" + " bc"*10,
-                " ba n"*10,
-            )
-        )
+    sentences = summarizer.key_method(document, 10)
+    assert len(sentences) == 3
+    assert str(sentences[0]) == "wa wb wc wd"
+    assert str(sentences[1]) == "I like music"
+    assert str(sentences[2]) == \
+        "This is test sentence with some extra words"
 
-        summarizer = EdmundsonSummarizer()
-        summarizer.bonus_words = ("ba", "bb", "bc",)
-        summarizer.stigma_words = ("sa", "sb", "sc",)
 
-        sentences = summarizer.cue_method(document, 5)
-        self.assertEqual(len(sentences), 5)
-        self.assertEqual(to_unicode(sentences[0]), ("ba "*10).strip())
-        self.assertEqual(to_unicode(sentences[1]), ("bb "*10).strip())
-        self.assertEqual(to_unicode(sentences[2]), "bb bc ba")
-        self.assertEqual(to_unicode(sentences[3]),
-            "na nb nc nd sa bc bc bc bc bc bc bc bc bc bc")
-        self.assertEqual(to_unicode(sentences[4]), ("ba n "*10).strip())
+def test_key_1():
+    """Test key method selecting the sentence with the most bonus words."""
+    document = build_document(
+        ("wa wb wc wd", "I like music",),
+        ("This is test sentence with some extra words and bonus",)
+    )
+    summarizer = EdmundsonSummarizer()
+    summarizer.bonus_words = ("ba", "bb", "bc", "bonus",)
 
-    def test_key_empty(self):
-        summarizer = EdmundsonSummarizer()
-        summarizer.bonus_words = ("ba", "bb", "bc",)
+    sentences = summarizer.key_method(document, 1)
+    assert len(sentences) == 1
+    assert str(sentences[0]) == \
+        "This is test sentence with some extra words and bonus"
 
-        sentences = summarizer.key_method(build_document(), 10)
-        self.assertEqual(len(sentences), 0)
 
-    def test_key_without_bonus_words(self):
-        summarizer = EdmundsonSummarizer()
+def test_key_2():
+    """Test key method with multiple sentences containing bonus words."""
+    document = build_document(
+        ("Om nom nom nom nom", "Sure I summarize it, with bonus",),
+        ("This is bonus test sentence with some extra words and bonus",)
+    )
+    summarizer = EdmundsonSummarizer()
+    summarizer.bonus_words = ("nom", "bonus",)
 
-        self.assertRaises(ValueError, summarizer.key_method, build_document(), 10)
+    sentences = summarizer.key_method(document, 2)
+    assert len(sentences) == 2
+    assert str(sentences[0]) == "Om nom nom nom nom"
+    assert str(sentences[1]) == \
+        "This is bonus test sentence with some extra words and bonus"
 
-    def test_key_no_bonus_words_in_document(self):
-        document = build_document(
-            ("wa wb wc wd", "I like music",),
-            ("This is test sentence with some extra words",)
-        )
-        summarizer = EdmundsonSummarizer()
-        summarizer.bonus_words = ("ba", "bb", "bc", "bonus",)
 
-        sentences = summarizer.key_method(document, 10)
-        self.assertEqual(len(sentences), 3)
-        self.assertEqual(to_unicode(sentences[0]), "wa wb wc wd")
-        self.assertEqual(to_unicode(sentences[1]), "I like music")
-        self.assertEqual(to_unicode(sentences[2]),
-            "This is test sentence with some extra words")
+def test_key_3():
+    """Test key method with different count and weight parameters."""
+    document = build_document(
+        ("wa", "wa wa", "wa wa wa", "wa wa wa wa", "wa Wa Wa Wa wa",),
+        ("x X x X",)
+    )
+    summarizer = EdmundsonSummarizer()
+    summarizer.bonus_words = ("wa", "X",)
 
-    def test_key_1(self):
-        document = build_document(
-            ("wa wb wc wd", "I like music",),
-            ("This is test sentence with some extra words and bonus",)
-        )
-        summarizer = EdmundsonSummarizer()
-        summarizer.bonus_words = ("ba", "bb", "bc", "bonus",)
+    sentences = summarizer.key_method(document, 3)
+    assert len(sentences) == 3
+    assert str(sentences[0]) == "wa wa wa"
+    assert str(sentences[1]) == "wa wa wa wa"
+    assert str(sentences[2]) == "wa Wa Wa Wa wa"
 
-        sentences = summarizer.key_method(document, 1)
-        self.assertEqual(len(sentences), 1)
-        self.assertEqual(to_unicode(sentences[0]),
-            "This is test sentence with some extra words and bonus")
+    sentences = summarizer.key_method(document, 3, weight=0)
+    assert len(sentences) == 3
+    assert str(sentences[0]) == "wa wa wa wa"
+    assert str(sentences[1]) == "wa Wa Wa Wa wa"
+    assert str(sentences[2]) == "x X x X"
 
-    def test_key_2(self):
-        document = build_document(
-            ("Om nom nom nom nom", "Sure I summarize it, with bonus",),
-            ("This is bonus test sentence with some extra words and bonus",)
-        )
-        summarizer = EdmundsonSummarizer()
-        summarizer.bonus_words = ("nom", "bonus",)
 
-        sentences = summarizer.key_method(document, 2)
-        self.assertEqual(len(sentences), 2)
-        self.assertEqual(to_unicode(sentences[0]), "Om nom nom nom nom")
-        self.assertEqual(to_unicode(sentences[1]),
-            "This is bonus test sentence with some extra words and bonus")
+def test_title_method_with_empty_document():
+    """Test title method with an empty document."""
+    summarizer = EdmundsonSummarizer()
+    summarizer.null_words = ("ba", "bb", "bc",)
 
-    def test_key_3(self):
-        document = build_document(
-            ("wa", "wa wa", "wa wa wa", "wa wa wa wa", "wa Wa Wa Wa wa",),
-            ("x X x X",)
-        )
-        summarizer = EdmundsonSummarizer()
-        summarizer.bonus_words = ("wa", "X",)
+    sentences = summarizer.title_method(build_document(), 10)
+    assert len(sentences) == 0
 
-        sentences = summarizer.key_method(document, 3)
-        self.assertEqual(len(sentences), 3)
-        self.assertEqual(to_unicode(sentences[0]), "wa wa wa")
-        self.assertEqual(to_unicode(sentences[1]), "wa wa wa wa")
-        self.assertEqual(to_unicode(sentences[2]), "wa Wa Wa Wa wa")
 
-        sentences = summarizer.key_method(document, 3, weight=0)
-        self.assertEqual(len(sentences), 3)
-        self.assertEqual(to_unicode(sentences[0]), "wa wa wa wa")
-        self.assertEqual(to_unicode(sentences[1]), "wa Wa Wa Wa wa")
-        self.assertEqual(to_unicode(sentences[2]), "x X x X")
+def test_title_method_without_null_words():
+    """Test that title method raises ValueError when null words are missing."""
+    summarizer = EdmundsonSummarizer()
+    with pytest.raises(ValueError):
+        summarizer.title_method(build_document(), 10)
 
-    def test_title_method_with_empty_document(self):
-        summarizer = EdmundsonSummarizer()
-        summarizer.null_words = ("ba", "bb", "bc",)
 
-        sentences = summarizer.title_method(build_document(), 10)
-        self.assertEqual(len(sentences), 0)
+def test_title_method_without_title():
+    """Test title method when the document has no headings."""
+    document = build_document(
+        ("This is sentence", "This is another one",),
+        ("And some next sentence but no heading",)
+    )
 
-    def test_title_method_without_null_words(self):
-        summarizer = EdmundsonSummarizer()
+    summarizer = EdmundsonSummarizer()
+    summarizer.null_words = ("this", "is", "some", "and",)
 
-        self.assertRaises(ValueError, summarizer.title_method, build_document(), 10)
+    sentences = summarizer.title_method(document, 10)
+    assert len(sentences) == 3
+    assert str(sentences[0]) == "This is sentence"
+    assert str(sentences[1]) == "This is another one"
+    assert str(sentences[2]) == "And some next sentence but no heading"
 
-    def test_title_method_without_title(self):
-        document = build_document(
-            ("This is sentence", "This is another one",),
-            ("And some next sentence but no heading",)
-        )
 
-        summarizer = EdmundsonSummarizer()
-        summarizer.null_words = ("this", "is", "some", "and",)
+def test_title_method_1():
+    """Test title method selecting the best matching sentence."""
+    document = build_document_from_string("""
+        # This is cool heading
+        Because I am sentence I like words
+        And because I am string I like characters
 
-        sentences = summarizer.title_method(document, 10)
-        self.assertEqual(len(sentences), 3)
-        self.assertEqual(to_unicode(sentences[0]), "This is sentence")
-        self.assertEqual(to_unicode(sentences[1]), "This is another one")
-        self.assertEqual(to_unicode(sentences[2]), "And some next sentence but no heading")
+        # blank and heading
+        This is next paragraph because of blank line above
+        Here is the winner because contains words like cool and heading
+    """)
 
-    def test_title_method_1(self):
-        document = build_document_from_string("""
-            # This is cool heading
-            Because I am sentence I like words
-            And because I am string I like characters
+    summarizer = EdmundsonSummarizer()
+    summarizer.null_words = ("this", "is", "I", "am", "and",)
 
-            # blank and heading
-            This is next paragraph because of blank line above
-            Here is the winner because contains words like cool and heading
-        """)
+    sentences = summarizer.title_method(document, 1)
+    assert len(sentences) == 1
+    assert str(sentences[0]) == \
+        "Here is the winner because contains words like cool and heading"
 
-        summarizer = EdmundsonSummarizer()
-        summarizer.null_words = ("this", "is", "I", "am", "and",)
 
-        sentences = summarizer.title_method(document, 1)
-        self.assertEqual(len(sentences), 1)
-        self.assertEqual(to_unicode(sentences[0]),
-            "Here is the winner because contains words like cool and heading")
+def test_title_method_2():
+    """Test title method selecting top two sentences."""
+    document = build_document_from_string("""
+        # This is cool heading
+        Because I am sentence I like words
+        And because I am string I like characters
 
-    def test_title_method_2(self):
-        document = build_document_from_string("""
-            # This is cool heading
-            Because I am sentence I like words
-            And because I am string I like characters
+        # blank and heading
+        This is next paragraph because of blank line above
+        Here is the winner because contains words like cool and heading
+    """)
 
-            # blank and heading
-            This is next paragraph because of blank line above
-            Here is the winner because contains words like cool and heading
-        """)
+    summarizer = EdmundsonSummarizer()
+    summarizer.null_words = ("this", "is", "I", "am", "and",)
 
-        summarizer = EdmundsonSummarizer()
-        summarizer.null_words = ("this", "is", "I", "am", "and",)
+    sentences = summarizer.title_method(document, 2)
+    assert len(sentences) == 2
+    assert str(sentences[0]) == \
+        "This is next paragraph because of blank line above"
+    assert str(sentences[1]) == \
+        "Here is the winner because contains words like cool and heading"
 
-        sentences = summarizer.title_method(document, 2)
-        self.assertEqual(len(sentences), 2)
-        self.assertEqual(to_unicode(sentences[0]),
-            "This is next paragraph because of blank line above")
-        self.assertEqual(to_unicode(sentences[1]),
-            "Here is the winner because contains words like cool and heading")
 
-    def test_title_method_3(self):
-        document = build_document_from_string("""
-            # This is cool heading
-            Because I am sentence I like words
-            And because I am string I like characters
+def test_title_method_3():
+    """Test title method selecting top three sentences."""
+    document = build_document_from_string("""
+        # This is cool heading
+        Because I am sentence I like words
+        And because I am string I like characters
 
-            # blank and heading
-            This is next paragraph because of blank line above
-            Here is the winner because contains words like cool and heading
-        """)
+        # blank and heading
+        This is next paragraph because of blank line above
+        Here is the winner because contains words like cool and heading
+    """)
 
-        summarizer = EdmundsonSummarizer()
-        summarizer.null_words = ("this", "is", "I", "am", "and",)
+    summarizer = EdmundsonSummarizer()
+    summarizer.null_words = ("this", "is", "I", "am", "and",)
 
-        sentences = summarizer.title_method(document, 3)
-        self.assertEqual(len(sentences), 3)
-        self.assertEqual(to_unicode(sentences[0]),
-            "Because I am sentence I like words")
-        self.assertEqual(to_unicode(sentences[1]),
-            "This is next paragraph because of blank line above")
-        self.assertEqual(to_unicode(sentences[2]),
-            "Here is the winner because contains words like cool and heading")
+    sentences = summarizer.title_method(document, 3)
+    assert len(sentences) == 3
+    assert str(sentences[0]) == "Because I am sentence I like words"
+    assert str(sentences[1]) == \
+        "This is next paragraph because of blank line above"
+    assert str(sentences[2]) == \
+        "Here is the winner because contains words like cool and heading"
 
-    def test_location_method_with_empty_document(self):
-        summarizer = EdmundsonSummarizer()
-        summarizer.null_words = ("na", "nb", "nc",)
 
-        sentences = summarizer.location_method(build_document(), 10)
-        self.assertEqual(len(sentences), 0)
+def test_location_method_with_empty_document():
+    """Test location method with an empty document."""
+    summarizer = EdmundsonSummarizer()
+    summarizer.null_words = ("na", "nb", "nc",)
 
-    def test_location_method_without_null_words(self):
-        summarizer = EdmundsonSummarizer()
+    sentences = summarizer.location_method(build_document(), 10)
+    assert len(sentences) == 0
 
-        self.assertRaises(ValueError, summarizer.location_method, build_document(), 10)
 
-    def test_location_method_1(self):
-        document = build_document_from_string("""
-            # na nb nc ha hb
-            ha = 1 + 1 + 1 = 3
-            ha hb = 2 + 1 + 1 = 4
+def test_location_method_without_null_words():
+    """Test that location method raises ValueError when null words are missing."""
+    summarizer = EdmundsonSummarizer()
+    with pytest.raises(ValueError):
+        summarizer.location_method(build_document(), 10)
 
-            first = 1
-            ha hb ha = 3
-            last = 1
 
-            # hc hd
-            hb hc hd = 3 + 1 + 1 = 5
-            ha hb = 2 + 1 + 1 = 4
-        """)
+def test_location_method_1():
+    """Test location method with default position weights."""
+    document = build_document_from_string("""
+        # na nb nc ha hb
+        ha = 1 + 1 + 1 = 3
+        ha hb = 2 + 1 + 1 = 4
 
-        summarizer = EdmundsonSummarizer()
-        summarizer.null_words = ("na", "nb", "nc", "nd", "ne",)
+        first = 1
+        ha hb ha = 3
+        last = 1
 
-        sentences = summarizer.location_method(document, 4)
-        self.assertEqual(len(sentences), 4)
-        self.assertEqual(to_unicode(sentences[0]), "ha = 1 + 1 + 1 = 3")
-        self.assertEqual(to_unicode(sentences[1]), "ha hb = 2 + 1 + 1 = 4")
-        self.assertEqual(to_unicode(sentences[2]), "hb hc hd = 3 + 1 + 1 = 5")
-        self.assertEqual(to_unicode(sentences[3]), "ha hb = 2 + 1 + 1 = 4")
+        # hc hd
+        hb hc hd = 3 + 1 + 1 = 5
+        ha hb = 2 + 1 + 1 = 4
+    """)
 
-    def test_location_method_2(self):
-        document = build_document_from_string("""
-            # na nb nc ha hb
-            ha = 1 + 1 + 0 = 2
-            middle = 0
-            ha hb = 2 + 1 + 0 = 3
+    summarizer = EdmundsonSummarizer()
+    summarizer.null_words = ("na", "nb", "nc", "nd", "ne",)
 
-            first = 1
-            ha hb ha = 3
-            last = 1
+    sentences = summarizer.location_method(document, 4)
+    assert len(sentences) == 4
+    assert str(sentences[0]) == "ha = 1 + 1 + 1 = 3"
+    assert str(sentences[1]) == "ha hb = 2 + 1 + 1 = 4"
+    assert str(sentences[2]) == "hb hc hd = 3 + 1 + 1 = 5"
+    assert str(sentences[3]) == "ha hb = 2 + 1 + 1 = 4"
 
-            # hc hd
-            hb hc hd = 3 + 1 + 0 = 4
-            ha hb = 2 + 1 + 0 = 3
-        """)
 
-        summarizer = EdmundsonSummarizer()
-        summarizer.null_words = ("na", "nb", "nc", "nd", "ne",)
+def test_location_method_2():
+    """Test location method with zero position weights."""
+    document = build_document_from_string("""
+        # na nb nc ha hb
+        ha = 1 + 1 + 0 = 2
+        middle = 0
+        ha hb = 2 + 1 + 0 = 3
 
-        sentences = summarizer.location_method(document, 4, w_p1=0, w_p2=0)
-        self.assertEqual(len(sentences), 4)
-        self.assertEqual(to_unicode(sentences[0]), "ha hb = 2 + 1 + 0 = 3")
-        self.assertEqual(to_unicode(sentences[1]), "ha hb ha = 3")
-        self.assertEqual(to_unicode(sentences[2]), "hb hc hd = 3 + 1 + 0 = 4")
-        self.assertEqual(to_unicode(sentences[3]), "ha hb = 2 + 1 + 0 = 3")
+        first = 1
+        ha hb ha = 3
+        last = 1
+
+        # hc hd
+        hb hc hd = 3 + 1 + 0 = 4
+        ha hb = 2 + 1 + 0 = 3
+    """)
+
+    summarizer = EdmundsonSummarizer()
+    summarizer.null_words = ("na", "nb", "nc", "nd", "ne",)
+
+    sentences = summarizer.location_method(document, 4, w_p1=0, w_p2=0)
+    assert len(sentences) == 4
+    assert str(sentences[0]) == "ha hb = 2 + 1 + 0 = 3"
+    assert str(sentences[1]) == "ha hb ha = 3"
+    assert str(sentences[2]) == "hb hc hd = 3 + 1 + 0 = 4"
+    assert str(sentences[3]) == "ha hb = 2 + 1 + 0 = 3"
