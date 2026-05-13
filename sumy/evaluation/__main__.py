@@ -1,30 +1,10 @@
-"""Sumy - evaluation of automatic text summary.
+"""Sumy - evaluation of automatic text summary CLI."""
 
-Usage:
-    sumy_eval (random | luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) <reference_summary> [--length=<length>] [--language=<lang>]
-    sumy_eval (random | luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) <reference_summary> [--length=<length>] [--language=<lang>] --url=<url>
-    sumy_eval (random | luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) <reference_summary> [--length=<length>] [--language=<lang>] --file=<file_path> --format=<file_format>
-    sumy_eval --version
-    sumy_eval --help
-
-Options:
-    <reference_summary>  Path to the file with reference summary.
-    --url=<url>          URL address of summarized message.
-    --file=<file>        Path to file with summarized text.
-    --format=<format>    Format of input file. [default: plaintext]
-    --length=<length>    Length of summarized text. It may be count of sentences
-                         or percentage of input text. [default: 20%]
-    --language=<lang>    Natural language of summarized text. [default: english]
-    --version            Displays version of application.
-    --help               Displays this text.
-
-"""
-
+import argparse
 import sys
 from urllib import request as urllib
 
 from itertools import chain
-from docopt import docopt
 from .. import __version__
 from ..utils import ItemsCount, get_stop_words
 from ..models import TfDocumentModel
@@ -235,18 +215,74 @@ AVAILABLE_EVALUATIONS = (
 )
 
 
+def build_eval_parser() -> argparse.ArgumentParser:
+    """Build the argparse parser for the sumy_eval CLI.
+
+    Returns:
+        Configured ArgumentParser instance.
+    """
+    parser = argparse.ArgumentParser(
+        prog="sumy_eval",
+        description="Evaluate automatic text summarization against a reference summary.",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
+    )
+    parser.add_argument(
+        "method",
+        choices=list(AVAILABLE_METHODS.keys()),
+        help="Summarization method to evaluate.",
+    )
+    parser.add_argument(
+        "reference_summary",
+        help="Path to the file with reference summary.",
+    )
+    parser.add_argument(
+        "--length",
+        default="20%",
+        help="Length of summarized text. It may be count of sentences "
+             "or percentage of input text. (default: 20%%)",
+    )
+    parser.add_argument(
+        "--language",
+        default="english",
+        help="Natural language of summarized text. (default: english)",
+    )
+    parser.add_argument(
+        "--url",
+        default=None,
+        help="URL address of summarized message.",
+    )
+    parser.add_argument(
+        "--file",
+        default=None,
+        help="Path to file with summarized text.",
+    )
+    parser.add_argument(
+        "--format",
+        default="plaintext",
+        dest="format",
+        choices=["html", "plaintext"],
+        help="Format of input file. (default: plaintext)",
+    )
+    return parser
+
+
 def main(args=None):
     """Run the sumy evaluation CLI.
 
     Args:
         args: Command-line arguments. If None, reads from sys.argv.
     """
-    args = docopt(__doc__, args, version=__version__)
-    summarizer, document, items_count, reference_summary = handle_arguments(args)
+    parser = build_eval_parser()
+    parsed_args = parser.parse_args(args)
+    summarizer, document, items_count, reference_summary = handle_arguments(parsed_args)
 
     evaluated_sentences = summarizer(document, items_count)
     reference_document = PlaintextParser.from_string(reference_summary,
-        Tokenizer(args["--language"]))
+        Tokenizer(parsed_args.language))
     reference_sentences = reference_document.document.sentences
 
     for name, evaluate_document, evaluate in AVAILABLE_EVALUATIONS:
@@ -261,7 +297,7 @@ def handle_arguments(args):
     """Parse and handle evaluation CLI arguments.
 
     Args:
-        args: Parsed argument dict from docopt.
+        args: Parsed argparse Namespace object.
 
     Returns:
         Tuple of (summarizer, document, items_count, reference_summary).
@@ -269,40 +305,31 @@ def handle_arguments(args):
     Raises:
         ValueError: If an unsupported document format is given.
     """
-    document_format = args["--format"]
-    if document_format is not None and document_format not in PARSERS:
-        raise ValueError(
-            f"Unsupported format of input document. "
-            f"Possible values are: {', '.join(PARSERS.keys())}. Given: {document_format}."
-        )
+    document_format = args.format
 
-    parser = PARSERS["plaintext"]
+    parser_class = PARSERS["plaintext"]
     input_stream = sys.stdin
 
-    if args["--url"] is not None:
-        parser = PARSERS["html"]
-        request = urllib.Request(args["--url"], headers=HEADERS)
+    if args.url is not None:
+        parser_class = PARSERS["html"]
+        request = urllib.Request(args.url, headers=HEADERS)
         input_stream = urllib.urlopen(request)
-    elif args["--file"] is not None:
-        parser = PARSERS.get(document_format, PlaintextParser)
-        input_stream = open(args["--file"], "rb")
+    elif args.file is not None:
+        parser_class = PARSERS.get(document_format, PlaintextParser)
+        input_stream = open(args.file, "rb")
 
-    summarizer_builder = AVAILABLE_METHODS["luhn"]
-    for method, builder in AVAILABLE_METHODS.items():
-        if args[method]:
-            summarizer_builder = builder
-            break
+    summarizer_builder = AVAILABLE_METHODS[args.method]
 
-    items_count = ItemsCount(args["--length"])
+    items_count = ItemsCount(args.length)
 
-    parser = parser(input_stream.read(), Tokenizer(args["--language"]))
+    doc_parser = parser_class(input_stream.read(), Tokenizer(args.language))
     if input_stream is not sys.stdin:
         input_stream.close()
 
-    with open(args["<reference_summary>"], "rb") as file:
+    with open(args.reference_summary, "rb") as file:
         reference_summary = file.read().decode("utf8")
 
-    return summarizer_builder(parser, args["--language"]), parser.document, items_count, reference_summary
+    return summarizer_builder(doc_parser, args.language), doc_parser.document, items_count, reference_summary
 
 
 if __name__ == "__main__":
