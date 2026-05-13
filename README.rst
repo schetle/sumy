@@ -3,8 +3,6 @@
 =========================
 Automatic text summarizer
 =========================
-.. image:: https://api.travis-ci.org/miso-belica/sumy.png?branch=master
-   :target: https://travis-ci.org/miso-belica/sumy
 
 Simple library and command line utility for extracting summary from HTML pages or plain texts. The package also contains simple evaluation framework for text summaries. Implemented summarization methods:
 
@@ -39,31 +37,21 @@ Here are some other summarizers:
 
 Installation
 ------------
-Make sure you have Python_ 2.6+/3.2+ and `pip <https://crate.io/packages/pip/>`_
+Make sure you have Python_ 3.12+ and `pip <https://crate.io/packages/pip/>`_
 (`Windows <http://docs.python-guide.org/en/latest/starting/install/win/>`_,
 `Linux <http://docs.python-guide.org/en/latest/starting/install/linux/>`_) installed.
 Run simply (preferred way):
 
 .. code-block:: bash
 
-    $ [sudo] pip install sumy
+    $ pip install sumy
 
 
 Or for the fresh version:
 
 .. code-block:: bash
 
-    $ [sudo] pip install git+git://github.com/miso-belica/sumy.git
-
-
-Or if you have to:
-
-.. code-block:: bash
-
-    $ wget https://github.com/miso-belica/sumy/archive/master.zip # download the sources
-    $ unzip master.zip # extract the downloaded file
-    $ cd sumy-master/
-    $ [sudo] python setup.py install # install the package
+    $ pip install git+git://github.com/miso-belica/sumy.git
 
 
 Usage
@@ -93,11 +81,6 @@ Python API
 Or you can use sumy like a library in your project.
 
 .. code-block:: python
-
-    # -*- coding: utf8 -*-
-
-    from __future__ import absolute_import
-    from __future__ import division, print_function, unicode_literals
 
     from sumy.parsers.html import HtmlParser
     from sumy.parsers.plaintext import PlaintextParser
@@ -131,4 +114,4 @@ Run tests via
 
 .. code-block:: bash
 
-    $ py.test-2.6 && py.test-3.2 && py.test-2.7 && py.test-3.3 && py.test-3.4
+    $ pytest tests/
