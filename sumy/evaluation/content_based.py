@@ -1,23 +1,24 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+"""Content-based evaluation metrics: cosine similarity and unit overlap."""
 
 from ..models import TfDocumentModel as TfModel
 
 
 def cosine_similarity(evaluated_model, reference_model):
-    """
-    Computes cosine similarity of two text documents. Each document
-    has to be represented as TF model of non-empty document.
+    """Compute cosine similarity of two TF document models.
 
-    :returns float:
-        0 <= cos <= 1, where 0 means independence and 1 means
-        exactly the same.
+    Args:
+        evaluated_model: TfDocumentModel of the evaluated text.
+        reference_model: TfDocumentModel of the reference text.
+
+    Returns:
+        Cosine similarity between 0.0 and 1.0.
+
+    Raises:
+        ValueError: If arguments are not TfDocumentModel instances or are empty.
     """
     if not (isinstance(evaluated_model, TfModel) and isinstance(reference_model, TfModel)):
         raise ValueError(
-            "Arguments has to be instances of 'sumy.models.TfDocumentModel'")
+            "Arguments have to be instances of 'sumy.models.TfDocumentModel'")
 
     terms = frozenset(evaluated_model.terms) | frozenset(reference_model.terms)
 
@@ -27,24 +28,27 @@ def cosine_similarity(evaluated_model, reference_model):
 
     denominator = evaluated_model.magnitude * reference_model.magnitude
     if denominator == 0.0:
-        raise ValueError("Document model can't be empty. Given %r & %r" % (
-            evaluated_model, reference_model))
+        raise ValueError(f"Document model can't be empty. Given {evaluated_model!r} & {reference_model!r}")
 
     return numerator / denominator
 
 
 def unit_overlap(evaluated_model, reference_model):
-    """
-    Computes unit overlap of two text documents. Documents
-    has to be represented as TF models of non-empty document.
+    """Compute unit overlap of two TF document models.
 
-    :returns float:
-        0 <= overlap <= 1, where 0 means no match and 1 means
-        exactly the same.
+    Args:
+        evaluated_model: TfDocumentModel of the evaluated text.
+        reference_model: TfDocumentModel of the reference text.
+
+    Returns:
+        Unit overlap between 0.0 and 1.0.
+
+    Raises:
+        ValueError: If arguments are not TfDocumentModel instances or are empty.
     """
     if not (isinstance(evaluated_model, TfModel) and isinstance(reference_model, TfModel)):
         raise ValueError(
-            "Arguments has to be instances of 'sumy.models.TfDocumentModel'")
+            "Arguments have to be instances of 'sumy.models.TfDocumentModel'")
 
     terms1 = frozenset(evaluated_model.terms)
     terms2 = frozenset(reference_model.terms)

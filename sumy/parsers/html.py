@@ -1,17 +1,17 @@
-# -*- coding: utf8 -*-
+"""Parser for HTML documents using breadability for article extraction."""
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
+from urllib import request as urllib
 from breadability.readable import Article
-from .._compat import urllib
-from ..utils import cached_property
+from functools import cached_property
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
 
 
 class HtmlParser(DocumentParser):
-    """Parser of text from HTML format into DOM."""
+    """Parser of text from HTML format into DOM.
+
+    Uses breadability to extract the main article content from HTML pages.
+    """
 
     SIGNIFICANT_TAGS = (
         "h1", "h2", "h3",
@@ -22,16 +22,45 @@ class HtmlParser(DocumentParser):
     )
 
     @classmethod
-    def from_string(cls, string, url, tokenizer):
+    def from_string(cls, string: str, url: str, tokenizer) -> "HtmlParser":
+        """Create a parser from an HTML string.
+
+        Args:
+            string: HTML content.
+            url: URL of the original page.
+            tokenizer: Tokenizer instance.
+
+        Returns:
+            HtmlParser instance.
+        """
         return cls(string, tokenizer, url)
 
     @classmethod
-    def from_file(cls, file_path, url, tokenizer):
+    def from_file(cls, file_path: str, url: str, tokenizer) -> "HtmlParser":
+        """Create a parser from an HTML file.
+
+        Args:
+            file_path: Path to the HTML file.
+            url: URL of the original page.
+            tokenizer: Tokenizer instance.
+
+        Returns:
+            HtmlParser instance.
+        """
         with open(file_path, "rb") as file:
             return cls(file.read(), tokenizer, url)
 
     @classmethod
-    def from_url(cls, url, tokenizer):
+    def from_url(cls, url: str, tokenizer) -> "HtmlParser":
+        """Create a parser by fetching HTML from a URL.
+
+        Args:
+            url: URL to fetch HTML from.
+            tokenizer: Tokenizer instance.
+
+        Returns:
+            HtmlParser instance.
+        """
         response = urllib.urlopen(url)
         data = response.read()
         response.close()
@@ -39,11 +68,23 @@ class HtmlParser(DocumentParser):
         return cls(data, tokenizer, url)
 
     def __init__(self, html_content, tokenizer, url=None):
-        super(HtmlParser, self).__init__(tokenizer)
+        """Initialize an HtmlParser.
+
+        Args:
+            html_content: HTML content as string or bytes.
+            tokenizer: Tokenizer instance.
+            url: Optional URL of the original page.
+        """
+        super().__init__(tokenizer)
         self._article = Article(html_content, url)
 
     @cached_property
-    def significant_words(self):
+    def significant_words(self) -> tuple:
+        """Return words from significant HTML tags (headings, bold, emphasis).
+
+        Returns:
+            Tuple of significant words, or default significant words if none found.
+        """
         words = []
         for paragraph in self._article.main_text:
             for text, annotations in paragraph:
@@ -56,7 +97,12 @@ class HtmlParser(DocumentParser):
             return self.SIGNIFICANT_WORDS
 
     @cached_property
-    def stigma_words(self):
+    def stigma_words(self) -> tuple:
+        """Return words from stigma HTML tags (links, strikethrough).
+
+        Returns:
+            Tuple of stigma words, or default stigma words if none found.
+        """
         words = []
         for paragraph in self._article.main_text:
             for text, annotations in paragraph:
@@ -68,7 +114,16 @@ class HtmlParser(DocumentParser):
         else:
             return self.STIGMA_WORDS
 
-    def _contains_any(self, sequence, *args):
+    def _contains_any(self, sequence, *args) -> bool:
+        """Check if sequence contains any of the given items.
+
+        Args:
+            sequence: Sequence to check (may be None).
+            *args: Items to look for.
+
+        Returns:
+            True if any item is found in the sequence.
+        """
         if sequence is None:
             return False
 
@@ -79,12 +134,12 @@ class HtmlParser(DocumentParser):
         return False
 
     @cached_property
-    def document(self):
-        # "a", "abbr", "acronym", "b", "big", "blink", "blockquote", "cite", "code",
-        # "dd", "del", "dfn", "dir", "dl", "dt", "em", "h", "h1", "h2", "h3", "h4",
-        # "h5", "h6", "i", "ins", "kbd", "li", "marquee", "menu", "ol", "pre", "q",
-        # "s", "samp", "strike", "strong", "sub", "sup", "tt", "u", "ul", "var",
+    def document(self) -> ObjectDocumentModel:
+        """Parse the HTML into an ObjectDocumentModel.
 
+        Returns:
+            ObjectDocumentModel with paragraphs, sentences, and words.
+        """
         annotated_text = self._article.main_text
 
         paragraphs = []

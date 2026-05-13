@@ -1,7 +1,5 @@
-# -*- coding: utf8 -*-
+"""Czech stemmer.
 
-"""
-Czech stemmer
 Copyright © 2010 Luís Gomes <luismsgomes@gmail.com>.
 
 Ported from the Java implementation available at:
@@ -11,21 +9,26 @@ Usage:
     czech_stemmer.py light|aggressive
 """
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import re
 import sys
 
 from warnings import warn
-from ..._compat import unicode
 
 
 WORD_PATTERN = re.compile(r"^\w+$", re.UNICODE)
 
 
-def stem_word(word, aggressive=False):
-    if not isinstance(word, unicode):
+def stem_word(word: str, aggressive: bool = False) -> str:
+    """Stem a Czech word using light or aggressive stemming.
+
+    Args:
+        word: The word to stem.
+        aggressive: If True, apply aggressive stemming rules.
+
+    Returns:
+        The stemmed word.
+    """
+    if not isinstance(word, str):
         word = word.decode("utf8")
 
     if not WORD_PATTERN.match(word):
@@ -54,6 +57,14 @@ def stem_word(word, aggressive=False):
 
 
 def _remove_case(word):
+    """Remove case suffixes from a Czech word.
+
+    Args:
+        word: Lowercase word to process.
+
+    Returns:
+        Word with case suffix removed.
+    """
     if len(word) > 7 and word.endswith("atech"):
         return word[:-5]
 
@@ -89,6 +100,14 @@ def _remove_case(word):
 
 
 def _remove_possessives(word):
+    """Remove possessive suffixes from a Czech word.
+
+    Args:
+        word: Word to process.
+
+    Returns:
+        Word with possessive suffix removed.
+    """
     if len(word) > 5:
         if word[-2:] in ("ov", "ův"):
             return word[:-2]
@@ -98,6 +117,14 @@ def _remove_possessives(word):
 
 
 def _remove_comparative(word):
+    """Remove comparative suffixes from a Czech word.
+
+    Args:
+        word: Word to process.
+
+    Returns:
+        Word with comparative suffix removed.
+    """
     if len(word) > 5:
         if word[-3:] in ("ejš", "ějš"):
             return _palatalize(word[:-2])
@@ -105,6 +132,14 @@ def _remove_comparative(word):
 
 
 def _remove_diminutive(word):
+    """Remove diminutive suffixes from a Czech word.
+
+    Args:
+        word: Word to process.
+
+    Returns:
+        Word with diminutive suffix removed.
+    """
     if len(word) > 7 and word.endswith("oušek"):
         return word[:-5]
     if len(word) > 6:
@@ -132,6 +167,14 @@ def _remove_diminutive(word):
 
 
 def _remove_augmentative(word):
+    """Remove augmentative suffixes from a Czech word.
+
+    Args:
+        word: Word to process.
+
+    Returns:
+        Word with augmentative suffix removed.
+    """
     if len(word) > 6 and word.endswith("ajzn"):
         return word[:-4]
     if len(word) > 5 and word[-3:] in ("izn", "isk"):
@@ -142,6 +185,14 @@ def _remove_augmentative(word):
 
 
 def _remove_derivational(word):
+    """Remove derivational suffixes from a Czech word.
+
+    Args:
+        word: Word to process.
+
+    Returns:
+        Word with derivational suffix removed.
+    """
     if len(word) > 8 and word.endswith("obinec"):
         return word[:-6]
     if len(word) > 7:
@@ -179,6 +230,14 @@ def _remove_derivational(word):
 
 
 def _palatalize(word):
+    """Apply palatalization rules to a Czech word stem.
+
+    Args:
+        word: Word to palatalize.
+
+    Returns:
+        Palatalized word.
+    """
     if word[-2:] in ("ci", "ce", "či", "če"):
         return word[:-2] + "k"
 
@@ -194,11 +253,11 @@ def _palatalize(word):
     return word[:-1]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if len(sys.argv) != 2 or sys.argv[1] not in ("light", "aggressive"):
-        sys.exit(__doc__.encode("utf8"))
+        sys.exit(__doc__)
 
     aggressive_stemming = bool(sys.argv[1] == "aggressive")
     for line in sys.stdin:
-        words = tuple(w.decode("utf8") + " " + stem_word(w, aggressive_stemming) for w in line.split())
-        print(*map(lambda s: s.encode("utf8"), words))
+        words = tuple(w + " " + stem_word(w, aggressive_stemming) for w in line.split())
+        print(*words)

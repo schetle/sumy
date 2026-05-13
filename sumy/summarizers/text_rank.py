@@ -1,7 +1,4 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+"""TextRank graph-based summarization method."""
 
 import math
 
@@ -11,23 +8,53 @@ from ._summarizer import AbstractSummarizer
 
 
 class TextRankSummarizer(AbstractSummarizer):
-    """Source: https://github.com/adamfabish/Reduction"""
+    """TextRank summarizer using graph-based ranking of sentences.
+
+    Source: https://github.com/adamfabish/Reduction
+    """
 
     _stop_words = frozenset()
 
     @property
-    def stop_words(self):
+    def stop_words(self) -> frozenset:
+        """Return the current stop words.
+
+        Returns:
+            Frozenset of stop words.
+        """
         return self._stop_words
 
     @stop_words.setter
     def stop_words(self, words):
+        """Set stop words, normalizing each word.
+
+        Args:
+            words: Iterable of stop words.
+        """
         self._stop_words = frozenset(map(self.normalize_word, words))
 
     def __call__(self, document, sentences_count):
+        """Summarize a document using TextRank.
+
+        Args:
+            document: ObjectDocumentModel to summarize.
+            sentences_count: Number of sentences to return.
+
+        Returns:
+            Tuple of best sentences.
+        """
         ratings = self.rate_sentences(document)
         return self._get_best_sentences(document.sentences, sentences_count, ratings)
 
     def rate_sentences(self, document):
+        """Rate all sentences in a document using TextRank.
+
+        Args:
+            document: ObjectDocumentModel to rate.
+
+        Returns:
+            Dict mapping sentences to ratings.
+        """
         sentences_words = [(s, self._to_words_set(s)) for s in document.sentences]
         ratings = defaultdict(float)
 
@@ -39,10 +66,27 @@ class TextRankSummarizer(AbstractSummarizer):
         return ratings
 
     def _to_words_set(self, sentence):
+        """Convert a sentence to a list of stemmed content words.
+
+        Args:
+            sentence: Sentence to process.
+
+        Returns:
+            List of stemmed word strings.
+        """
         words = map(self.normalize_word, sentence.words)
         return [self.stem_word(w) for w in words if w not in self._stop_words]
 
     def _rate_sentences_edge(self, words1, words2):
+        """Compute the edge weight between two sentences.
+
+        Args:
+            words1: Word list from first sentence.
+            words2: Word list from second sentence.
+
+        Returns:
+            Edge weight based on word overlap.
+        """
         rank = 0
         for w1 in words1:
             for w2 in words2:

@@ -1,6 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+"""Document parsers for different input formats."""
 
 from .parser import DocumentParser

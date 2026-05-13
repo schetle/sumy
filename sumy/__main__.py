@@ -1,7 +1,4 @@
-# -*- coding: utf8 -*-
-
-"""
-Sumy - automatic text summarizer.
+"""Sumy - automatic text summarizer.
 
 Usage:
     sumy (luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) [--length=<length>] [--language=<lang>] [--stopwords=<file_path>] [--format=<format>]
@@ -24,15 +21,12 @@ Options:
 
 """
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import sys
+from urllib import request as urllib
 
 from docopt import docopt
 from . import __version__
 from .utils import ItemsCount, get_stop_words, read_stop_words
-from ._compat import urllib, to_string, to_unicode, to_bytes, PY3
 from .nlp.tokenizers import Tokenizer
 from .parsers.html import HtmlParser
 from .parsers.plaintext import PlaintextParser
@@ -46,7 +40,7 @@ from .summarizers.kl import KLSummarizer
 from .nlp.stemmers import Stemmer
 
 HEADERS = {
-    "User-Agent": "Sumy (Automatic text summarizer) Version/%s" % __version__,
+    "User-Agent": f"Sumy (Automatic text summarizer) Version/{__version__}",
 }
 PARSERS = {
     "html": HtmlParser,
@@ -65,25 +59,42 @@ AVAILABLE_METHODS = {
 
 
 def main(args=None):
-    args = docopt(to_string(__doc__), args, version=__version__)
+    """Run the sumy summarizer CLI.
+
+    Args:
+        args: Command-line arguments. If None, reads from sys.argv.
+
+    Returns:
+        Exit code (0 for success).
+    """
+    args = docopt(__doc__, args, version=__version__)
     summarizer, parser, items_count = handle_arguments(args)
 
     for sentence in summarizer(parser.document, items_count):
-        if PY3:
-            print(to_unicode(sentence))
-        else:
-            print(to_bytes(sentence))
+        print(str(sentence))
 
     return 0
 
 
 def handle_arguments(args, default_input_stream=sys.stdin):
-    document_format = args['--format']
+    """Parse and handle CLI arguments, returning summarizer, parser, and count.
+
+    Args:
+        args: Parsed argument dict from docopt.
+        default_input_stream: Default input stream for stdin mode.
+
+    Returns:
+        Tuple of (summarizer, parser, items_count).
+
+    Raises:
+        ValueError: If an unsupported document format is given.
+    """
+    document_format = args["--format"]
     if document_format is not None and document_format not in PARSERS:
-        raise ValueError("Unsupported format of input document. Possible values are: %s. Given: %s." % (
-            ", ".join(PARSERS.keys()),
-            document_format,
-        ))
+        raise ValueError(
+            f"Unsupported format of input document. "
+            f"Possible values are: {', '.join(PARSERS.keys())}. Given: {document_format}."
+        )
 
     if args["--url"] is not None:
         parser = PARSERS[document_format or "html"]
@@ -99,8 +110,8 @@ def handle_arguments(args, default_input_stream=sys.stdin):
     items_count = ItemsCount(args["--length"])
 
     language = args["--language"]
-    if args['--stopwords']:
-        stop_words = read_stop_words(args['--stopwords'])
+    if args["--stopwords"]:
+        stop_words = read_stop_words(args["--stopwords"])
     else:
         stop_words = get_stop_words(language)
 
@@ -117,6 +128,17 @@ def handle_arguments(args, default_input_stream=sys.stdin):
 
 
 def build_summarizer(summarizer_class, stop_words, stemmer, parser):
+    """Build and configure a summarizer instance.
+
+    Args:
+        summarizer_class: Summarizer class to instantiate.
+        stop_words: Stop words to set on the summarizer.
+        stemmer: Stemmer to use.
+        parser: Parser with significant/stigma words for Edmundson.
+
+    Returns:
+        Configured summarizer instance.
+    """
     summarizer = summarizer_class(stemmer)
     if summarizer_class is EdmundsonSummarizer:
         summarizer.null_words = stop_words

@@ -1,69 +1,96 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+"""Utility functions and classes for the sumy package."""
 
 import sys
 
-from functools import wraps
+from functools import cached_property
 from os.path import dirname, abspath, join, exists
-from ._compat import to_string, to_unicode, string_types
 
 
-def cached_property(getter):
+def expand_resource_path(path: str) -> str:
+    """Expand a relative resource path to an absolute path within the sumy data directory.
+
+    Args:
+        path: Relative path within the data directory.
+
+    Returns:
+        Absolute path to the resource.
     """
-    Decorator that converts a method into memoized property.
-    The decorator works as expected only for classes with
-    attribute '__dict__' and immutable properties.
-    """
-    @wraps(getter)
-    def decorator(self):
-        key = "_cached_property_" + getter.__name__
-
-        if not hasattr(self, key):
-            setattr(self, key, getter(self))
-
-        return getattr(self, key)
-
-    return property(decorator)
-
-
-def expand_resource_path(path):
     directory = dirname(sys.modules["sumy"].__file__)
     directory = abspath(directory)
-    return join(directory, to_string("data"), to_string(path))
+    return join(directory, "data", path)
 
 
-def get_stop_words(language):
-    path = expand_resource_path("stopwords/%s.txt" % language)
+def get_stop_words(language: str) -> frozenset:
+    """Load stop words for the given language.
+
+    Args:
+        language: Name of the language (e.g., 'english', 'czech').
+
+    Returns:
+        Frozenset of stop words.
+
+    Raises:
+        LookupError: If stop words are not available for the given language.
+    """
+    path = expand_resource_path(f"stopwords/{language}.txt")
     if not exists(path):
-        raise LookupError("Stop-words are not available for language %s." % language)
+        raise LookupError(f"Stop-words are not available for language {language}.")
     return read_stop_words(path)
 
 
-def read_stop_words(filename):
+def read_stop_words(filename: str) -> frozenset:
+    """Read stop words from a file.
+
+    Args:
+        filename: Path to the stop words file.
+
+    Returns:
+        Frozenset of stop words.
+    """
     with open(filename, "rb") as open_file:
-        return frozenset(to_unicode(w.rstrip()) for w in open_file.readlines())
+        return frozenset(w.rstrip().decode("utf8") for w in open_file.readlines())
 
 
-class ItemsCount(object):
+class ItemsCount:
+    """Callable that selects a number of items from a sequence.
+
+    The count can be an absolute number or a percentage string (e.g., '20%').
+    """
+
     def __init__(self, value):
+        """Initialize ItemsCount with a count value.
+
+        Args:
+            value: Number of items or percentage string (e.g., '20%').
+        """
         self._value = value
 
     def __call__(self, sequence):
-        if isinstance(self._value, string_types):
+        """Select items from the sequence based on the configured count.
+
+        Args:
+            sequence: The sequence to select items from.
+
+        Returns:
+            A slice of the sequence.
+
+        Raises:
+            ValueError: If the value type is unsupported.
+        """
+        if isinstance(self._value, str):
             if self._value.endswith("%"):
                 total_count = len(sequence)
                 percentage = int(self._value[:-1])
-                # at least one sentence should be choosen
-                count = max(1, total_count*percentage // 100)
+                # at least one sentence should be chosen
+                count = max(1, total_count * percentage // 100)
                 return sequence[:count]
             else:
                 return sequence[:int(self._value)]
         elif isinstance(self._value, (int, float)):
             return sequence[:int(self._value)]
         else:
-            ValueError("Unsuported value of items count '%s'." % self._value)
+            raise ValueError(f"Unsupported value of items count '{self._value}'.")
 
     def __repr__(self):
-        return to_string("<ItemsCount: %r>" % self._value)
+        """Return string representation of ItemsCount."""
+        return f"<ItemsCount: {self._value!r}>"

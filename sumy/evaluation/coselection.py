@@ -1,33 +1,26 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+"""Coselection evaluation metrics: precision, recall, and F-score."""
 
 
 def f_score(evaluated_sentences, reference_sentences, weight=1.0):
-    """
-    Computation of F-Score measure. It is computed as
-    F(E) = ( (W^2 + 1) * P(E) * R(E) ) / ( W^2 * P(E) + R(E) ), where:
+    """Compute the F-Score measure for extracted sentences.
 
-    - P(E) is precision metrics of extract E.
-    - R(E) is recall metrics of extract E.
-    - W is a weighting factor that favours P(E) metrics
-      when W > 1 and favours R(E) metrics when W < 1.
+    F(E) = ((W^2 + 1) * P(E) * R(E)) / (W^2 * P(E) + R(E))
 
-    If W = 1.0 (default value) basic F-Score is computed.
-    It is equivalent to F(E) = (2 * P(E) * R(E)) / (P(E) + R(E)).
+    If W = 1.0 (default), computes the basic F-Score equivalent to
+    (2 * P(E) * R(E)) / (P(E) + R(E)).
 
-    :parameter iterable evaluated_sentences:
-        Sentences of evaluated extract.
-    :parameter iterable reference_sentences:
-        Sentences of reference extract.
-    :returns float:
-        Returns 0.0 <= P(E) <= 1.0
+    Args:
+        evaluated_sentences: Sentences of the evaluated extract.
+        reference_sentences: Sentences of the reference extract.
+        weight: Weighting factor favoring precision (W > 1) or recall (W < 1).
+
+    Returns:
+        F-Score value between 0.0 and 1.0.
     """
     p = precision(evaluated_sentences, reference_sentences)
     r = recall(evaluated_sentences, reference_sentences)
 
-    weight **= 2 # weight = weight^2
+    weight **= 2  # weight = weight^2
     denominator = weight * p + r
     if denominator == 0.0:
         return 0.0
@@ -36,42 +29,56 @@ def f_score(evaluated_sentences, reference_sentences, weight=1.0):
 
 
 def precision(evaluated_sentences, reference_sentences):
-    """
-    Intrinsic method of evaluation for extracts. It is computed as
-    P(E) = A / B, where:
+    """Compute precision for extracted sentences.
 
-    - A is count of common sentences occurring in both extracts.
-    - B is count of sentences in evaluated extract.
+    P(E) = A / B, where A is the count of common sentences and B is
+    the count of sentences in the evaluated extract.
 
-    :parameter iterable evaluated_sentences:
-        Sentences of evaluated extract.
-    :parameter iterable reference_sentences:
-        Sentences of reference extract.
-    :returns float:
-        Returns 0.0 <= P(E) <= 1.0
+    Args:
+        evaluated_sentences: Sentences of the evaluated extract.
+        reference_sentences: Sentences of the reference extract.
+
+    Returns:
+        Precision value between 0.0 and 1.0.
+
+    Raises:
+        ValueError: If either collection is empty.
     """
     return _divide_evaluation(reference_sentences, evaluated_sentences)
 
 
 def recall(evaluated_sentences, reference_sentences):
-    """
-    Intrinsic method of evaluation for extracts. It is computed as
-    R(E) = A / C, where:
+    """Compute recall for extracted sentences.
 
-    - A is count of common sentences in both extracts.
-    - C is count of sentences in reference extract.
+    R(E) = A / C, where A is the count of common sentences and C is
+    the count of sentences in the reference extract.
 
-    :parameter iterable evaluated_sentences:
-        Sentences of evaluated extract.
-    :parameter iterable reference_sentences:
-        Sentences of reference extract.
-    :returns float:
-        Returns 0.0 <= R(E) <= 1.0
+    Args:
+        evaluated_sentences: Sentences of the evaluated extract.
+        reference_sentences: Sentences of the reference extract.
+
+    Returns:
+        Recall value between 0.0 and 1.0.
+
+    Raises:
+        ValueError: If either collection is empty.
     """
     return _divide_evaluation(evaluated_sentences, reference_sentences)
 
 
 def _divide_evaluation(numerator_sentences, denominator_sentences):
+    """Compute the ratio of common sentences to denominator size.
+
+    Args:
+        numerator_sentences: Sentences contributing to the numerator.
+        denominator_sentences: Sentences contributing to the denominator.
+
+    Returns:
+        Ratio of common sentences to denominator size.
+
+    Raises:
+        ValueError: If either collection is empty.
+    """
     denominator_sentences = frozenset(denominator_sentences)
     numerator_sentences = frozenset(numerator_sentences)
 
