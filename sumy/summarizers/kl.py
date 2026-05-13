@@ -107,8 +107,8 @@ class KLSummarizer(AbstractSummarizer):
             List of normalized content words.
         """
         all_words = self._get_all_words_in_doc(sentences)
-        content_words = self._filter_out_stop_words(all_words)
-        normalized_content_words = self._normalize_words(content_words)
+        normalized_words = self._normalize_words(all_words)
+        normalized_content_words = self._filter_out_stop_words(normalized_words)
         return normalized_content_words
 
     def _compute_tf(self, sentences):
@@ -211,8 +211,10 @@ class KLSummarizer(AbstractSummarizer):
             # will store all the kls values for this pass
             kls = []
 
-            # converts summary to word list
-            summary_as_word_list = self._get_all_words_in_doc(summary)
+            # converts summary to normalized content word list
+            summary_as_word_list = self._filter_out_stop_words(
+                self._normalize_words(self._get_all_words_in_doc(summary))
+            )
 
             for s in sentences_as_words:
                 # calculates the joint frequency through combining the word lists
