@@ -69,6 +69,23 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(document.paragraphs[4].sentences), 1)
 
 
+class TestPlaintextParserBytesInput(unittest.TestCase):
+    def test_bytes_input_is_accepted(self):
+        text = 'Ako sa máš? Ja dobre!'
+        parser = PlaintextParser(text.encode('utf-8'), Tokenizer('czech'))
+        document = parser.document
+        self.assertEqual(len(document.sentences), 2)
+
+    def test_bytes_input_matches_str_input(self):
+        text = 'Ako sa máš? Ja dobre!'
+        parser_str = PlaintextParser.from_string(text, Tokenizer('czech'))
+        parser_bytes = PlaintextParser(text.encode('utf-8'), Tokenizer('czech'))
+        self.assertEqual(
+            [str(s) for s in parser_str.document.sentences],
+            [str(s) for s in parser_bytes.document.sentences],
+        )
+
+
 class TestHtmlParser(unittest.TestCase):
     def test_annotated_text(self):
         path = expand_resource_path("snippets/paragraphs.html")
