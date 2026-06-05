@@ -21,9 +21,6 @@ WORD_PATTERN = re.compile(r"^\w+$", re.UNICODE)
 
 
 def stem_word(word, aggressive=False):
-    if not isinstance(word, str):
-        word = word.decode("utf-8")
-
     if not WORD_PATTERN.match(word):
         return word
 
