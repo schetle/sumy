@@ -13,7 +13,6 @@ Verifies:
 """
 import subprocess
 import sys
-import os
 import pytest
 
 WORKING_DIR = "/l2l/workspace/sumy"
