@@ -56,7 +56,7 @@ dependencies = [
 [project.optional-dependencies]
 LSA = ["numpy"]
 LexRank = ["numpy"]
-dev = ["pytest>=7", "pytest-cov", "pytest-xdist"]
+dev = ["pytest>=7", "pytest-cov"]
 
 [project.scripts]
 sumy = "sumy.__main__:main"
