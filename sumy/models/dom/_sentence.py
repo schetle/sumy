@@ -5,6 +5,8 @@ from functools import cached_property
 
 class Sentence(object):
     def __init__(self, text, tokenizer, is_heading=False):
+        if isinstance(text, bytes):
+            text = text.decode("utf-8")
         self._text = str(text).strip()
         self._tokenizer = tokenizer
         self._is_heading = bool(is_heading)

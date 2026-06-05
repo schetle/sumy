@@ -78,9 +78,9 @@ class TestSentence:
         assert isinstance(hash(s), int)
 
     def test_sentence_bytes_input_converted_to_str(self):
-        """Sentence accepts bytes for text via str(text)."""
-        s = Sentence("Hello world.", TOKENIZER)
-        assert isinstance(str(s), str)
+        """Sentence accepts bytes for text and decodes via UTF-8."""
+        s = Sentence(b"Hello world.", TOKENIZER)
+        assert str(s) == "Hello world."
 
 
 class TestParagraph:
