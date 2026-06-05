@@ -1,11 +1,7 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import unittest
 
-from sumy._compat import to_unicode
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.models.dom import Paragraph, Sentence
 from ..utils import build_document, build_document_from_string
@@ -44,7 +40,7 @@ class TestDocument(unittest.TestCase):
         """)
 
         self.assertEqual(len(document.headings), 1)
-        self.assertEqual(to_unicode(document.headings[0]), "Nová myšlenka")
+        self.assertEqual(str(document.headings[0]), "Nová myšlenka")
 
     def test_sentences(self):
         document = build_document_from_string("""
@@ -56,11 +52,11 @@ class TestDocument(unittest.TestCase):
         """)
 
         self.assertEqual(len(document.sentences), 3)
-        self.assertEqual(to_unicode(document.sentences[0]),
+        self.assertEqual(str(document.sentences[0]),
             "Nějaký muž šel kolem naší zahrady")
-        self.assertEqual(to_unicode(document.sentences[1]),
+        self.assertEqual(str(document.sentences[1]),
             "Nějaký jiný muž šel kolem vaší zahrady")
-        self.assertEqual(to_unicode(document.sentences[2]),
+        self.assertEqual(str(document.sentences[2]),
             "Už už abych taky šel")
 
     def test_only_instances_of_sentence_allowed(self):

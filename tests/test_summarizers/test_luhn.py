@@ -1,8 +1,5 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import unittest
 
 from sumy.summarizers.luhn import LuhnSummarizer
@@ -10,7 +7,6 @@ from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.nlp.stemmers.czech import stem_word
 from sumy.utils import get_stop_words
-from sumy._compat import to_unicode
 from ..utils import build_document, build_sentence
 
 
@@ -37,8 +33,8 @@ class TestLuhn(unittest.TestCase):
 
         returned = summarizer(document, 10)
         self.assertEqual(len(returned), 2)
-        self.assertEqual(to_unicode(returned[0]), "Já jsem 1. věta")
-        self.assertEqual(to_unicode(returned[1]), "A já ta 2. vítězná výhra")
+        self.assertEqual(str(returned[0]), "Já jsem 1. věta")
+        self.assertEqual(str(returned[1]), "A já ta 2. vítězná výhra")
 
     def test_two_sentences_but_one_winner(self):
         document = build_document((
@@ -50,7 +46,7 @@ class TestLuhn(unittest.TestCase):
 
         returned = summarizer(document, 1)
         self.assertEqual(len(returned), 1)
-        self.assertEqual(to_unicode(returned[0]), "A já ta 2. vítězná věta")
+        self.assertEqual(str(returned[0]), "A já ta 2. vítězná věta")
 
     def test_three_sentences(self):
         document = build_document((
@@ -63,18 +59,18 @@ class TestLuhn(unittest.TestCase):
 
         returned = summarizer(document, 1)
         self.assertEqual(len(returned), 1)
-        self.assertEqual(to_unicode(returned[0]), "wb s wb s wb s s s s s s s s s wb")
+        self.assertEqual(str(returned[0]), "wb s wb s wb s s s s s s s s s wb")
 
         returned = summarizer(document, 2)
         self.assertEqual(len(returned), 2)
-        self.assertEqual(to_unicode(returned[0]), "wb s wb s wb s s s s s s s s s wb")
-        self.assertEqual(to_unicode(returned[1]), "wc s s wc s s wc")
+        self.assertEqual(str(returned[0]), "wb s wb s wb s s s s s s s s s wb")
+        self.assertEqual(str(returned[1]), "wc s s wc s s wc")
 
         returned = summarizer(document, 3)
         self.assertEqual(len(returned), 3)
-        self.assertEqual(to_unicode(returned[0]), "wa s s s wa s s s wa")
-        self.assertEqual(to_unicode(returned[1]), "wb s wb s wb s s s s s s s s s wb")
-        self.assertEqual(to_unicode(returned[2]), "wc s s wc s s wc")
+        self.assertEqual(str(returned[0]), "wa s s s wa s s s wa")
+        self.assertEqual(str(returned[1]), "wb s wb s wb s s s s s s s s s wb")
+        self.assertEqual(str(returned[2]), "wc s s wc s s wc")
 
     def test_various_words_with_significant_percentage(self):
         document = build_document((
@@ -90,18 +86,18 @@ class TestLuhn(unittest.TestCase):
 
         returned = summarizer(document, 1)
         self.assertEqual(len(returned), 1)
-        self.assertEqual(to_unicode(returned[0]), "6 e e e e e")
+        self.assertEqual(str(returned[0]), "6 e e e e e")
 
         returned = summarizer(document, 2)
         self.assertEqual(len(returned), 2)
-        self.assertEqual(to_unicode(returned[0]), "5 z z z z")
-        self.assertEqual(to_unicode(returned[1]), "6 e e e e e")
+        self.assertEqual(str(returned[0]), "5 z z z z")
+        self.assertEqual(str(returned[1]), "6 e e e e e")
 
         returned = summarizer(document, 3)
         self.assertEqual(len(returned), 3)
-        self.assertEqual(to_unicode(returned[0]), "3 c c c")
-        self.assertEqual(to_unicode(returned[1]), "5 z z z z")
-        self.assertEqual(to_unicode(returned[2]), "6 e e e e e")
+        self.assertEqual(str(returned[0]), "3 c c c")
+        self.assertEqual(str(returned[1]), "5 z z z z")
+        self.assertEqual(str(returned[2]), "6 e e e e e")
 
     def test_real_example(self):
         parser = PlaintextParser.from_string(
@@ -118,9 +114,9 @@ class TestLuhn(unittest.TestCase):
 
         returned = summarizer(parser.document, 2)
         self.assertEqual(len(returned), 2)
-        self.assertEqual(to_unicode(returned[0]),
+        self.assertEqual(str(returned[0]),
             "Jednalo se o případ chlapce v 6. třídě, který měl problémy s učením.")
-        self.assertEqual(to_unicode(returned[1]),
+        self.assertEqual(str(returned[1]),
             "Připadal si, že je mezi malými dětmi a realizoval se tím, "
             "že si ve třídě o rok mladších dětí budoval vedoucí pozici.")
 

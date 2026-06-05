@@ -1,13 +1,9 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import unittest
 
 from sumy.models.dom._sentence import Sentence
 from sumy.summarizers.kl import KLSummarizer
-from sumy._compat import to_unicode
 from ..utils import build_document, build_document_from_string
 from sumy.nlp.tokenizers import Tokenizer
 

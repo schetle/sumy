@@ -1,8 +1,5 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import math
 import unittest
 import sumy.summarizers.lex_rank as lex_rank_module

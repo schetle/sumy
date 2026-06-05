@@ -1,11 +1,7 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import unittest
 
-from sumy._compat import to_unicode
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.parsers.html import HtmlParser
 from sumy.nlp.tokenizers import Tokenizer
@@ -86,15 +82,15 @@ class TestHtmlParser(unittest.TestCase):
         self.assertEqual(len(document.paragraphs[0].headings), 1)
         self.assertEqual(len(document.paragraphs[0].sentences), 1)
 
-        self.assertEqual(to_unicode(document.paragraphs[0].headings[0]),
+        self.assertEqual(str(document.paragraphs[0].headings[0]),
             "Toto je nadpis prvej úrovne")
-        self.assertEqual(to_unicode(document.paragraphs[0].sentences[0]),
+        self.assertEqual(str(document.paragraphs[0].sentences[0]),
             "Toto je prvý odstavec a to je fajn.")
 
         self.assertEqual(len(document.paragraphs[1].headings), 0)
         self.assertEqual(len(document.paragraphs[1].sentences), 2)
 
-        self.assertEqual(to_unicode(document.paragraphs[1].sentences[0]),
+        self.assertEqual(str(document.paragraphs[1].sentences[0]),
             "Tento text je tu aby vyplnil prázdne miesto v srdci súboru.")
-        self.assertEqual(to_unicode(document.paragraphs[1].sentences[1]),
+        self.assertEqual(str(document.paragraphs[1].sentences[1]),
             "Aj súbory majú predsa city.")
