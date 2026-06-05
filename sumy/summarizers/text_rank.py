@@ -10,16 +10,6 @@ from ._summarizer import AbstractSummarizer
 class TextRankSummarizer(AbstractSummarizer):
     """Source: https://github.com/adamfabish/Reduction"""
 
-    _stop_words = frozenset()
-
-    @property
-    def stop_words(self):
-        return self._stop_words
-
-    @stop_words.setter
-    def stop_words(self, words):
-        self._stop_words = frozenset(map(self.normalize_word, words))
-
     def __call__(self, document, sentences_count):
         ratings = self.rate_sentences(document)
         return self._get_best_sentences(document.sentences, sentences_count, ratings)

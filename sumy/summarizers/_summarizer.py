@@ -19,6 +19,16 @@ class AbstractSummarizer(object):
     def __call__(self, document, sentences_count):
         raise NotImplementedError("This method should be overriden in subclass")
 
+    _stop_words = frozenset()
+
+    @property
+    def stop_words(self):
+        return self._stop_words
+
+    @stop_words.setter
+    def stop_words(self, words):
+        self._stop_words = frozenset(map(self.normalize_word, words))
+
     def stem_word(self, word):
         return self._stemmer(self.normalize_word(word))
 
