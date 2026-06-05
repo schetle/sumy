@@ -92,3 +92,9 @@ class TestMain(unittest.TestCase):
             args, default_input_stream=StringIO("Test sentence here.")
         )
         self.assertIsNotNone(summarizer)
+
+    def test_url_and_file_are_mutually_exclusive(self):
+        from sumy.__main__ import main as sumy_main
+        with self.assertRaises(SystemExit) as cm:
+            sumy_main(["lsa", "--url=http://example.com", "--file=somefile.txt"])
+        self.assertEqual(cm.exception.code, 2)

@@ -41,10 +41,11 @@ def main(args=None):
     parser = argparse.ArgumentParser(description="Automatic text summarizer")
     parser.add_argument("algorithm", choices=list(AVAILABLE_METHODS.keys()),
                         help="Summarization algorithm to use")
-    parser.add_argument("--url", default=None,
-                        help="URL address of the web page to summarize.")
-    parser.add_argument("--file", default=None,
-                        help="Path to the text file to summarize.")
+    input_group = parser.add_mutually_exclusive_group()
+    input_group.add_argument("--url", default=None,
+                             help="URL address of the web page to summarize.")
+    input_group.add_argument("--file", default=None,
+                             help="Path to the text file to summarize.")
     parser.add_argument("--length", default="20%",
                         help="Length of summarized text. It may be count of sentences "
                              "or percentage of input text. [default: 20%%]")
