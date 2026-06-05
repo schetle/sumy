@@ -1,33 +1,9 @@
 # -*- coding: utf8 -*-
 
-"""
-Sumy - automatic text summarizer.
-
-Usage:
-    sumy (luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) [--length=<length>] [--language=<lang>] [--stopwords=<file_path>] [--format=<format>]
-    sumy (luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) [--length=<length>] [--language=<lang>] [--stopwords=<file_path>] [--format=<format>] --url=<url>
-    sumy (luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) [--length=<length>] [--language=<lang>] [--stopwords=<file_path>] [--format=<format>] --file=<file_path>
-    sumy --version
-    sumy --help
-
-Options:
-    --length=<length>        Length of summarized text. It may be count of sentences
-                             or percentage of input text. [default: 20%]
-    --language=<lang>        Natural language of summarized text. [default: english]
-    --stopwords=<file_path>  Path to a file containing a list of stopwords. One word per line in UTF-8 encoding.
-                             If it's not provided default list of stop-words is used according to chosen language.
-    --format=<format>        Format of input document. Possible values: html, plaintext
-    --url=<url>              URL address of the web page to summarize.
-    --file=<file_path>       Path to the text file to summarize.
-    --version                Displays current application version.
-    --help                   Displays this text.
-
-"""
-
 import sys
+import argparse
 import urllib.request
 
-from docopt import docopt
 from . import __version__
 from .utils import ItemsCount, get_stop_words, read_stop_words
 from .nlp.tokenizers import Tokenizer
@@ -62,7 +38,26 @@ AVAILABLE_METHODS = {
 
 
 def main(args=None):
-    args = docopt(__doc__, args, version=__version__)
+    parser = argparse.ArgumentParser(description="Automatic text summarizer")
+    parser.add_argument("algorithm", choices=list(AVAILABLE_METHODS.keys()),
+                        help="Summarization algorithm to use")
+    parser.add_argument("--url", default=None,
+                        help="URL address of the web page to summarize.")
+    parser.add_argument("--file", default=None,
+                        help="Path to the text file to summarize.")
+    parser.add_argument("--length", default="20%",
+                        help="Length of summarized text. It may be count of sentences "
+                             "or percentage of input text. [default: 20%%]")
+    parser.add_argument("--language", default="english",
+                        help="Natural language of summarized text. [default: english]")
+    parser.add_argument("--stopwords", default=None,
+                        help="Path to a file containing a list of stopwords. "
+                             "One word per line in UTF-8 encoding.")
+    parser.add_argument("--format", default=None,
+                        help="Format of input document. Possible values: html, plaintext")
+    parser.add_argument("--version", action="version", version=__version__)
+
+    args = parser.parse_args(args)
     summarizer, parser, items_count = handle_arguments(args)
 
     for sentence in summarizer(parser.document, items_count):
@@ -72,29 +67,29 @@ def main(args=None):
 
 
 def handle_arguments(args, default_input_stream=sys.stdin):
-    document_format = args['--format']
+    document_format = args.format
     if document_format is not None and document_format not in PARSERS:
         raise ValueError("Unsupported format of input document. Possible values are: %s. Given: %s." % (
             ", ".join(PARSERS.keys()),
             document_format,
         ))
 
-    if args["--url"] is not None:
+    if args.url is not None:
         parser = PARSERS[document_format or "html"]
-        request = urllib.request.Request(args["--url"], headers=HEADERS)
+        request = urllib.request.Request(args.url, headers=HEADERS)
         input_stream = urllib.request.urlopen(request)
-    elif args["--file"] is not None:
+    elif args.file is not None:
         parser = PARSERS[document_format or "plaintext"]
-        input_stream = open(args["--file"], "rb")
+        input_stream = open(args.file, "rb")
     else:
         parser = PARSERS[document_format or "plaintext"]
         input_stream = default_input_stream
 
-    items_count = ItemsCount(args["--length"])
+    items_count = ItemsCount(args.length)
 
-    language = args["--language"]
-    if args['--stopwords']:
-        stop_words = read_stop_words(args['--stopwords'])
+    language = args.language
+    if args.stopwords:
+        stop_words = read_stop_words(args.stopwords)
     else:
         stop_words = get_stop_words(language)
 
@@ -104,7 +99,7 @@ def handle_arguments(args, default_input_stream=sys.stdin):
 
     stemmer = Stemmer(language)
 
-    summarizer_class = next(cls for name, cls in AVAILABLE_METHODS.items() if args[name])
+    summarizer_class = AVAILABLE_METHODS[args.algorithm]
     summarizer = build_summarizer(summarizer_class, stop_words, stemmer, parser)
 
     return summarizer, parser, items_count
