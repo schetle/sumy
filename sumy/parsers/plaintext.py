@@ -17,6 +17,8 @@ class PlaintextParser(DocumentParser):
 
     def __init__(self, text, tokenizer):
         super(PlaintextParser, self).__init__(tokenizer)
+        if isinstance(text, bytes):
+            text = text.decode("utf-8")
         self._text = str(text).strip()
 
     @cached_property

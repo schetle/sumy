@@ -184,7 +184,7 @@ def handle_arguments(args):
         input_stream = urllib.request.urlopen(request)
     elif args.file is not None:
         parser = PARSERS.get(document_format, PlaintextParser)
-        input_stream = open(args.file, "rb")
+        input_stream = open(args.file, "r", encoding="utf-8")
 
     summarizer_builder = AVAILABLE_METHODS[args.algorithm]
 
@@ -194,8 +194,8 @@ def handle_arguments(args):
     if input_stream is not sys.stdin:
         input_stream.close()
 
-    with open(args.reference_summary, "rb") as file:
-        reference_summary = file.read().decode("utf-8")
+    with open(args.reference_summary, "r", encoding="utf-8") as file:
+        reference_summary = file.read()
 
     return summarizer_builder(parser, args.language), parser.document, items_count, reference_summary
 

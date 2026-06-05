@@ -80,7 +80,7 @@ def handle_arguments(args, default_input_stream=sys.stdin):
         input_stream = urllib.request.urlopen(request)
     elif args.file is not None:
         parser = PARSERS[document_format or "plaintext"]
-        input_stream = open(args.file, "rb")
+        input_stream = open(args.file, "r", encoding="utf-8")
     else:
         parser = PARSERS[document_format or "plaintext"]
         input_stream = default_input_stream
