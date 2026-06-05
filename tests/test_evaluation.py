@@ -1,5 +1,8 @@
 # -*- coding: utf8 -*-
 
+import argparse
+import os
+import tempfile
 import unittest
 
 from sumy.nlp.tokenizers import Tokenizer
@@ -303,3 +306,94 @@ class TestRougeEvaluation(unittest.TestCase):
         candidate_text = "one two six seven eight. one three eight nine five."
         candidates = PlaintextParser(candidate_text, Tokenizer("english")).document.sentences
         rouge_l_summary_level(candidates, reference)
+
+
+def make_eval_namespace(**kwargs):
+    defaults = dict(
+        algorithm='luhn',
+        reference_summary=None,
+        url=None,
+        file=None,
+        format='plaintext',
+        length='20%',
+        language='english',
+    )
+    defaults.update(kwargs)
+    return argparse.Namespace(**defaults)
+
+
+class TestEvalMain(unittest.TestCase):
+    def _make_ref_file(self, content='Reference summary sentence.'):
+        f = tempfile.NamedTemporaryFile(mode='w', suffix='.txt',
+                                        encoding='utf-8', delete=False)
+        f.write(content)
+        f.close()
+        return f.name
+
+    def _make_input_file(self, content='Hello world. This is a test sentence.'):
+        f = tempfile.NamedTemporaryFile(mode='w', suffix='.txt',
+                                        encoding='utf-8', delete=False)
+        f.write(content)
+        f.close()
+        return f.name
+
+    def test_handle_arguments_with_file_and_reference(self):
+        from sumy.evaluation.__main__ import handle_arguments as eval_handle_arguments
+        ref = self._make_ref_file()
+        inp = self._make_input_file()
+        try:
+            args = make_eval_namespace(file=inp, reference_summary=ref)
+            summarizer, document, items_count, ref_summary = eval_handle_arguments(args)
+            self.assertIsNotNone(summarizer)
+            self.assertIsNotNone(document)
+            self.assertIsNotNone(items_count)
+            self.assertIsInstance(ref_summary, str)
+        finally:
+            os.unlink(ref)
+            os.unlink(inp)
+
+    def test_handle_wrong_format(self):
+        from sumy.evaluation.__main__ import handle_arguments as eval_handle_arguments
+        ref = self._make_ref_file()
+        try:
+            args = make_eval_namespace(url='http://example.com', format='text',
+                                       reference_summary=ref)
+            self.assertRaises(ValueError, eval_handle_arguments, args)
+        finally:
+            os.unlink(ref)
+
+    def test_algorithm_choices(self):
+        from sumy.evaluation.__main__ import AVAILABLE_METHODS as EVAL_AVAILABLE_METHODS
+        expected = {'random', 'luhn', 'edmundson', 'lsa', 'text-rank',
+                    'lex-rank', 'sum-basic', 'kl'}
+        self.assertEqual(set(EVAL_AVAILABLE_METHODS.keys()), expected)
+
+    def test_handle_all_algorithms_with_file(self):
+        from sumy.evaluation.__main__ import handle_arguments as eval_handle_arguments
+        from sumy.evaluation.__main__ import AVAILABLE_METHODS as EVAL_AVAILABLE_METHODS
+        ref = self._make_ref_file()
+        inp = self._make_input_file(
+            'Hello world. This is a test sentence. Another sentence here.'
+        )
+        try:
+            for algo in EVAL_AVAILABLE_METHODS:
+                args = make_eval_namespace(algorithm=algo, file=inp,
+                                           reference_summary=ref)
+                summarizer, document, items_count, ref_summary = eval_handle_arguments(args)
+                self.assertIsNotNone(summarizer)
+        finally:
+            os.unlink(ref)
+            os.unlink(inp)
+
+    def test_reference_summary_read_as_unicode(self):
+        from sumy.evaluation.__main__ import handle_arguments as eval_handle_arguments
+        ref = self._make_ref_file(content='Unicode content: cafe.')
+        inp = self._make_input_file()
+        try:
+            args = make_eval_namespace(file=inp, reference_summary=ref)
+            _, _, _, ref_summary = eval_handle_arguments(args)
+            self.assertIsInstance(ref_summary, str)
+            self.assertIn('cafe', ref_summary)
+        finally:
+            os.unlink(ref)
+            os.unlink(inp)
