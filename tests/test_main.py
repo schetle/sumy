@@ -1,8 +1,11 @@
 # -*- coding: utf8 -*-
 
 import argparse
+import os
+import tempfile
 import unittest
 from io import StringIO
+from unittest.mock import patch
 
 from sumy.__main__ import handle_arguments, AVAILABLE_METHODS
 
@@ -98,3 +101,41 @@ class TestMain(unittest.TestCase):
         with self.assertRaises(SystemExit) as cm:
             sumy_main(["lsa", "--url=http://example.com", "--file=somefile.txt"])
         self.assertEqual(cm.exception.code, 2)
+
+    def test_handle_file_argument(self):
+        content = "First sentence. Second sentence."
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8',
+                                         suffix='.txt', delete=False) as f:
+            f.write(content)
+            tmp_path = f.name
+        try:
+            args = make_namespace(algorithm='luhn', file=tmp_path)
+            summarizer, parser, items_count = handle_arguments(args)
+            self.assertIsNotNone(summarizer)
+            self.assertIsNotNone(parser)
+        finally:
+            os.unlink(tmp_path)
+
+    def test_handle_stopwords_argument(self):
+        stopwords_path = os.path.join(
+            os.path.dirname(__file__), 'data', 'stopwords', 'language.txt'
+        )
+        args = make_namespace(algorithm='lsa', stopwords=stopwords_path)
+        summarizer, parser, items_count = handle_arguments(
+            args, default_input_stream=StringIO("Hello world. This is a test.")
+        )
+        self.assertIsNotNone(summarizer)
+
+    def test_main_with_file_argument(self):
+        from sumy.__main__ import main as sumy_main
+        content = "First sentence here. Second sentence follows."
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8',
+                                         suffix='.txt', delete=False) as f:
+            f.write(content)
+            tmp_path = f.name
+        try:
+            with patch('builtins.print'):
+                exit_code = sumy_main(['luhn', '--file=' + tmp_path, '--length=1'])
+            self.assertEqual(exit_code, 0)
+        finally:
+            os.unlink(tmp_path)
