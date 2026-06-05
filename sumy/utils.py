@@ -1,37 +1,14 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import sys
 
-from functools import wraps
 from os.path import dirname, abspath, join, exists
-from ._compat import to_string, to_unicode, string_types
-
-
-def cached_property(getter):
-    """
-    Decorator that converts a method into memoized property.
-    The decorator works as expected only for classes with
-    attribute '__dict__' and immutable properties.
-    """
-    @wraps(getter)
-    def decorator(self):
-        key = "_cached_property_" + getter.__name__
-
-        if not hasattr(self, key):
-            setattr(self, key, getter(self))
-
-        return getattr(self, key)
-
-    return property(decorator)
 
 
 def expand_resource_path(path):
     directory = dirname(sys.modules["sumy"].__file__)
     directory = abspath(directory)
-    return join(directory, to_string("data"), to_string(path))
+    return join(directory, "data", path)
 
 
 def get_stop_words(language):
@@ -42,8 +19,8 @@ def get_stop_words(language):
 
 
 def read_stop_words(filename):
-    with open(filename, "rb") as open_file:
-        return frozenset(to_unicode(w.rstrip()) for w in open_file.readlines())
+    with open(filename, "r", encoding="utf-8") as open_file:
+        return frozenset(w.rstrip() for w in open_file.readlines())
 
 
 class ItemsCount(object):
@@ -51,7 +28,7 @@ class ItemsCount(object):
         self._value = value
 
     def __call__(self, sequence):
-        if isinstance(self._value, string_types):
+        if isinstance(self._value, str):
             if self._value.endswith("%"):
                 total_count = len(sequence)
                 percentage = int(self._value[:-1])
@@ -66,4 +43,4 @@ class ItemsCount(object):
             ValueError("Unsuported value of items count '%s'." % self._value)
 
     def __repr__(self):
-        return to_string("<ItemsCount: %r>" % self._value)
+        return "<ItemsCount: %r>" % self._value

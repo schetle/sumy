@@ -1,11 +1,9 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+import urllib.request
+from functools import cached_property
 
 from breadability.readable import Article
-from .._compat import urllib
-from ..utils import cached_property
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
 
@@ -32,7 +30,7 @@ class HtmlParser(DocumentParser):
 
     @classmethod
     def from_url(cls, url, tokenizer):
-        response = urllib.urlopen(url)
+        response = urllib.request.urlopen(url)
         data = response.read()
         response.close()
 

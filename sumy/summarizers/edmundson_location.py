@@ -1,11 +1,7 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
-from itertools import chain
+from itertools import chain, filterfalse as ffilter
 from operator import attrgetter
-from .._compat import ffilter
 from ._summarizer import AbstractSummarizer
 
 
