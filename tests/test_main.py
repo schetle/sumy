@@ -2,11 +2,9 @@
 
 import argparse
 import unittest
-import pytest
 from io import StringIO
 
 from sumy.__main__ import handle_arguments, AVAILABLE_METHODS
-from sumy.__main__ import main as sumy_main
 
 
 def make_namespace(**kwargs):
