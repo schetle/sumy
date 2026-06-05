@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sumy"
+version = "0.3.0"
+description = "Module for automatic summarization of text documents and HTML pages."
+readme = "README.rst"
+authors = [
+    { name = "Michal Belica", email = "miso.belica@gmail.com" },
+]
+license = { text = "Apache License, Version 2.0" }
+keywords = [
+    "data mining",
+    "automatic summarization",
+    "data reduction",
+    "web-data extraction",
+    "NLP",
+    "natural language processing",
+    "latent semantic analysis",
+    "LSA",
+    "TextRank",
+    "LexRank",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: Apache Software License",
+
+    "Natural Language :: Czech",
+    "Natural Language :: Slovak",
+    "Natural Language :: English",
+    "Natural Language :: German",
+    "Natural Language :: French",
+
+    "Topic :: Education",
+    "Topic :: Internet",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Text Processing :: Filters",
+    "Topic :: Text Processing :: Linguistic",
+    "Topic :: Text Processing :: Markup :: HTML",
+
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "breadability>=0.1.20",
+    "nltk>=3.9",
+]
+
+[project.optional-dependencies]
+LSA = ["numpy"]
+LexRank = ["numpy"]
+dev = ["pytest>=7", "pytest-cov", "pytest-xdist"]
+
+[project.scripts]
+sumy = "sumy.__main__:main"
+sumy_eval = "sumy.evaluation.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/miso-belica/sumy"
+Source = "https://github.com/miso-belica/sumy"
+
+[tool.setuptools.packages.find]
+include = ["sumy*"]
+
+[tool.setuptools.package-data]
+"sumy" = ["data/stopwords/*.txt"]
+
+[tool.pytest.ini_options]
+addopts = "--quiet --tb=short --color=yes --cov=sumy --cov-report=term-missing --no-cov-on-fail"
