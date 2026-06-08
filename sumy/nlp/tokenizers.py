@@ -2,7 +2,8 @@
 
 import re
 import nltk
-from nltk.tokenize import PunktTokenizer
+from nltk.data import find as nltk_find
+from nltk.tokenize.punkt import PunktSentenceTokenizer, load_punkt_params
 
 
 class Tokenizer(object):
@@ -32,7 +33,10 @@ class Tokenizer(object):
         return self._language
 
     def _sentence_tokenizer(self, language):
-        return PunktTokenizer(lang=language)
+        lang_dir = nltk_find(f"tokenizers/punkt_tab/{language}/")
+        tokenizer = PunktSentenceTokenizer()
+        tokenizer._params = load_punkt_params(lang_dir)
+        return tokenizer
 
     def to_sentences(self, paragraph):
         extra_abbreviations = self.LANGUAGE_EXTRA_ABREVS.get(self._language, [])
