@@ -183,7 +183,7 @@ def handle_arguments(method, reference_summary, length, language,
         input_stream = open(file_path, "rb")
     else:
         parser_class = PARSERS["plaintext"]
-        input_stream = click.get_text_stream('stdin')
+        input_stream = sys.stdin
 
     items_count = ItemsCount(length)
     data = input_stream.read()
