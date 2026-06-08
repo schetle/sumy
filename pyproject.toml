@@ -73,5 +73,5 @@ include = ["sumy*"]
 sumy = ["data/stopwords/*.txt"]
 
 [tool.pytest.ini_options]
-addopts = "--quiet --tb=short --color=yes"
+addopts = "--quiet --tb=short --color=yes --cov=sumy --cov-report=term-missing --no-cov-on-fail"
 testpaths = ["tests"]
