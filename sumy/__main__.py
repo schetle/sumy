@@ -1,38 +1,12 @@
 # -*- coding: utf8 -*-
 
-"""
-Sumy - automatic text summarizer.
-
-Usage:
-    sumy (luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) [--length=<length>] [--language=<lang>] [--stopwords=<file_path>] [--format=<format>]
-    sumy (luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) [--length=<length>] [--language=<lang>] [--stopwords=<file_path>] [--format=<format>] --url=<url>
-    sumy (luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) [--length=<length>] [--language=<lang>] [--stopwords=<file_path>] [--format=<format>] --file=<file_path>
-    sumy --version
-    sumy --help
-
-Options:
-    --length=<length>        Length of summarized text. It may be count of sentences
-                             or percentage of input text. [default: 20%]
-    --language=<lang>        Natural language of summarized text. [default: english]
-    --stopwords=<file_path>  Path to a file containing a list of stopwords. One word per line in UTF-8 encoding.
-                             If it's not provided default list of stop-words is used according to chosen language.
-    --format=<format>        Format of input document. Possible values: html, plaintext
-    --url=<url>              URL address of the web page to summarize.
-    --file=<file_path>       Path to the text file to summarize.
-    --version                Displays current application version.
-    --help                   Displays this text.
-
-"""
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import sys
+import urllib.request
 
-from docopt import docopt
+import click
+
 from . import __version__
 from .utils import ItemsCount, get_stop_words, read_stop_words
-from ._compat import urllib, to_string, to_unicode, to_bytes, PY3
 from .nlp.tokenizers import Tokenizer
 from .parsers.html import HtmlParser
 from .parsers.plaintext import PlaintextParser
@@ -64,53 +38,67 @@ AVAILABLE_METHODS = {
 }
 
 
-def main(args=None):
-    args = docopt(to_string(__doc__), args, version=__version__)
-    summarizer, parser, items_count = handle_arguments(args)
-
+@click.command()
+@click.argument("method", type=click.Choice(list(AVAILABLE_METHODS)))
+@click.option("--length", default="20%", show_default=True,
+              help="Length of summarized text. Count of sentences or percentage of input text.")
+@click.option("--language", default="english", show_default=True,
+              help="Natural language of summarized text.")
+@click.option("--stopwords", "stopwords_path", default=None,
+              help="Path to a file containing stop words (one per line, UTF-8).")
+@click.option("--format", "document_format", default=None,
+              help="Format of input document. Possible values: html, plaintext.")
+@click.option("--url", default=None, help="URL address of the web page to summarize.")
+@click.option("--file", "file_path", default=None, help="Path to the text file to summarize.")
+def main(method, length, language, stopwords_path, document_format, url, file_path):
+    """Sumy - automatic text summarizer."""
+    summarizer, parser, items_count = handle_arguments(
+        method=method,
+        length=length,
+        language=language,
+        stopwords_path=stopwords_path,
+        document_format=document_format,
+        url=url,
+        file_path=file_path,
+    )
     for sentence in summarizer(parser.document, items_count):
-        if PY3:
-            print(to_unicode(sentence))
-        else:
-            print(to_bytes(sentence))
-
-    return 0
+        print(str(sentence))
 
 
-def handle_arguments(args, default_input_stream=sys.stdin):
-    document_format = args['--format']
+def handle_arguments(method, length, language, stopwords_path=None,
+                     document_format=None, url=None, file_path=None,
+                     default_input_stream=sys.stdin):
     if document_format is not None and document_format not in PARSERS:
-        raise ValueError("Unsupported format of input document. Possible values are: %s. Given: %s." % (
-            ", ".join(PARSERS.keys()),
-            document_format,
-        ))
+        raise ValueError("Unsupported format. Possible: %s. Given: %s." % (
+            ", ".join(PARSERS.keys()), document_format))
 
-    if args["--url"] is not None:
-        parser = PARSERS[document_format or "html"]
-        request = urllib.Request(args["--url"], headers=HEADERS)
-        input_stream = urllib.urlopen(request)
-    elif args["--file"] is not None:
-        parser = PARSERS[document_format or "plaintext"]
-        input_stream = open(args["--file"], "rb")
+    if url is not None:
+        parser_class = PARSERS[document_format or "html"]
+        request = urllib.request.Request(url, headers=HEADERS)
+        input_stream = urllib.request.urlopen(request)
+    elif file_path is not None:
+        parser_class = PARSERS[document_format or "plaintext"]
+        input_stream = open(file_path, "rb")
     else:
-        parser = PARSERS[document_format or "plaintext"]
+        parser_class = PARSERS[document_format or "plaintext"]
         input_stream = default_input_stream
 
-    items_count = ItemsCount(args["--length"])
+    items_count = ItemsCount(length)
 
-    language = args["--language"]
-    if args['--stopwords']:
-        stop_words = read_stop_words(args['--stopwords'])
+    if stopwords_path:
+        stop_words = read_stop_words(stopwords_path)
     else:
         stop_words = get_stop_words(language)
 
-    parser = parser(input_stream.read(), Tokenizer(language))
+    data = input_stream.read()
+    if isinstance(data, bytes):
+        data = data.decode('utf-8', errors='replace')
+    parser = parser_class(data, Tokenizer(language))
     if input_stream is not sys.stdin:
         input_stream.close()
 
     stemmer = Stemmer(language)
-
-    summarizer_class = next(cls for name, cls in AVAILABLE_METHODS.items() if args[name])
+    summarizer_class = AVAILABLE_METHODS[method]
     summarizer = build_summarizer(summarizer_class, stop_words, stemmer, parser)
 
     return summarizer, parser, items_count
@@ -128,11 +116,4 @@ def build_summarizer(summarizer_class, stop_words, stemmer, parser):
 
 
 if __name__ == "__main__":
-    try:
-        exit_code = main()
-        exit(exit_code)
-    except KeyboardInterrupt:
-        exit(1)
-    except Exception as e:
-        print(e)
-        exit(1)
+    main()
