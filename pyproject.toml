@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sumy"
+version = "0.4.0"
+description = "Module for automatic summarization of text documents and HTML pages."
+readme = {file = "README.rst", content-type = "text/x-rst"}
+authors = [
+    {name = "Michal Belica", email = "miso.belica@gmail.com"},
+]
+license = {text = "Apache License, Version 2.0"}
+keywords = [
+    "data mining",
+    "automatic summarization",
+    "data reduction",
+    "web-data extraction",
+    "NLP",
+    "natural language processing",
+    "latent semantic analysis",
+    "LSA",
+    "TextRank",
+    "LexRank",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: Czech",
+    "Natural Language :: Slovak",
+    "Natural Language :: English",
+    "Natural Language :: German",
+    "Natural Language :: French",
+    "Topic :: Education",
+    "Topic :: Internet",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Text Processing :: Filters",
+    "Topic :: Text Processing :: Linguistic",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.2",
+    "readability-lxml>=0.8.4",
+    "nltk>=3.9",
+]
+
+[project.optional-dependencies]
+LSA = ["numpy>=1.26"]
+LexRank = ["numpy>=1.26"]
+dev = ["pytest>=8", "pytest-cov>=5", "mypy>=1.10"]
+
+[project.urls]
+Homepage = "https://github.com/miso-belica/sumy"
+
+[project.scripts]
+sumy = "sumy.__main__:main"
+sumy_eval = "sumy.evaluation.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["sumy*"]
+
+[tool.setuptools.package-data]
+sumy = ["data/stopwords/*.txt"]
+
+[tool.pytest.ini_options]
+addopts = "--quiet --tb=short --color=yes"
+testpaths = ["tests"]
