@@ -1,19 +1,17 @@
-from io import StringIO
-from os.path import dirname, join, abspath
+import pytest
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.models.dom import ObjectDocumentModel, Paragraph, Sentence
 
-_TOKENIZER = Tokenizer("czech")
+
+@pytest.fixture(scope="session")
+def tokenizer():
+    return Tokenizer("czech")
 
 
-def expand_resource_path(path):
-    return join(abspath(dirname(__file__)), "data", path)
-
-
-def load_resource(path):
-    path = expand_resource_path(path)
-    with open(path, "rb") as file:
-        return file.read().decode('utf-8')
+def build_sentence(sentence_as_string, is_heading=False, tokenizer=None):
+    if tokenizer is None:
+        tokenizer = Tokenizer("czech")
+    return Sentence(sentence_as_string, tokenizer, is_heading)
 
 
 def build_document(*sets_of_sentences):
@@ -32,20 +30,17 @@ def build_document(*sets_of_sentences):
 def build_document_from_string(string):
     sentences = []
     paragraphs = []
+    tokenizer = Tokenizer("czech")
     for line in string.strip().splitlines():
         line = line.lstrip()
         if line.startswith("# "):
-            sentences.append(Sentence(line[2:], _TOKENIZER, is_heading=True))
+            sentences.append(Sentence(line[2:], tokenizer, is_heading=True))
         elif not line:
             if sentences:
                 paragraphs.append(Paragraph(sentences))
             sentences = []
         else:
-            sentences.append(Sentence(line, _TOKENIZER))
+            sentences.append(Sentence(line, tokenizer))
     if sentences:
         paragraphs.append(Paragraph(sentences))
     return ObjectDocumentModel(paragraphs)
-
-
-def build_sentence(sentence_as_string, is_heading=False):
-    return Sentence(sentence_as_string, _TOKENIZER, is_heading)

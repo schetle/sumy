@@ -1,55 +1,56 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
-import unittest
-
-from docopt import docopt, DocoptExit
-from sumy.__main__ import __doc__ as main_doc
-from sumy.__main__ import handle_arguments, to_string, __version__
-from .utils import StringIO
+import pytest
+from io import StringIO
+from click.testing import CliRunner
+from sumy.__main__ import main, handle_arguments, build_summarizer, AVAILABLE_METHODS
 
 
-class TestMain(unittest.TestCase):
-    DEFAULT_ARGS = {
-        '--file': None,
-        '--format': None,
-        '--help': False,
-        '--language': 'english',
-        '--length': '20%',
-        '--stopwords': None,
-        '--url': None,
-        '--version': False,
-        'edmundson': False,
-        'lex-rank': False,
-        'lsa': True,
-        'luhn': False,
-        'text-rank': False,
-        'sum-basic': False,
-        'kl': False,
-    }
+def test_help():
+    runner = CliRunner()
+    result = runner.invoke(main, ["--help"])
+    assert result.exit_code == 0
+    assert "luhn" in result.output or "AVAILABLE_METHODS" in result.output or "lsa" in result.output
 
-    def test_ok_args(self):
-        docopt(to_string(main_doc), 'luhn --url=URL --format=FORMAT'.split(), version=__version__)
 
-    def test_args_none(self):
-        self.assertRaises(DocoptExit, docopt, to_string(main_doc), None, version=__version__)
+def test_valid_method_luhn():
+    runner = CliRunner()
+    result = runner.invoke(main, ["luhn"], input="Hello world. This is a test sentence.")
+    assert result.exit_code == 0
 
-    def test_args_just_command(self):
-        args = docopt(to_string(main_doc), ['lsa'], version=__version__)
-        self.assertEqual(self.DEFAULT_ARGS, args)
 
-    def test_args_two_commands(self):
-        self.assertRaises(DocoptExit, docopt, to_string(main_doc), 'lsa luhn'.split(), version=__version__)
+def test_valid_method_lsa():
+    runner = CliRunner()
+    result = runner.invoke(main, ["lsa"], input="Hello world. This is a test sentence. And a third one.")
+    assert result.exit_code == 0
 
-    def test_args_url_and_file(self):
-        self.assertRaises(DocoptExit, docopt, to_string(main_doc), 'lsa --url=URL --file=FILE'.split(), version=__version__)
 
-    def test_handle_default_arguments(self):
-        handle_arguments(self.DEFAULT_ARGS, default_input_stream=StringIO("Whatever."))
+def test_invalid_method():
+    runner = CliRunner()
+    result = runner.invoke(main, ["invalid-method"])
+    assert result.exit_code != 0
 
-    def test_handle_wrong_format(self):
-        wrong_args = self.DEFAULT_ARGS.copy()
-        wrong_args.update({'--url': 'URL', '--format': 'text'})
-        self.assertRaises(ValueError, handle_arguments, wrong_args, default_input_stream=StringIO("Whatever."))
+
+def test_handle_arguments_default():
+    summarizer, parser, items_count = handle_arguments(
+        method="luhn",
+        length="20%",
+        language="english",
+        default_input_stream=StringIO("Hello world. This is a test sentence.")
+    )
+    assert summarizer is not None
+    assert parser is not None
+
+
+def test_handle_arguments_wrong_format():
+    with pytest.raises(ValueError):
+        handle_arguments(
+            method="lsa",
+            length="20%",
+            language="english",
+            document_format="text",
+            default_input_stream=StringIO("Whatever.")
+        )
+
+
+def test_all_methods_available():
+    expected = {"luhn", "edmundson", "lsa", "text-rank", "lex-rank", "sum-basic", "kl"}
+    assert set(AVAILABLE_METHODS.keys()) == expected

@@ -60,6 +60,7 @@ def main(method, length, language, stopwords_path, document_format, url, file_pa
         document_format=document_format,
         url=url,
         file_path=file_path,
+        default_input_stream=click.get_text_stream('stdin'),
     )
     for sentence in summarizer(parser.document, items_count):
         print(str(sentence))
@@ -67,7 +68,9 @@ def main(method, length, language, stopwords_path, document_format, url, file_pa
 
 def handle_arguments(method, length, language, stopwords_path=None,
                      document_format=None, url=None, file_path=None,
-                     default_input_stream=sys.stdin):
+                     default_input_stream=None):
+    if default_input_stream is None:
+        default_input_stream = sys.stdin
     if document_format is not None and document_format not in PARSERS:
         raise ValueError("Unsupported format. Possible: %s. Given: %s." % (
             ", ".join(PARSERS.keys()), document_format))
