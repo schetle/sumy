@@ -36,8 +36,7 @@ class Tokenizer(object):
 
     def to_sentences(self, paragraph):
         extra_abbreviations = self.LANGUAGE_EXTRA_ABREVS.get(self._language, [])
-        if hasattr(self._sentence_tokenizer, '_params'):
-            self._sentence_tokenizer._params.abbrev_types.update(extra_abbreviations)
+        self._sentence_tokenizer._params.abbrev_types.update(extra_abbreviations)
         sentences = self._sentence_tokenizer.tokenize(str(paragraph))
         return tuple(s.strip() for s in sentences)
 
