@@ -325,3 +325,110 @@ def test_rouge_l_summary_level():
     candidate_text = "one two six seven eight. one three eight nine five."
     candidates = PlaintextParser(candidate_text, Tokenizer("english")).document.sentences
     rouge_l_summary_level(candidates, reference)
+
+
+# CLI tests for evaluation/__main__.py (Click migration coverage)
+import os
+import tempfile
+from click.testing import CliRunner as EvalCliRunner
+from sumy.evaluation.__main__ import main as eval_main
+from sumy.evaluation.__main__ import handle_arguments as eval_handle_arguments
+from sumy.evaluation.__main__ import AVAILABLE_METHODS as EVAL_AVAILABLE_METHODS
+
+
+def test_eval_help():
+    runner = EvalCliRunner()
+    result = runner.invoke(eval_main, ["--help"])
+    assert result.exit_code == 0
+    assert "luhn" in result.output or "random" in result.output
+
+
+_EVAL_TEST_TEXT = (
+    "Natural language processing is a subfield of artificial intelligence. "
+    "It focuses on the interaction between computers and human language. "
+    "Text summarization is an important task in natural language processing. "
+    "Automatic summarizers can process large documents quickly and efficiently. "
+    "The Luhn algorithm selects sentences based on word frequency scores. "
+    "LSA uses singular value decomposition to identify key topics. "
+    "Good summaries preserve the most important information from the source. "
+    "Evaluation metrics such as ROUGE measure summary quality automatically. "
+    "Precision and recall are fundamental measures for summarization quality. "
+    "Modern summarizers use both extractive and abstractive approaches."
+)
+
+
+def test_eval_valid_method_luhn():
+    runner = EvalCliRunner()
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as ref:
+        ref.write(_EVAL_TEST_TEXT)
+        ref_path = ref.name
+    try:
+        with runner.isolated_filesystem():
+            with open("input.txt", "w") as f:
+                f.write(_EVAL_TEST_TEXT)
+            result = runner.invoke(eval_main, ["luhn", ref_path, "--length", "10", "--file", "input.txt"])
+        assert result.exit_code == 0
+    finally:
+        os.unlink(ref_path)
+
+
+def test_eval_valid_method_lsa():
+    runner = EvalCliRunner()
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as ref:
+        ref.write(_EVAL_TEST_TEXT)
+        ref_path = ref.name
+    try:
+        with runner.isolated_filesystem():
+            with open("input.txt", "w") as f:
+                f.write(_EVAL_TEST_TEXT)
+            result = runner.invoke(eval_main, ["lsa", ref_path, "--length", "10", "--file", "input.txt"])
+        assert result.exit_code == 0
+    finally:
+        os.unlink(ref_path)
+
+
+def test_eval_invalid_method():
+    runner = EvalCliRunner()
+    result = runner.invoke(eval_main, ["invalid-method", "/dev/null"])
+    assert result.exit_code != 0
+
+
+def test_eval_handle_arguments_default():
+    text = "Hello world. This is a test sentence."
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as ref:
+        ref.write(text)
+        ref_path = ref.name
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as inp:
+        inp.write(text)
+        inp_path = inp.name
+    try:
+        summarizer, document, items_count, reference = eval_handle_arguments(
+            method="luhn",
+            reference_summary=ref_path,
+            length="20%",
+            language="english",
+            file_path=inp_path,
+        )
+        assert summarizer is not None
+        assert document is not None
+    finally:
+        os.unlink(ref_path)
+        os.unlink(inp_path)
+
+
+def test_eval_handle_arguments_wrong_format():
+    import pytest
+    with pytest.raises(ValueError):
+        eval_handle_arguments(
+            method="lsa",
+            reference_summary="/dev/null",
+            length="20%",
+            language="english",
+            document_format="text",
+            file_path="/dev/null",
+        )
+
+
+def test_eval_all_methods_available():
+    expected = {"random", "luhn", "edmundson", "lsa", "text-rank", "lex-rank", "sum-basic", "kl"}
+    assert set(EVAL_AVAILABLE_METHODS.keys()) == expected
