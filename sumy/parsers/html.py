@@ -45,6 +45,7 @@ class HtmlParser(DocumentParser):
         self._summary_html = doc.summary()
         self._url = url
 
+    @cached_property
     def _parse_summary(self):
         """Parse the readability summary HTML into an lxml element tree."""
         return etree.fromstring(self._summary_html, etree.HTMLParser())
@@ -52,7 +53,7 @@ class HtmlParser(DocumentParser):
     @cached_property
     def significant_words(self):
         words = []
-        root = self._parse_summary()
+        root = self._parse_summary
         for tag in self.SIGNIFICANT_TAGS:
             for element in root.iter(tag):
                 if element.text:
@@ -69,7 +70,7 @@ class HtmlParser(DocumentParser):
     @cached_property
     def stigma_words(self):
         words = []
-        root = self._parse_summary()
+        root = self._parse_summary
         for tag in ("a", "strike", "s"):
             for element in root.iter(tag):
                 if element.text:
@@ -81,7 +82,7 @@ class HtmlParser(DocumentParser):
 
     @cached_property
     def document(self):
-        root = self._parse_summary()
+        root = self._parse_summary
         paragraphs = []
 
         # readability-lxml wraps content in a div inside body; use iter to find
