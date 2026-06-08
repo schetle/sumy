@@ -1,7 +1,7 @@
 import pytest
 from io import StringIO
 from click.testing import CliRunner
-from sumy.__main__ import main, handle_arguments, build_summarizer, AVAILABLE_METHODS
+from sumy.__main__ import main, handle_arguments, AVAILABLE_METHODS
 
 
 def test_help():
