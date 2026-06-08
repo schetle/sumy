@@ -201,4 +201,10 @@ def handle_arguments(method, reference_summary, length, language,
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        exit(1)
+    except Exception as e:
+        print(e)
+        exit(1)
