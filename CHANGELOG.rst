@@ -13,6 +13,7 @@ Changelog
 - Replaced ``docopt`` CLI parsing with ``click`` 8.x in both ``sumy`` and ``sumy_eval`` entry points.
 - Updated NLTK tokenizer to use ``punkt_tab`` resource, fixing CVE-2024-39705 (pickle RCE vulnerability).
 - Migrated packaging from ``setup.py``/``setup.cfg``/``MANIFEST.in`` to ``pyproject.toml``.
+- **Breaking change**: Removed versioned CLI aliases ``sumy-X.Y`` and ``sumy_eval-X.Y`` (e.g. ``sumy-3.11``). Use ``sumy`` and ``sumy_eval`` instead.
 - Converted test suite to pytest-native style.
 
 0.3.0 (2014-06-07)
