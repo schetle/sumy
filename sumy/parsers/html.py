@@ -1,10 +1,10 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+import urllib.request
 
-from breadability.readable import Article
-from .._compat import urllib
+from readability import Document
+from lxml import etree
+
 from ..utils import cached_property
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
@@ -32,24 +32,31 @@ class HtmlParser(DocumentParser):
 
     @classmethod
     def from_url(cls, url, tokenizer):
-        response = urllib.urlopen(url)
+        response = urllib.request.urlopen(url)
         data = response.read()
         response.close()
-
         return cls(data, tokenizer, url)
 
     def __init__(self, html_content, tokenizer, url=None):
-        super(HtmlParser, self).__init__(tokenizer)
-        self._article = Article(html_content, url)
+        super().__init__(tokenizer)
+        if isinstance(html_content, bytes):
+            html_content = html_content.decode('utf-8', errors='replace')
+        doc = Document(html_content)
+        self._summary_html = doc.summary()
+        self._url = url
 
     @cached_property
     def significant_words(self):
         words = []
-        for paragraph in self._article.main_text:
-            for text, annotations in paragraph:
-                if self._contains_any(annotations, *self.SIGNIFICANT_TAGS):
-                    words.extend(self.tokenize_words(text))
-
+        root = etree.fromstring(self._summary_html.encode('utf-8'), etree.HTMLParser())
+        for tag in self.SIGNIFICANT_TAGS:
+            for element in root.iter(tag):
+                if element.text:
+                    words.extend(self.tokenize_words(element.text))
+                # also check tail text in child elements
+                for child in element:
+                    if child.tail:
+                        words.extend(self.tokenize_words(child.tail))
         if words:
             return tuple(words)
         else:
@@ -58,49 +65,39 @@ class HtmlParser(DocumentParser):
     @cached_property
     def stigma_words(self):
         words = []
-        for paragraph in self._article.main_text:
-            for text, annotations in paragraph:
-                if self._contains_any(annotations, "a", "strike", "s"):
-                    words.extend(self.tokenize_words(text))
-
+        root = etree.fromstring(self._summary_html.encode('utf-8'), etree.HTMLParser())
+        for tag in ("a", "strike", "s"):
+            for element in root.iter(tag):
+                if element.text:
+                    words.extend(self.tokenize_words(element.text))
         if words:
             return tuple(words)
         else:
             return self.STIGMA_WORDS
 
-    def _contains_any(self, sequence, *args):
-        if sequence is None:
-            return False
-
-        for item in args:
-            if item in sequence:
-                return True
-
-        return False
-
     @cached_property
     def document(self):
-        # "a", "abbr", "acronym", "b", "big", "blink", "blockquote", "cite", "code",
-        # "dd", "del", "dfn", "dir", "dl", "dt", "em", "h", "h1", "h2", "h3", "h4",
-        # "h5", "h6", "i", "ins", "kbd", "li", "marquee", "menu", "ol", "pre", "q",
-        # "s", "samp", "strike", "strong", "sub", "sup", "tt", "u", "ul", "var",
-
-        annotated_text = self._article.main_text
-
+        root = etree.fromstring(self._summary_html.encode('utf-8'), etree.HTMLParser())
         paragraphs = []
-        for paragraph in annotated_text:
+
+        # readability-lxml wraps content in a div inside body; use iter to find
+        # all h1/h2/h3/p elements in document order regardless of nesting depth
+        for element in root.iter():
+            tag = element.tag.lower() if isinstance(element.tag, str) else ''
             sentences = []
 
-            current_text = ""
-            for text, annotations in paragraph:
-                if annotations and ("h1" in annotations or "h2" in annotations or "h3" in annotations):
+            if tag in ('h1', 'h2', 'h3'):
+                text = etree.tostring(element, method='text', encoding='unicode').strip()
+                if text:
                     sentences.append(Sentence(text, self._tokenizer, is_heading=True))
-                # skip <pre> nodes
-                elif not (annotations and "pre" in annotations):
-                    current_text += " " + text
+            elif tag == 'p':
+                # Get all text content from the paragraph
+                text = etree.tostring(element, method='text', encoding='unicode').strip()
+                if text:
+                    new_sentences = self.tokenize_sentences(text)
+                    sentences.extend(Sentence(s, self._tokenizer) for s in new_sentences)
 
-            new_sentences = self.tokenize_sentences(current_text)
-            sentences.extend(Sentence(s, self._tokenizer) for s in new_sentences)
-            paragraphs.append(Paragraph(sentences))
+            if sentences:
+                paragraphs.append(Paragraph(sentences))
 
         return ObjectDocumentModel(paragraphs)
