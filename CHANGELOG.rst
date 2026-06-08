@@ -3,6 +3,18 @@
 Changelog
 =========
 
+0.4.0 (2026-06-08)
+------------------
+- **Breaking change**: Dropped support for Python 2 and Python < 3.10. Python 3.10+ is now required.
+- Deleted ``sumy/_compat.py`` Python 2 compatibility layer.
+- Removed all ``from __future__ import`` headers.
+- Fixed critical Python 3.10+ bug: ``collections.Sequence`` replaced with ``collections.abc.Sequence``.
+- Replaced abandoned ``breadability`` HTML parser with ``readability-lxml``.
+- Replaced ``docopt`` CLI parsing with ``click`` 8.x in both ``sumy`` and ``sumy_eval`` entry points.
+- Updated NLTK tokenizer to use ``punkt_tab`` resource, fixing CVE-2024-39705 (pickle RCE vulnerability).
+- Migrated packaging from ``setup.py``/``setup.cfg``/``MANIFEST.in`` to ``pyproject.toml``.
+- Converted test suite to pytest-native style.
+
 0.3.0 (2014-06-07)
 ------------------
 - Added possibility to specify format of input document for URL & stdin. Thanks to `@Lucas-C <https://github.com/Lucas-C>`_.

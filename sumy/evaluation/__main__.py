@@ -187,8 +187,8 @@ def handle_arguments(method, reference_summary, length, language,
 
     items_count = ItemsCount(length)
     data = input_stream.read()
-    if isinstance(data, str):
-        data = data.encode('utf-8')
+    if isinstance(data, bytes):
+        data = data.decode('utf-8', errors='replace')
     parser = parser_class(data, Tokenizer(language))
     if hasattr(input_stream, 'close') and input_stream is not sys.stdin:
         input_stream.close()
