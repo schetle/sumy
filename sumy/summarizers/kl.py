@@ -115,8 +115,8 @@ class KLSummarizer(AbstractSummarizer):
             # will store all the kls values for this pass
             kls = []
             
-            # converts summary to word list
-            summary_as_word_list = self._get_all_words_in_doc(summary)
+            # converts summary to word list (normalized content words to match word_freq)
+            summary_as_word_list = [w for s in summary for w in self._get_content_words_in_sentence(s)]
             
             for s in sentences_as_words:
                 # calculates the joint frequency through combining the word lists

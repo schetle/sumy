@@ -39,6 +39,7 @@ AVAILABLE_METHODS = {
 
 
 @click.command()
+@click.version_option(version=__version__, prog_name="sumy")
 @click.argument("method", type=click.Choice(list(AVAILABLE_METHODS)))
 @click.option("--length", default="20%", show_default=True,
               help="Length of summarized text. Count of sentences or percentage of input text.")
