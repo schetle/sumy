@@ -1,7 +1,6 @@
 import pytest
 
 from sumy.summarizers.edmundson import EdmundsonSummarizer
-from ..utils import build_document, build_document_from_string
 
 
 def test_bonus_words_property():
@@ -37,7 +36,7 @@ def test_null_words_property():
     assert summarizer.null_words == frozenset(words)
 
 
-def test_empty_document():
+def test_empty_document(build_document):
     summarizer = EdmundsonSummarizer(cue_weight=0, key_weight=0,
         title_weight=0, location_weight=0)
 
@@ -45,7 +44,7 @@ def test_empty_document():
     assert len(sentences) == 0
 
 
-def test_mixed_cue_key():
+def test_mixed_cue_key(build_document_from_string):
     document = build_document_from_string("""
         # This is cool heading
         Because I am sentence I like words
@@ -67,14 +66,14 @@ def test_mixed_cue_key():
     assert str(sentences[1]) == "Here is the winner because contains words like cool and heading"
 
 
-def test_cue_with_no_words():
+def test_cue_with_no_words(build_document):
     summarizer = EdmundsonSummarizer()
 
     with pytest.raises(ValueError):
         summarizer.cue_method(build_document(), 10)
 
 
-def test_cue_with_no_stigma_words():
+def test_cue_with_no_stigma_words(build_document):
     summarizer = EdmundsonSummarizer()
     summarizer.bonus_words = ("great", "very", "beautiful",)
 
@@ -82,7 +81,7 @@ def test_cue_with_no_stigma_words():
         summarizer.cue_method(build_document(), 10)
 
 
-def test_cue_with_no_bonus_words():
+def test_cue_with_no_bonus_words(build_document):
     summarizer = EdmundsonSummarizer()
     summarizer.stigma_words = ("useless", "bad", "spinach",)
 
@@ -90,7 +89,7 @@ def test_cue_with_no_bonus_words():
         summarizer.cue_method(build_document(), 10)
 
 
-def test_cue_empty():
+def test_cue_empty(build_document):
     summarizer = EdmundsonSummarizer()
     summarizer.bonus_words = ("ba", "bb", "bc",)
     summarizer.stigma_words = ("sa", "sb", "sc",)
@@ -99,7 +98,7 @@ def test_cue_empty():
     assert len(sentences) == 0
 
 
-def test_cue_letters_case():
+def test_cue_letters_case(build_document):
     document = build_document(
         ("X X X", "x x x x",),
         ("w w w", "W W W W",)
@@ -115,7 +114,7 @@ def test_cue_letters_case():
     assert str(sentences[1]) == "W W W W"
 
 
-def test_cue_1():
+def test_cue_1(build_document):
     document = build_document(
         ("ba bb bc bb unknown ľščťžýáíé sb sc sb",)
     )
@@ -128,7 +127,7 @@ def test_cue_1():
     assert len(sentences) == 1
 
 
-def test_cue_2():
+def test_cue_2(build_document):
     document = build_document(
         ("ba bb bc bb unknown ľščťžýáíé sb sc sb",),
         ("Pepek likes spinach",)
@@ -148,7 +147,7 @@ def test_cue_2():
     assert str(sentences[0]) == "ba bb bc bb unknown ľščťžýáíé sb sc sb"
 
 
-def test_cue_3():
+def test_cue_3(build_document):
     document = build_document(
         (
             "ba "*10,
@@ -177,7 +176,7 @@ def test_cue_3():
     assert str(sentences[4]) == ("ba n "*10).strip()
 
 
-def test_key_empty():
+def test_key_empty(build_document):
     summarizer = EdmundsonSummarizer()
     summarizer.bonus_words = ("ba", "bb", "bc",)
 
@@ -185,14 +184,14 @@ def test_key_empty():
     assert len(sentences) == 0
 
 
-def test_key_without_bonus_words():
+def test_key_without_bonus_words(build_document):
     summarizer = EdmundsonSummarizer()
 
     with pytest.raises(ValueError):
         summarizer.key_method(build_document(), 10)
 
 
-def test_key_no_bonus_words_in_document():
+def test_key_no_bonus_words_in_document(build_document):
     document = build_document(
         ("wa wb wc wd", "I like music",),
         ("This is test sentence with some extra words",)
@@ -207,7 +206,7 @@ def test_key_no_bonus_words_in_document():
     assert str(sentences[2]) == "This is test sentence with some extra words"
 
 
-def test_key_1():
+def test_key_1(build_document):
     document = build_document(
         ("wa wb wc wd", "I like music",),
         ("This is test sentence with some extra words and bonus",)
@@ -220,7 +219,7 @@ def test_key_1():
     assert str(sentences[0]) == "This is test sentence with some extra words and bonus"
 
 
-def test_key_2():
+def test_key_2(build_document):
     document = build_document(
         ("Om nom nom nom nom", "Sure I summarize it, with bonus",),
         ("This is bonus test sentence with some extra words and bonus",)
@@ -234,7 +233,7 @@ def test_key_2():
     assert str(sentences[1]) == "This is bonus test sentence with some extra words and bonus"
 
 
-def test_key_3():
+def test_key_3(build_document):
     document = build_document(
         ("wa", "wa wa", "wa wa wa", "wa wa wa wa", "wa Wa Wa Wa wa",),
         ("x X x X",)
@@ -255,7 +254,7 @@ def test_key_3():
     assert str(sentences[2]) == "x X x X"
 
 
-def test_title_method_with_empty_document():
+def test_title_method_with_empty_document(build_document):
     summarizer = EdmundsonSummarizer()
     summarizer.null_words = ("ba", "bb", "bc",)
 
@@ -263,14 +262,14 @@ def test_title_method_with_empty_document():
     assert len(sentences) == 0
 
 
-def test_title_method_without_null_words():
+def test_title_method_without_null_words(build_document):
     summarizer = EdmundsonSummarizer()
 
     with pytest.raises(ValueError):
         summarizer.title_method(build_document(), 10)
 
 
-def test_title_method_without_title():
+def test_title_method_without_title(build_document):
     document = build_document(
         ("This is sentence", "This is another one",),
         ("And some next sentence but no heading",)
@@ -286,7 +285,7 @@ def test_title_method_without_title():
     assert str(sentences[2]) == "And some next sentence but no heading"
 
 
-def test_title_method_1():
+def test_title_method_1(build_document_from_string):
     document = build_document_from_string("""
         # This is cool heading
         Because I am sentence I like words
@@ -305,7 +304,7 @@ def test_title_method_1():
     assert str(sentences[0]) == "Here is the winner because contains words like cool and heading"
 
 
-def test_title_method_2():
+def test_title_method_2(build_document_from_string):
     document = build_document_from_string("""
         # This is cool heading
         Because I am sentence I like words
@@ -325,7 +324,7 @@ def test_title_method_2():
     assert str(sentences[1]) == "Here is the winner because contains words like cool and heading"
 
 
-def test_title_method_3():
+def test_title_method_3(build_document_from_string):
     document = build_document_from_string("""
         # This is cool heading
         Because I am sentence I like words
@@ -346,7 +345,7 @@ def test_title_method_3():
     assert str(sentences[2]) == "Here is the winner because contains words like cool and heading"
 
 
-def test_location_method_with_empty_document():
+def test_location_method_with_empty_document(build_document):
     summarizer = EdmundsonSummarizer()
     summarizer.null_words = ("na", "nb", "nc",)
 
@@ -354,14 +353,14 @@ def test_location_method_with_empty_document():
     assert len(sentences) == 0
 
 
-def test_location_method_without_null_words():
+def test_location_method_without_null_words(build_document):
     summarizer = EdmundsonSummarizer()
 
     with pytest.raises(ValueError):
         summarizer.location_method(build_document(), 10)
 
 
-def test_location_method_1():
+def test_location_method_1(build_document_from_string):
     document = build_document_from_string("""
         # na nb nc ha hb
         ha = 1 + 1 + 1 = 3
@@ -387,7 +386,7 @@ def test_location_method_1():
     assert str(sentences[3]) == "ha hb = 2 + 1 + 1 = 4"
 
 
-def test_location_method_2():
+def test_location_method_2(build_document_from_string):
     document = build_document_from_string("""
         # na nb nc ha hb
         ha = 1 + 1 + 0 = 2

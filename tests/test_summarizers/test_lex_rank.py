@@ -7,10 +7,7 @@ from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.stemmers.czech import stem_word
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.utils import get_stop_words
-from ..utils import build_document, load_resource
-
-
-def test_numpy_not_installed():
+def test_numpy_not_installed(build_document):
     summarizer = LexRankSummarizer()
 
     numpy = lex_rank_module.numpy
@@ -93,7 +90,7 @@ def test_modified_cosine_computation():
     assert expected == cosine
 
 
-def test_article_example():
+def test_article_example(load_resource):
     """Source: http://www.prevko.cz/dite/skutecne-pribehy-deti"""
     parser = PlaintextParser.from_string(
         load_resource("articles/prevko_cz_1.txt"),

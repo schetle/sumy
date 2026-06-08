@@ -5,10 +5,7 @@ from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.nlp.stemmers.czech import stem_word
 from sumy.utils import get_stop_words
-from ..utils import build_document, build_sentence
-
-
-def test_empty_document():
+def test_empty_document(build_document):
     document = build_document()
     summarizer = LuhnSummarizer()
 
@@ -16,7 +13,7 @@ def test_empty_document():
     assert len(returned) == 0
 
 
-def test_single_sentence():
+def test_single_sentence(build_document):
     document = build_document(("Já jsem jedna věta",))
     summarizer = LuhnSummarizer()
     summarizer.stop_words = ("já", "jsem",)
@@ -25,7 +22,7 @@ def test_single_sentence():
     assert len(returned) == 1
 
 
-def test_two_sentences():
+def test_two_sentences(build_document):
     document = build_document(("Já jsem 1. věta", "A já ta 2. vítězná výhra"))
     summarizer = LuhnSummarizer()
     summarizer.stop_words = ("já", "jsem", "a", "ta",)
@@ -36,7 +33,7 @@ def test_two_sentences():
     assert str(returned[1]) == "A já ta 2. vítězná výhra"
 
 
-def test_two_sentences_but_one_winner():
+def test_two_sentences_but_one_winner(build_document):
     document = build_document((
         "Já jsem 1. vítězná ta věta",
         "A já ta 2. vítězná věta"
@@ -49,7 +46,7 @@ def test_two_sentences_but_one_winner():
     assert str(returned[0]) == "A já ta 2. vítězná věta"
 
 
-def test_three_sentences():
+def test_three_sentences(build_document):
     document = build_document((
         "wa s s s wa s s s wa",
         "wb s wb s wb s s s s s s s s s wb",
@@ -74,7 +71,7 @@ def test_three_sentences():
     assert str(returned[2]) == "wc s s wc s s wc"
 
 
-def test_various_words_with_significant_percentage():
+def test_various_words_with_significant_percentage(build_document):
     document = build_document((
         "1 a",
         "2 b b",
@@ -127,7 +124,7 @@ def test_real_example():
 # --- TestSentenceRating tests ---
 
 @pytest.fixture
-def sentence_rating_setup():
+def sentence_rating_setup(build_sentence):
     summarizer = LuhnSummarizer()
     sentence = build_sentence(
         "Nějaký muž šel kolem naší zahrady a žil pěkný život samotáře")
@@ -233,7 +230,7 @@ def test_chunks_with_user_gap(sentence_rating_setup):
     assert summarizer.rate_sentence(sentence, significant_stems) == pytest.approx(9/8)
 
 
-def test_three_chunks_with_1_gap(sentence_rating_setup):
+def test_three_chunks_with_1_gap(sentence_rating_setup, build_sentence):
     summarizer, _ = sentence_rating_setup
     sentence = build_sentence("w s w s w")
     significant_stems = ("w",)
@@ -241,7 +238,7 @@ def test_three_chunks_with_1_gap(sentence_rating_setup):
     assert summarizer.rate_sentence(sentence, significant_stems) == pytest.approx(9/5)
 
 
-def test_three_chunks_with_2_gap(sentence_rating_setup):
+def test_three_chunks_with_2_gap(sentence_rating_setup, build_sentence):
     summarizer, _ = sentence_rating_setup
     sentence = build_sentence("w s s w s s w")
     significant_stems = ("w",)
@@ -249,7 +246,7 @@ def test_three_chunks_with_2_gap(sentence_rating_setup):
     assert summarizer.rate_sentence(sentence, significant_stems) == pytest.approx(9/7)
 
 
-def test_three_chunks_with_3_gap(sentence_rating_setup):
+def test_three_chunks_with_3_gap(sentence_rating_setup, build_sentence):
     summarizer, _ = sentence_rating_setup
     sentence = build_sentence("w s s s w s s s w")
     significant_stems = ("w",)
