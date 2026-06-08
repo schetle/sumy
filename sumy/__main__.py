@@ -98,7 +98,7 @@ def handle_arguments(method, length, language, stopwords_path=None,
     if isinstance(data, bytes):
         data = data.decode('utf-8', errors='replace')
     parser = parser_class(data, Tokenizer(language))
-    if input_stream is not sys.stdin:
+    if input_stream is not default_input_stream:
         input_stream.close()
 
     stemmer = Stemmer(language)
