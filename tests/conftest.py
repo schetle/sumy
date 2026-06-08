@@ -1,7 +1,9 @@
-import os
 import pytest
 from sumy.nlp.tokenizers import Tokenizer
-from sumy.models.dom import ObjectDocumentModel, Paragraph, Sentence
+from sumy.models.dom import Sentence
+from .utils import build_document as _build_document
+from .utils import build_document_from_string as _build_document_from_string
+from .utils import load_resource as _load_resource
 
 
 @pytest.fixture(scope="session")
@@ -20,52 +22,14 @@ def build_sentence():
 
 @pytest.fixture
 def build_document():
-    def _build_sentence(text, is_heading=False):
-        return Sentence(text, Tokenizer("czech"), is_heading)
-
-    def _build_document(*sets_of_sentences):
-        paragraphs = []
-        for sentences in sets_of_sentences:
-            sentence_instances = []
-            for s in sentences:
-                if isinstance(s, str):
-                    sentence_instances.append(_build_sentence(s))
-                else:
-                    sentence_instances.append(s)
-            paragraphs.append(Paragraph(sentence_instances))
-        return ObjectDocumentModel(paragraphs)
-
     return _build_document
 
 
 @pytest.fixture
 def build_document_from_string():
-    def _build(string):
-        sentences = []
-        paragraphs = []
-        tok = Tokenizer("czech")
-        for line in string.strip().splitlines():
-            line = line.lstrip()
-            if line.startswith("# "):
-                sentences.append(Sentence(line[2:], tok, is_heading=True))
-            elif not line:
-                if sentences:
-                    paragraphs.append(Paragraph(sentences))
-                sentences = []
-            else:
-                sentences.append(Sentence(line, tok))
-        if sentences:
-            paragraphs.append(Paragraph(sentences))
-        return ObjectDocumentModel(paragraphs)
-
-    return _build
+    return _build_document_from_string
 
 
 @pytest.fixture
 def load_resource():
-    def _load(path):
-        base = os.path.join(os.path.abspath(os.path.dirname(__file__)), "data")
-        full_path = os.path.join(base, path)
-        with open(full_path, "rb") as f:
-            return f.read().decode("utf-8")
-    return _load
+    return _load_resource
