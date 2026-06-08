@@ -170,7 +170,7 @@ def main(method, reference_summary, length, language, url, file_path, document_f
 
 def handle_arguments(method, reference_summary, length, language,
                      url=None, file_path=None, document_format="plaintext"):
-    if document_format not in PARSERS:
+    if document_format is not None and document_format not in PARSERS:
         raise ValueError("Unsupported format: %s. Possible: %s." % (
             document_format, ", ".join(PARSERS.keys())))
 
