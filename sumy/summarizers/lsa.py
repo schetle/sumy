@@ -64,11 +64,10 @@ class LsaSummarizer(AbstractSummarizer):
         words_count = len(dictionary)
         sentences_count = len(sentences)
         if words_count < sentences_count:
-            message = (
-                "Number of words (%d) is lower than number of sentences (%d). "
+            warn(
+                f"Number of words ({words_count}) is lower than number of sentences ({sentences_count}). "
                 "LSA algorithm may not work properly."
             )
-            warn(message % (words_count, sentences_count))
 
         # create matrix |unique words|x|sentences| filled with zeroes
         matrix = numpy.zeros((words_count, sentences_count))
