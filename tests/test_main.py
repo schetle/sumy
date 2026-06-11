@@ -1,55 +1,76 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import unittest
+import argparse
+import sys
+import pytest
 
-from docopt import docopt, DocoptExit
-from sumy.__main__ import __doc__ as main_doc
-from sumy.__main__ import handle_arguments, to_string, __version__
-from .utils import StringIO
+from sumy.__main__ import main, handle_arguments, AVAILABLE_METHODS
+from sumy import __version__
+from io import StringIO
 
 
 class TestMain(unittest.TestCase):
-    DEFAULT_ARGS = {
-        '--file': None,
-        '--format': None,
-        '--help': False,
-        '--language': 'english',
-        '--length': '20%',
-        '--stopwords': None,
-        '--url': None,
-        '--version': False,
-        'edmundson': False,
-        'lex-rank': False,
-        'lsa': True,
-        'luhn': False,
-        'text-rank': False,
-        'sum-basic': False,
-        'kl': False,
-    }
+    def test_main_with_valid_method(self):
+        """Test that main() runs without error for a valid method with file input."""
+        # Use a test file that exists
+        exit_code = main(["luhn", "--file", "tests/data/snippets/prevko.txt", "--language", "czech", "--length", "3"])
+        assert exit_code == 0
 
-    def test_ok_args(self):
-        docopt(to_string(main_doc), 'luhn --url=URL --format=FORMAT'.split(), version=__version__)
+    def test_main_no_args_exits(self):
+        """Test that calling main with no args raises SystemExit (argparse requires method)."""
+        with pytest.raises(SystemExit):
+            main([])
 
-    def test_args_none(self):
-        self.assertRaises(DocoptExit, docopt, to_string(main_doc), None, version=__version__)
+    def test_main_invalid_method_exits(self):
+        """Test that an invalid method name raises SystemExit."""
+        with pytest.raises(SystemExit):
+            main(["invalid_method"])
 
-    def test_args_just_command(self):
-        args = docopt(to_string(main_doc), ['lsa'], version=__version__)
-        self.assertEqual(self.DEFAULT_ARGS, args)
+    def test_main_version(self):
+        """Test that --version raises SystemExit (argparse behavior)."""
+        with pytest.raises(SystemExit) as exc_info:
+            main(["--version"])
+        assert exc_info.value.code == 0
 
-    def test_args_two_commands(self):
-        self.assertRaises(DocoptExit, docopt, to_string(main_doc), 'lsa luhn'.split(), version=__version__)
+    def test_handle_arguments_default_input(self):
+        """Test handle_arguments with default input (stdin)."""
+        args = argparse.Namespace(
+            method="lsa",
+            url=None,
+            file=None,
+            format=None,
+            length="20%",
+            language="english",
+            stopwords=None,
+        )
+        summarizer, parser, items_count = handle_arguments(args, default_input_stream=StringIO("This is a test sentence. And another one."))
+        assert summarizer is not None
+        assert parser is not None
 
-    def test_args_url_and_file(self):
-        self.assertRaises(DocoptExit, docopt, to_string(main_doc), 'lsa --url=URL --file=FILE'.split(), version=__version__)
+    def test_handle_arguments_wrong_format(self):
+        """Test that handle_arguments raises ValueError for invalid format."""
+        args = argparse.Namespace(
+            method="lsa",
+            url="http://example.com",
+            file=None,
+            format="text",
+            length="20%",
+            language="english",
+            stopwords=None,
+        )
+        with pytest.raises(ValueError):
+            handle_arguments(args, default_input_stream=StringIO("Whatever."))
 
-    def test_handle_default_arguments(self):
-        handle_arguments(self.DEFAULT_ARGS, default_input_stream=StringIO("Whatever."))
-
-    def test_handle_wrong_format(self):
-        wrong_args = self.DEFAULT_ARGS.copy()
-        wrong_args.update({'--url': 'URL', '--format': 'text'})
-        self.assertRaises(ValueError, handle_arguments, wrong_args, default_input_stream=StringIO("Whatever."))
+    def test_handle_arguments_with_file(self):
+        """Test handle_arguments with --file argument."""
+        args = argparse.Namespace(
+            method="luhn",
+            url=None,
+            file="tests/data/snippets/prevko.txt",
+            format=None,
+            length="20%",
+            language="czech",
+            stopwords=None,
+        )
+        summarizer, parser, items_count = handle_arguments(args)
+        assert summarizer is not None
+        assert parser is not None
