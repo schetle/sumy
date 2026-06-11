@@ -29,7 +29,7 @@ class Tokenizer:
         return self._language
 
     def _sentence_tokenizer(self, language):
-        path = f"tokenizers/punkt/{language}.pickle"
+        path = f"tokenizers/punkt_tab/{language}.pickle"
         return nltk.data.load(path)
 
     def to_sentences(self, paragraph):
