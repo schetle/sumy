@@ -15,7 +15,9 @@ class PlaintextParser(DocumentParser):
 
     def __init__(self, text, tokenizer):
         super().__init__(tokenizer)
-        self._text = str(text).strip()
+        if isinstance(text, bytes):
+            text = text.decode("utf-8")
+        self._text = text.strip()
 
     @cached_property
     def significant_words(self):
