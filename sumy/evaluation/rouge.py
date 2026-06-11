@@ -1,8 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 from ..models.dom import Sentence
 
 
@@ -18,7 +13,7 @@ def _get_ngrams(n, text):
 def _split_into_words(sentences):
 	fullTextWords = []
 	for s in sentences:
-		if not isinstance(s, Sentence): 
+		if not isinstance(s, Sentence):
 			raise (ValueError("Object in collection must be of type Sentence"))
 		fullTextWords.extend(s.words)
 	return fullTextWords
@@ -41,7 +36,7 @@ def _len_lcs(x, y):
 	Returns the length of the Longest Common Subsequence between sequences x
 	and y.
 	Source: http://www.algorithmist.com/index.php/Longest_Common_Subsequence
-	
+
 	:param x: sequence of words
 	:param y: sequence of words
 	:returns integer: Length of LCS between x and y
@@ -105,17 +100,17 @@ def rouge_n(evaluated_sentences, reference_sentences, n=2):
 	Sourece: http://research.microsoft.com/en-us/um/people/cyl/download/
 	papers/rouge-working-note-v1.3.1.pdf
 
-	:param evaluated_sentences: 
+	:param evaluated_sentences:
 		The sentences that have been picked by the summarizer
 	:param reference_sentences:
 		The sentences from the referene set
 	:param n: Size of ngram.  Defaults to 2.
-	:returns: 
+	:returns:
 		float 0 <= ROUGE-N <= 1, where 0 means no overlap and 1 means
 		exactly the same.
 	:raises ValueError: raises exception if a param has len <= 0
 	"""
-	if len(evaluated_sentences) <= 0 or len(reference_sentences) <= 0: 
+	if len(evaluated_sentences) <= 0 or len(reference_sentences) <= 0:
 		raise (ValueError("Collections must contain at least 1 sentence."))
 
 	evaluated_ngrams = _get_word_ngrams(n, evaluated_sentences)
@@ -133,11 +128,11 @@ def rouge_1(evaluated_sentences, reference_sentences):
 	'''
 	Rouge-N where N=1.  This is a commonly used metric.
 
-	:param evaluated_sentences: 
+	:param evaluated_sentences:
 		The sentences that have been picked by the summarizer
 	:param reference_sentences:
 		The sentences from the referene set
-	:returns: 
+	:returns:
 		float 0 <= ROUGE-N <= 1, where 0 means no overlap and 1 means
 		exactly the same.
 	'''
@@ -148,11 +143,11 @@ def rouge_2(evaluated_sentences, reference_sentences):
 	'''
 	Rouge-N where N=2.  This is a commonly used metric.
 
-	:param evaluated_sentences: 
+	:param evaluated_sentences:
 		The sentences that have been picked by the summarizer
 	:param reference_sentences:
 		The sentences from the referene set
-	:returns: 
+	:returns:
 		float 0 <= ROUGE-N <= 1, where 0 means no overlap and 1 means
 		exactly the same.
 	'''
@@ -164,16 +159,16 @@ def _f_lcs(llcs, m, n):
 	Computes the LCS-based F-measure score
 	Source: http://research.microsoft.com/en-us/um/people/cyl/download/papers/
 	rouge-working-note-v1.3.1.pdf
-	
+
 	:param llcs: Length of LCS
-	:param m: number of words in reference summary 
+	:param m: number of words in reference summary
 	:param n: number of words in candidate summary
 	:returns float: LCS-based F-measure score
 	'''
 	r_lcs = llcs / m
 	p_lcs = llcs / n
 	beta = p_lcs / r_lcs
-	num = (1 + (beta ** 2)) * r_lcs * p_lcs 
+	num = (1 + (beta ** 2)) * r_lcs * p_lcs
 	denom = r_lcs + ((beta ** 2) * p_lcs)
 	return num / denom
 
@@ -183,7 +178,7 @@ def rouge_l_sentence_level(evaluated_sentences, reference_sentences):
 	Computes ROUGE-L (sentence level) of two text collections of sentences.
 	http://research.microsoft.com/en-us/um/people/cyl/download/papers/
 	rouge-working-note-v1.3.1.pdf
-	
+
 	Calculated according to:
 	R_lcs = LCS(X,Y)/m
 	P_lcs = LCS(X,Y)/n
@@ -195,14 +190,14 @@ def rouge_l_sentence_level(evaluated_sentences, reference_sentences):
 	m = length of reference summary
 	n = length of candidate summary
 
-	:param evaluated_sentences: 
+	:param evaluated_sentences:
 		The sentences that have been picked by the summarizer
 	:param reference_sentences:
 		The sentences from the referene set
 	:returns float: F_lcs
 	:raises ValueError: raises exception if a param has len <= 0
 	"""
-	if len(evaluated_sentences) <= 0 or len(reference_sentences) <= 0: 
+	if len(evaluated_sentences) <= 0 or len(reference_sentences) <= 0:
 		raise (ValueError("Collections must contain at least 1 sentence."))
 	reference_words = _split_into_words(reference_sentences)
 	evaluated_words = _split_into_words(evaluated_sentences)
@@ -214,27 +209,27 @@ def rouge_l_sentence_level(evaluated_sentences, reference_sentences):
 
 def _union_lcs(evaluated_sentences, reference_sentence):
 	'''
-	Returns LCS_u(r_i, C) which is the LCS score of the union longest common subsequence 
-	between reference sentence ri and candidate summary C. For example, if 
-	r_i= w1 w2 w3 w4 w5, and C contains two sentences: c1 = w1 w2 w6 w7 w8 and 
-	c2 = w1 w3 w8 w9 w5, then the longest common subsequence of r_i and c1 is 
-	“w1 w2” and the longest common subsequence of r_i and c2 is “w1 w3 w5”. The 
-	union longest common subsequence of r_i, c1, and c2 is “w1 w2 w3 w5” and 
+	Returns LCS_u(r_i, C) which is the LCS score of the union longest common subsequence
+	between reference sentence ri and candidate summary C. For example, if
+	r_i= w1 w2 w3 w4 w5, and C contains two sentences: c1 = w1 w2 w6 w7 w8 and
+	c2 = w1 w3 w8 w9 w5, then the longest common subsequence of r_i and c1 is
+	"w1 w2" and the longest common subsequence of r_i and c2 is "w1 w3 w5". The
+	union longest common subsequence of r_i, c1, and c2 is "w1 w2 w3 w5" and
 	LCS_u(r_i, C) = 4/5.
 
-	:param evaluated_sentences: 
+	:param evaluated_sentences:
 		The sentences that have been picked by the summarizer
 	:param reference_sentence:
 		One of the sentences in the reference summaries
 	:returns float: LCS_u(r_i, C)
 	:raises ValueError: raises exception if a param has len <= 0
 	'''
-	if len(evaluated_sentences) <= 0: 
+	if len(evaluated_sentences) <= 0:
 		raise (ValueError("Collections must contain at least 1 sentence."))
 
 	lcs_union = set()
 	reference_words = _split_into_words([reference_sentence])
-	combined_lcs_length = 0	
+	combined_lcs_length = 0
 	for eval_s in evaluated_sentences:
 		evaluated_words = _split_into_words([eval_s])
 		lcs = set(_recon_lcs(reference_words, evaluated_words))
@@ -264,19 +259,19 @@ def rouge_l_summary_level(evaluated_sentences, reference_sentences):
 	m = number of words in reference summary
 	n = number of words in candidate summary
 
-	:param evaluated_sentences: 
+	:param evaluated_sentences:
 		The sentences that have been picked by the summarizer
 	:param reference_sentences:
 		The sentences from the referene set
 	:returns float: F_lcs
 	:raises ValueError: raises exception if a param has len <= 0
 	"""
-	if len(evaluated_sentences) <= 0 or len(reference_sentences) <= 0: 
+	if len(evaluated_sentences) <= 0 or len(reference_sentences) <= 0:
 		raise (ValueError("Collections must contain at least 1 sentence."))
 
 	# total number of words in reference sentences
 	m = len(_split_into_words(reference_sentences))
-	
+
 	# total number of words in evaluated sentences
 	n = len(_split_into_words(evaluated_sentences))
 
@@ -284,4 +279,3 @@ def rouge_l_summary_level(evaluated_sentences, reference_sentences):
 	for ref_s in reference_sentences:
 		union_lcs_sum_across_all_references += _union_lcs(evaluated_sentences, ref_s)
 	return _f_lcs(union_lcs_sum_across_all_references, m, n)
-

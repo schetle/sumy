@@ -1,9 +1,5 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import math
+from collections import Counter
 
 try:
     import numpy
@@ -11,7 +7,6 @@ except ImportError:
     numpy = None
 
 from ._summarizer import AbstractSummarizer
-from .._compat import Counter
 
 
 class LexRankSummarizer(AbstractSummarizer):
@@ -87,9 +82,9 @@ class LexRankSummarizer(AbstractSummarizer):
 
     def _create_matrix(self, sentences, threshold, tf_metrics, idf_metrics):
         """
-        Creates matrix of shape |sentences|×|sentences|.
+        Creates matrix of shape |sentences|x|sentences|.
         """
-        # create matrix |sentences|×|sentences| filled with zeroes
+        # create matrix |sentences|x|sentences| filled with zeroes
         sentences_count = len(sentences)
         matrix = numpy.zeros((sentences_count, sentences_count))
         degrees = numpy.zeros((sentences_count, ))

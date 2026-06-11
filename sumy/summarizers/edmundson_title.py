@@ -1,17 +1,11 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 from operator import attrgetter
-from itertools import chain
-from .._compat import ffilter
+from itertools import chain, filterfalse
 from ._summarizer import AbstractSummarizer
 
 
 class EdmundsonTitleMethod(AbstractSummarizer):
     def __init__(self, stemmer, null_words):
-        super(EdmundsonTitleMethod, self).__init__(stemmer)
+        super().__init__(stemmer)
         self._null_words = null_words
 
     def __call__(self, document, sentences_count):
@@ -26,7 +20,7 @@ class EdmundsonTitleMethod(AbstractSummarizer):
 
         significant_words = chain(*heading_words)
         significant_words = map(self.stem_word, significant_words)
-        significant_words = ffilter(self._is_null_word, significant_words)
+        significant_words = filterfalse(self._is_null_word, significant_words)
 
         return frozenset(significant_words)
 

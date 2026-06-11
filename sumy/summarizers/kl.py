@@ -1,7 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
 import math
 
 from ._summarizer import AbstractSummarizer
@@ -10,7 +6,7 @@ from ..utils import get_stop_words
 
 class KLSummarizer(AbstractSummarizer):
     """
-    Method that greedily adds sentences to a summary so long as it decreases the 
+    Method that greedily adds sentences to a summary so long as it decreases the
     KL Divergence.
     Source: http://www.aclweb.org/anthology/N09-1041
     """
@@ -29,7 +25,7 @@ class KLSummarizer(AbstractSummarizer):
         return [w for s in sentences for w in s.words]
 
     def _get_content_words_in_sentence(self, sentence):
-        normalized_words = self._normalize_words(sentence.words)   
+        normalized_words = self._normalize_words(sentence.words)
         normalized_content_words = self._filter_out_stop_words(normalized_words)
         return normalized_content_words
 
@@ -50,7 +46,7 @@ class KLSummarizer(AbstractSummarizer):
         content_words = self._filter_out_stop_words(all_words)
         normalized_content_words = self._normalize_words(content_words)
         return normalized_content_words
-        
+
     def _compute_tf(self, sentences):
         '''
         Computes the normalized term frequency as explained in http://www.tfidf.com/
@@ -74,7 +70,7 @@ class KLSummarizer(AbstractSummarizer):
 
         # adds in the counts of the second list
         for k in wc2:
-            if k in joint: 
+            if k in joint:
                 joint[k] += wc2[k]
             else: joint[k] = wc2[k]
 
@@ -111,15 +107,15 @@ class KLSummarizer(AbstractSummarizer):
 
         # get all content words once for efficiency
         sentences_as_words = [self._get_content_words_in_sentence(s) for s in sentences]
-        
+
         # Removes one sentence per iteration by adding to summary
         while len(sentences_list) > 0:
             # will store all the kls values for this pass
             kls = []
-            
+
             # converts summary to word list
             summary_as_word_list = self._get_all_words_in_doc(summary)
-            
+
             for s in sentences_as_words:
                 # calculates the joint frequency through combining the word lists
                 joint_freq = self._joint_freq(s, summary_as_word_list)
@@ -137,4 +133,3 @@ class KLSummarizer(AbstractSummarizer):
             ratings[best_sentence] =  -1 * len(ratings)
 
         return ratings
-

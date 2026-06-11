@@ -1,8 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import math
 
 from warnings import warn
@@ -61,7 +56,7 @@ class LsaSummarizer(AbstractSummarizer):
 
     def _create_matrix(self, document, dictionary):
         """
-        Creates matrix of shape |unique words|×|sentences| where cells
+        Creates matrix of shape |unique words|x|sentences| where cells
         contains number of occurences of words (rows) in senteces (cols).
         """
         sentences = document.sentences
@@ -75,7 +70,7 @@ class LsaSummarizer(AbstractSummarizer):
             )
             warn(message % (words_count, sentences_count))
 
-        # create matrix |unique words|×|sentences| filled with zeroes
+        # create matrix |unique words|x|sentences| filled with zeroes
         matrix = numpy.zeros((words_count, sentences_count))
         for col, sentence in enumerate(sentences):
             for word in map(self.stem_word, sentence.words):

@@ -1,10 +1,6 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+from urllib import request as urllib_request
 
 from breadability.readable import Article
-from .._compat import urllib
 from ..utils import cached_property
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
@@ -32,14 +28,14 @@ class HtmlParser(DocumentParser):
 
     @classmethod
     def from_url(cls, url, tokenizer):
-        response = urllib.urlopen(url)
+        response = urllib_request.urlopen(url)
         data = response.read()
         response.close()
 
         return cls(data, tokenizer, url)
 
     def __init__(self, html_content, tokenizer, url=None):
-        super(HtmlParser, self).__init__(tokenizer)
+        super().__init__(tokenizer)
         self._article = Article(html_content, url)
 
     @cached_property
