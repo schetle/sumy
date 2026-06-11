@@ -2,13 +2,13 @@ import math
 from collections import Counter
 from typing import Any
 
+from ._summarizer import AbstractSummarizer
+
 numpy: Any
 try:
     import numpy
 except ImportError:
     numpy = None
-
-from ._summarizer import AbstractSummarizer
 
 
 class LexRankSummarizer(AbstractSummarizer):

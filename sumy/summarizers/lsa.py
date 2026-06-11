@@ -2,6 +2,8 @@ import math
 from typing import Any
 from warnings import warn
 
+from ._summarizer import AbstractSummarizer
+
 numpy: Any
 try:
     import numpy
@@ -13,7 +15,6 @@ try:
     from numpy.linalg import svd as singular_value_decomposition
 except ImportError:
     singular_value_decomposition = None
-from ._summarizer import AbstractSummarizer
 
 
 class LsaSummarizer(AbstractSummarizer):
