@@ -1,1 +1,1 @@
-from .parser import DocumentParser
+from .parser import DocumentParser as DocumentParser

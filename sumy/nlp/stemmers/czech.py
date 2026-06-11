@@ -11,9 +11,7 @@ Usage:
 
 import re
 import sys
-
 from warnings import warn
-
 
 WORD_PATTERN = re.compile(r"^\w+$", re.UNICODE)
 
@@ -58,11 +56,9 @@ def _remove_case(word):
             return word[:-4]
 
     if len(word) > 5:
-        if word[-3:] in ("ech", "ich", "ích", "ého", "ěmi", "emi", "ému",
-                         "ete", "eti", "iho", "ího", "ími", "imu"):
+        if word[-3:] in ("ech", "ich", "ích", "ého", "ěmi", "emi", "ému", "ete", "eti", "iho", "ího", "ími", "imu"):
             return _palatalize(word[:-2])
-        if word[-3:] in ("ách", "ata", "aty", "ých", "ama", "ami",
-                         "ové", "ovi", "ými"):
+        if word[-3:] in ("ách", "ata", "aty", "ých", "ama", "ami", "ové", "ovi", "ými"):
             return word[:-3]
 
     if len(word) > 4:
@@ -102,18 +98,14 @@ def _remove_diminutive(word):
     if len(word) > 7 and word.endswith("oušek"):
         return word[:-5]
     if len(word) > 6:
-        if word[-4:] in ("eček", "éček", "iček", "íček", "enek", "ének",
-                         "inek", "ínek"):
+        if word[-4:] in ("eček", "éček", "iček", "íček", "enek", "ének", "inek", "ínek"):
             return _palatalize(word[:-3])
-        if word[-4:] in ("áček", "aček", "oček", "uček", "anek", "onek",
-                         "unek", "ánek"):
+        if word[-4:] in ("áček", "aček", "oček", "uček", "anek", "onek", "unek", "ánek"):
             return _palatalize(word[:-4])
     if len(word) > 5:
-        if word[-3:] in ("ečk", "éčk", "ičk", "íčk", "enk", "énk",
-                         "ink", "ínk"):
+        if word[-3:] in ("ečk", "éčk", "ičk", "íčk", "enk", "énk", "ink", "ínk"):
             return _palatalize(word[:-3])
-        if word[-3:] in ("áčk", "ačk", "očk", "učk", "ank", "onk",
-                         "unk", "átk", "ánk", "ušk"):
+        if word[-3:] in ("áčk", "ačk", "očk", "učk", "ank", "onk", "unk", "átk", "ánk", "ušk"):
             return word[:-3]
     if len(word) > 4:
         if word[-2:] in ("ek", "ék", "ík", "ik"):
@@ -144,8 +136,7 @@ def _remove_derivational(word):
         if word[-5:] in ("ovisk", "ovstv", "ovišt", "ovník"):
             return word[:-5]
     if len(word) > 6:
-        if word[-4:] in ("ásek", "loun", "nost", "teln", "ovec", "ovík",
-                         "ovtv", "ovin", "štin"):
+        if word[-4:] in ("ásek", "loun", "nost", "teln", "ovec", "ovík", "ovtv", "ovin", "štin"):
             return word[:-4]
         if word[-4:] in ("enic", "inec", "itel"):
             return _palatalize(word[:-3])
@@ -154,18 +145,14 @@ def _remove_derivational(word):
             return word[:-3]
         if word[-3:] in ("ěnk", "ián", "ist", "isk", "išt", "itb", "írn"):
             return _palatalize(word[:-2])
-        if word[-3:] in ("och", "ost", "ovn", "oun", "out", "ouš",
-                         "ušk", "kyn", "čan", "kář", "néř", "ník",
-                         "ctv", "stv"):
+        if word[-3:] in ("och", "ost", "ovn", "oun", "out", "ouš", "ušk", "kyn", "čan", "kář", "néř", "ník", "ctv", "stv"):
             return word[:-3]
     if len(word) > 4:
         if word[-2:] in ("áč", "ač", "án", "an", "ář", "as"):
             return word[:-2]
-        if word[-2:] in ("ec", "en", "ěn", "éř", "íř", "ic", "in", "ín",
-                         "it", "iv"):
+        if word[-2:] in ("ec", "en", "ěn", "éř", "íř", "ic", "in", "ín", "it", "iv"):
             return _palatalize(word[:-1])
-        if word[-2:] in ("ob", "ot", "ov", "oň", "ul", "yn", "čk", "čn",
-                         "dl", "nk", "tv", "tk", "vk"):
+        if word[-2:] in ("ob", "ot", "ov", "oň", "ul", "yn", "čk", "čn", "dl", "nk", "tv", "tk", "vk"):
             return word[:-2]
     if len(word) > 3 and word[-1] in "cčklnt":
         return word[:-1]
@@ -188,7 +175,7 @@ def _palatalize(word):
     return word[:-1]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if len(sys.argv) != 2 or sys.argv[1] not in ("light", "aggressive"):
         sys.exit(__doc__)
 

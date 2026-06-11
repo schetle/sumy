@@ -21,7 +21,7 @@ def f_score(evaluated_sentences, reference_sentences, weight=1.0):
     p = precision(evaluated_sentences, reference_sentences)
     r = recall(evaluated_sentences, reference_sentences)
 
-    weight **= 2 # weight = weight^2
+    weight **= 2  # weight = weight^2
     denominator = weight * p + r
     if denominator == 0.0:
         return 0.0

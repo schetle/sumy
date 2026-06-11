@@ -1,8 +1,7 @@
-from io import StringIO
-from os.path import dirname, join, abspath
-from sumy.nlp.tokenizers import Tokenizer
-from sumy.models.dom import ObjectDocumentModel, Paragraph, Sentence
+from os.path import abspath, dirname, join
 
+from sumy.models.dom import ObjectDocumentModel, Paragraph, Sentence
+from sumy.nlp.tokenizers import Tokenizer
 
 _TOKENIZER = Tokenizer("czech")
 

@@ -1,9 +1,10 @@
 import unittest
 
 from sumy.models.dom._sentence import Sentence
-from sumy.summarizers.kl import KLSummarizer
-from ..utils import build_document, build_document_from_string
 from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.kl import KLSummarizer
+
+from ..utils import build_document
 
 
 class TestKL(unittest.TestCase):
@@ -32,16 +33,16 @@ class TestKL(unittest.TestCase):
         self.assertEqual(len(returned), 1)
 
     def test_compute_word_freq(self):
-        
+
         summarizer = self._build_summarizer(self.EMPTY_STOP_WORDS)
-        
+
         words = ["one", "two", "three", "four"]
         freq = summarizer._compute_word_freq(words)
         self.assertEqual(freq.get("one", 0), 1)
         self.assertEqual(freq.get("two", 0), 1)
         self.assertEqual(freq.get("three", 0), 1)
         self.assertEqual(freq.get("four", 0), 1)
-        
+
         words = ["one", "one", "two", "two"]
         freq = summarizer._compute_word_freq(words)
         self.assertEqual(freq.get("one", 0), 2)
@@ -53,45 +54,42 @@ class TestKL(unittest.TestCase):
         w1 = ["one", "two", "three", "four"]
         w2 = ["one", "two", "three", "four"]
         freq = summarizer._joint_freq(w1, w2)
-        self.assertEqual(freq["one"], 1.0/4)
-        self.assertEqual(freq["two"], 1.0/4)
-        self.assertEqual(freq["three"], 1.0/4)
-        self.assertEqual(freq["four"], 1.0/4)
+        self.assertEqual(freq["one"], 1.0 / 4)
+        self.assertEqual(freq["two"], 1.0 / 4)
+        self.assertEqual(freq["three"], 1.0 / 4)
+        self.assertEqual(freq["four"], 1.0 / 4)
 
         w1 = ["one", "two", "three", "four"]
         w2 = ["one", "one", "three", "five"]
         freq = summarizer._joint_freq(w1, w2)
-        self.assertEqual(freq["one"], 3.0/8)
-        self.assertEqual(freq["two"], 1.0/8)
-        self.assertEqual(freq["three"], 1.0/4)
-        self.assertEqual(freq["four"], 1.0/8)
-        self.assertEqual(freq["five"], 1.0/8)
+        self.assertEqual(freq["one"], 3.0 / 8)
+        self.assertEqual(freq["two"], 1.0 / 8)
+        self.assertEqual(freq["three"], 1.0 / 4)
+        self.assertEqual(freq["four"], 1.0 / 8)
+        self.assertEqual(freq["five"], 1.0 / 8)
 
     def test_kl_divergence(self):
         summarizer = self._build_summarizer(self.EMPTY_STOP_WORDS)
         EPS = 0.00001
 
+        w1 = {"one": 0.35, "two": 0.5, "three": 0.15}
+        w2 = {"one": 1.0 / 3.0, "two": 1.0 / 3.0, "three": 1.0 / 3.0}
 
-        w1 = {"one":.35, "two":.5, "three":.15}
-        w2 = {"one":1.0/3.0, "two":1.0/3.0, "three":1.0/3.0}
-
-        w1_ = [.35, .5, .15]
-        w2_ = [1.0/3.0, 1.0/3.0, 1.0/3.0]
+        _w1_list = [0.35, 0.5, 0.15]
+        _w2_list = [1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0]
 
         # This value comes from scipy.stats.entropy(w2_, w1_)
         # Note: the order of params is different
         kl_correct = 0.11475080798005841
         self.assertTrue(abs(summarizer._kl_divergence(w1, w2) - kl_correct < EPS))
 
-        w1 = {"one":.1, "two":.2, "three":.7}
-        w2 = {"one":.2, "two":.4, "three":.4}
+        w1 = {"one": 0.1, "two": 0.2, "three": 0.7}
+        w2 = {"one": 0.2, "two": 0.4, "three": 0.4}
 
-        w1_ = [.1, .2, .7]
-        w2_ = [.2, .4, .4]
-        
+        _w1 = [0.1, 0.2, 0.7]
+        _w2 = [0.2, 0.4, 0.4]
+
         # This value comes from scipy.stats.entropy(w2_, w1_)
         # Note: the order of params is different
         kl_correct = 0.1920419931617981
         self.assertTrue(abs(summarizer._kl_divergence(w1, w2) - kl_correct) < EPS)
-
-

@@ -1,7 +1,4 @@
-import math
-
 from ._summarizer import AbstractSummarizer
-from ..utils import get_stop_words
 
 
 class SumBasicSummarizer(AbstractSummarizer):
@@ -44,9 +41,9 @@ class SumBasicSummarizer(AbstractSummarizer):
         return normalized_content_words
 
     def _compute_tf(self, sentences):
-        '''
+        """
         Computes the normalized term frequency as explained in http://www.tfidf.com/
-        '''
+        """
         content_words = self._get_all_content_words_in_doc(sentences)
         content_words_count = len(content_words)
         content_words_freq = self._compute_word_freq(content_words)
@@ -73,7 +70,7 @@ class SumBasicSummarizer(AbstractSummarizer):
         best_sentence_index = 0
         for i, words in enumerate(sentences_as_words):
             word_freq_avg = self._compute_average_probability_of_words(word_freq, words)
-            if (word_freq_avg > max_value):
+            if word_freq_avg > max_value:
                 max_value = word_freq_avg
                 best_sentence_index = i
         return best_sentence_index
@@ -94,7 +91,7 @@ class SumBasicSummarizer(AbstractSummarizer):
             best_sentence = sentences_list.pop(best_sentence_index)
 
             # value is the iteration in which it was removed multiplied by -1 so that the first sentences removed (the most important) have highest values
-            ratings[best_sentence] =  -1 * len(ratings)
+            ratings[best_sentence] = -1 * len(ratings)
 
             # update probabilities
             best_sentence_words = sentences_as_words.pop(best_sentence_index)

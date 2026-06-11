@@ -1,3 +1,3 @@
-from ._document import ObjectDocumentModel
-from ._paragraph import Paragraph
-from ._sentence import Sentence
+from ._document import ObjectDocumentModel as ObjectDocumentModel
+from ._paragraph import Paragraph as Paragraph
+from ._sentence import Sentence as Sentence

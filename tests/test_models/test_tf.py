@@ -1,7 +1,7 @@
 import unittest
 
-from sumy.nlp.tokenizers import Tokenizer
 from sumy.models import TfDocumentModel
+from sumy.nlp.tokenizers import Tokenizer
 
 
 class TestTfModel(unittest.TestCase):
@@ -81,11 +81,11 @@ class TestTfModel(unittest.TestCase):
         words = "a b c d e c b d c e e d e d e".split()
         model = TfDocumentModel(tuple(words))
 
-        self.assertAlmostEqual(model.normalized_term_frequency("a"), 1/5)
-        self.assertAlmostEqual(model.normalized_term_frequency("b"), 2/5)
-        self.assertAlmostEqual(model.normalized_term_frequency("c"), 3/5)
-        self.assertAlmostEqual(model.normalized_term_frequency("d"), 4/5)
-        self.assertAlmostEqual(model.normalized_term_frequency("e"), 5/5)
+        self.assertAlmostEqual(model.normalized_term_frequency("a"), 1 / 5)
+        self.assertAlmostEqual(model.normalized_term_frequency("b"), 2 / 5)
+        self.assertAlmostEqual(model.normalized_term_frequency("c"), 3 / 5)
+        self.assertAlmostEqual(model.normalized_term_frequency("d"), 4 / 5)
+        self.assertAlmostEqual(model.normalized_term_frequency("e"), 5 / 5)
         self.assertAlmostEqual(model.normalized_term_frequency("z"), 0.0)
 
         self.assertEqual(model.most_frequent_terms(), ("e", "d", "c", "b", "a"))
@@ -94,11 +94,11 @@ class TestTfModel(unittest.TestCase):
         words = "a b c d e c b d c e e d e d e".split()
         model = TfDocumentModel(tuple(words))
 
-        self.assertAlmostEqual(model.normalized_term_frequency("a", 0.5), 0.5 + 1/10)
-        self.assertAlmostEqual(model.normalized_term_frequency("b", 0.5), 0.5 + 2/10)
-        self.assertAlmostEqual(model.normalized_term_frequency("c", 0.5), 0.5 + 3/10)
-        self.assertAlmostEqual(model.normalized_term_frequency("d", 0.5), 0.5 + 4/10)
-        self.assertAlmostEqual(model.normalized_term_frequency("e", 0.5), 0.5 + 5/10)
+        self.assertAlmostEqual(model.normalized_term_frequency("a", 0.5), 0.5 + 1 / 10)
+        self.assertAlmostEqual(model.normalized_term_frequency("b", 0.5), 0.5 + 2 / 10)
+        self.assertAlmostEqual(model.normalized_term_frequency("c", 0.5), 0.5 + 3 / 10)
+        self.assertAlmostEqual(model.normalized_term_frequency("d", 0.5), 0.5 + 4 / 10)
+        self.assertAlmostEqual(model.normalized_term_frequency("e", 0.5), 0.5 + 5 / 10)
         self.assertAlmostEqual(model.normalized_term_frequency("z", 0.5), 0.5)
 
         self.assertEqual(model.most_frequent_terms(), ("e", "d", "c", "b", "a"))

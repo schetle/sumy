@@ -11,10 +11,10 @@ def null_stemmer(object):
 class Stemmer:
     def __init__(self, language):
         self._stemmer = null_stemmer
-        if language.lower() in ('czech', 'slovak'):
+        if language.lower() in ("czech", "slovak"):
             self._stemmer = czech_stemmer
             return
-        stemmer_classname = language.capitalize() + 'Stemmer'
+        stemmer_classname = language.capitalize() + "Stemmer"
         try:
             stemmer_class = getattr(nltk_stemmers_module, stemmer_classname)
         except AttributeError:

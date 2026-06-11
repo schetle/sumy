@@ -1,10 +1,17 @@
 from collections import namedtuple
 from operator import attrgetter
-from ..utils import ItemsCount
+
 from ..nlp.stemmers import null_stemmer
+from ..utils import ItemsCount
 
-
-SentenceInfo = namedtuple("SentenceInfo", ("sentence", "order", "rating",))
+SentenceInfo = namedtuple(
+    "SentenceInfo",
+    (
+        "sentence",
+        "order",
+        "rating",
+    ),
+)
 
 
 class AbstractSummarizer:
@@ -27,10 +34,11 @@ class AbstractSummarizer:
         rate = rating
         if isinstance(rating, dict):
             assert not args and not kwargs
-            rate = lambda s: rating[s]
 
-        infos = (SentenceInfo(s, o, rate(s, *args, **kwargs))
-            for o, s in enumerate(sentences))
+            def rate(s):
+                return rating[s]
+
+        infos = (SentenceInfo(s, o, rate(s, *args, **kwargs)) for o, s in enumerate(sentences))
 
         # sort sentences by rating in descending order
         infos = sorted(infos, key=attrgetter("rating"), reverse=True)

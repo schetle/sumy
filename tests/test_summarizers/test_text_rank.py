@@ -1,7 +1,8 @@
 import unittest
 
-from sumy.summarizers.text_rank import TextRankSummarizer
 from sumy.nlp.stemmers import Stemmer
+from sumy.summarizers.text_rank import TextRankSummarizer
+
 from ..utils import build_document
 
 
@@ -16,7 +17,10 @@ class TestTextRank(unittest.TestCase):
     def test_single_sentence(self):
         document = build_document(("I am one sentence",))
         summarizer = TextRankSummarizer()
-        summarizer.stop_words = ("I", "am",)
+        summarizer.stop_words = (
+            "I",
+            "am",
+        )
 
         returned = summarizer(document, 10)
         self.assertEqual(len(returned), 1)
@@ -24,7 +28,12 @@ class TestTextRank(unittest.TestCase):
     def test_two_sentences(self):
         document = build_document(("I am that 1. sentence", "And I am 2. winning prize"))
         summarizer = TextRankSummarizer()
-        summarizer.stop_words = ("I", "am", "and", "that",)
+        summarizer.stop_words = (
+            "I",
+            "am",
+            "and",
+            "that",
+        )
 
         returned = summarizer(document, 10)
         self.assertEqual(len(returned), 2)
@@ -36,9 +45,18 @@ class TestTextRank(unittest.TestCase):
         summarizer.stop_words = ["stop", "Halt", "SHUT", "HmMm"]
 
         document = build_document(
-            ("stop halt shut hmmm", "Stop Halt Shut Hmmm",),
-            ("StOp HaLt ShUt HmMm", "STOP HALT SHUT HMMM",),
-            ("Some relevant sentence", "Some moRe releVant sentEnce",),
+            (
+                "stop halt shut hmmm",
+                "Stop Halt Shut Hmmm",
+            ),
+            (
+                "StOp HaLt ShUt HmMm",
+                "STOP HALT SHUT HMMM",
+            ),
+            (
+                "Some relevant sentence",
+                "Some moRe releVant sentEnce",
+            ),
         )
         sentences = document.sentences
 
@@ -60,11 +78,13 @@ class TestTextRank(unittest.TestCase):
         self.assertEqual(expected, returned)
 
     def test_three_sentences_but_second_winner(self):
-        document = build_document([
-            "I am that 1. sentence",
-            "And I am 2. sentence - winning sentence",
-            "And I am 3. sentence - winner is my 2nd name",
-        ])
+        document = build_document(
+            [
+                "I am that 1. sentence",
+                "And I am 2. sentence - winning sentence",
+                "And I am 3. sentence - winner is my 2nd name",
+            ]
+        )
         summarizer = TextRankSummarizer()
         summarizer.stop_words = ["I", "am", "and", "that"]
 
@@ -73,11 +93,13 @@ class TestTextRank(unittest.TestCase):
         self.assertEqual(str(returned[0]), "And I am 2. sentence - winning sentence")
 
     def test_sentences_rating(self):
-        document = build_document([
-            "a c e g",
-            "a b c d e f g",
-            "b d f",
-        ])
+        document = build_document(
+            [
+                "a c e g",
+                "a b c d e f g",
+                "b d f",
+            ]
+        )
         summarizer = TextRankSummarizer()
         summarizer.stop_words = ["I", "am", "and", "that"]
 

@@ -32,8 +32,15 @@ class TestTokenizer(unittest.TestCase):
         words = tokenizer.to_words("I am a very nice sentence with comma, but..")
 
         expected = (
-            "I", "am", "a", "very", "nice", "sentence",
-            "with", "comma", "but",
+            "I",
+            "am",
+            "a",
+            "very",
+            "nice",
+            "sentence",
+            "with",
+            "comma",
+            "but",
         )
         self.assertEqual(expected, words)
 

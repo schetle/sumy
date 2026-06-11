@@ -14,6 +14,7 @@ class LexRankSummarizer(AbstractSummarizer):
     LexRank: Graph-based Centrality as Salience in Text Summarization
     Source: http://tangra.si.umich.edu/~radev/lexrank/lexrank.pdf
     """
+
     threshold = 0.1
     epsilon = 0.1
     _stop_words = frozenset()
@@ -87,7 +88,7 @@ class LexRankSummarizer(AbstractSummarizer):
         # create matrix |sentences|x|sentences| filled with zeroes
         sentences_count = len(sentences)
         matrix = numpy.zeros((sentences_count, sentences_count))
-        degrees = numpy.zeros((sentences_count, ))
+        degrees = numpy.zeros((sentences_count,))
 
         for row, (sentence1, tf1) in enumerate(zip(sentences, tf_metrics)):
             for col, (sentence2, tf2) in enumerate(zip(sentences, tf_metrics)):
@@ -114,10 +115,10 @@ class LexRankSummarizer(AbstractSummarizer):
 
         numerator = 0.0
         for term in common_words:
-            numerator += tf1[term]*tf2[term] * idf_metrics[term]**2
+            numerator += tf1[term] * tf2[term] * idf_metrics[term] ** 2
 
-        denominator1 = sum((tf1[t]*idf_metrics[t])**2 for t in sentence1)
-        denominator2 = sum((tf2[t]*idf_metrics[t])**2 for t in sentence2)
+        denominator1 = sum((tf1[t] * idf_metrics[t]) ** 2 for t in sentence1)
+        denominator2 = sum((tf2[t] * idf_metrics[t]) ** 2 for t in sentence2)
 
         if denominator1 > 0 and denominator2 > 0:
             return numerator / (math.sqrt(denominator1) * math.sqrt(denominator2))

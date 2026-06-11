@@ -1,14 +1,16 @@
 import unittest
 
-from sumy.parsers.plaintext import PlaintextParser
-from sumy.parsers.html import HtmlParser
 from sumy.nlp.tokenizers import Tokenizer
+from sumy.parsers.html import HtmlParser
+from sumy.parsers.plaintext import PlaintextParser
+
 from .utils import expand_resource_path
 
 
 class TestParser(unittest.TestCase):
     def test_parse_plaintext(self):
-        parser = PlaintextParser.from_string("""
+        parser = PlaintextParser.from_string(
+            """
             Ako sa máš? Ja dobre! A ty? No
             mohlo to byť aj lepšie!!! Ale pohodička.
 
@@ -16,7 +18,9 @@ class TestParser(unittest.TestCase):
             TOTO JE AKOŽE NADPIS
             A toto je text pod ním, ktorý je textový.
             A tak ďalej...
-        """, Tokenizer("czech"))
+        """,
+            Tokenizer("czech"),
+        )
 
         document = parser.document
 
@@ -29,7 +33,8 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(document.paragraphs[1].sentences), 2)
 
     def test_parse_plaintext_long(self):
-        parser = PlaintextParser.from_string("""
+        parser = PlaintextParser.from_string(
+            """
             Ako sa máš? Ja dobre! A ty? No
             mohlo to byť aj lepšie!!! Ale pohodička.
 
@@ -45,7 +50,9 @@ class TestParser(unittest.TestCase):
 
 
             A tak este dalej!
-        """, Tokenizer("czech"))
+        """,
+            Tokenizer("czech"),
+        )
 
         document = parser.document
 
@@ -80,15 +87,11 @@ class TestHtmlParser(unittest.TestCase):
         self.assertEqual(len(document.paragraphs[0].headings), 1)
         self.assertEqual(len(document.paragraphs[0].sentences), 1)
 
-        self.assertEqual(str(document.paragraphs[0].headings[0]),
-            "Toto je nadpis prvej úrovne")
-        self.assertEqual(str(document.paragraphs[0].sentences[0]),
-            "Toto je prvý odstavec a to je fajn.")
+        self.assertEqual(str(document.paragraphs[0].headings[0]), "Toto je nadpis prvej úrovne")
+        self.assertEqual(str(document.paragraphs[0].sentences[0]), "Toto je prvý odstavec a to je fajn.")
 
         self.assertEqual(len(document.paragraphs[1].headings), 0)
         self.assertEqual(len(document.paragraphs[1].sentences), 2)
 
-        self.assertEqual(str(document.paragraphs[1].sentences[0]),
-            "Tento text je tu aby vyplnil prázdne miesto v srdci súboru.")
-        self.assertEqual(str(document.paragraphs[1].sentences[1]),
-            "Aj súbory majú predsa city.")
+        self.assertEqual(str(document.paragraphs[1].sentences[0]), "Tento text je tu aby vyplnil prázdne miesto v srdci súboru.")
+        self.assertEqual(str(document.paragraphs[1].sentences[1]), "Aj súbory majú predsa city.")

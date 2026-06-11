@@ -1,7 +1,6 @@
 import math
 
 from ._summarizer import AbstractSummarizer
-from ..utils import get_stop_words
 
 
 class KLSummarizer(AbstractSummarizer):
@@ -48,9 +47,9 @@ class KLSummarizer(AbstractSummarizer):
         return normalized_content_words
 
     def _compute_tf(self, sentences):
-        '''
+        """
         Computes the normalized term frequency as explained in http://www.tfidf.com/
-        '''
+        """
         content_words = self._get_all_content_words_in_doc(sentences)
         content_words_count = len(content_words)
         content_words_freq = self._compute_word_freq(content_words)
@@ -72,7 +71,8 @@ class KLSummarizer(AbstractSummarizer):
         for k in wc2:
             if k in joint:
                 joint[k] += wc2[k]
-            else: joint[k] = wc2[k]
+            else:
+                joint[k] = wc2[k]
 
         # divides total counts by the combined length
         for k in joint:
@@ -81,19 +81,19 @@ class KLSummarizer(AbstractSummarizer):
         return joint
 
     def _kl_divergence(self, summary_freq, doc_freq):
-        '''
+        """
         Note: Could import scipy.stats and use scipy.stats.entropy(doc_freq, summary_freq)
         but this gives equivalent value without the import
-        '''
+        """
         sum_val = 0
         for w in summary_freq:
             sum_val += doc_freq[w] * math.log(doc_freq[w] / summary_freq[w])
         return sum_val
 
     def _find_index_of_best_sentence(self, kls):
-        '''
+        """
         the best sentence is the one with the smallest kl_divergence
-        '''
+        """
         indexToRemove = kls.index(min(kls))
         return indexToRemove
 
@@ -130,6 +130,6 @@ class KLSummarizer(AbstractSummarizer):
             summary.append(best_sentence)
 
             # value is the iteration in which it was removed multiplied by -1 so that the first sentences removed (the most important) have highest values
-            ratings[best_sentence] =  -1 * len(ratings)
+            ratings[best_sentence] = -1 * len(ratings)
 
         return ratings

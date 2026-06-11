@@ -1,1 +1,1 @@
-from .tf import TfDocumentModel
+from .tf import TfDocumentModel as TfDocumentModel

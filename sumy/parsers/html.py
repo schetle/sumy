@@ -1,8 +1,9 @@
 from urllib import request as urllib_request
 
 from breadability.readable import Article
+
+from ..models.dom import ObjectDocumentModel, Paragraph, Sentence
 from ..utils import cached_property
-from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
 
 
@@ -10,8 +11,11 @@ class HtmlParser(DocumentParser):
     """Parser of text from HTML format into DOM."""
 
     SIGNIFICANT_TAGS = (
-        "h1", "h2", "h3",
-        "b", "strong",
+        "h1",
+        "h2",
+        "h3",
+        "b",
+        "strong",
         "big",
         "dfn",
         "em",

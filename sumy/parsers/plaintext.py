@@ -1,5 +1,5 @@
+from ..models.dom import ObjectDocumentModel, Paragraph, Sentence
 from ..utils import cached_property
-from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
 
 

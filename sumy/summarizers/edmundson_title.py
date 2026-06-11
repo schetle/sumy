@@ -1,5 +1,6 @@
-from operator import attrgetter
 from itertools import chain, filterfalse
+from operator import attrgetter
+
 from ._summarizer import AbstractSummarizer
 
 
@@ -12,8 +13,7 @@ class EdmundsonTitleMethod(AbstractSummarizer):
         sentences = document.sentences
         significant_words = self._compute_significant_words(document)
 
-        return self._get_best_sentences(sentences, sentences_count,
-            self._rate_sentence, significant_words)
+        return self._get_best_sentences(sentences, sentences_count, self._rate_sentence, significant_words)
 
     def _compute_significant_words(self, document):
         heading_words = map(attrgetter("words"), document.headings)
@@ -36,7 +36,6 @@ class EdmundsonTitleMethod(AbstractSummarizer):
 
         rated_sentences = {}
         for sentence in document.sentences:
-            rated_sentences[sentence] = self._rate_sentence(sentence,
-                significant_words)
+            rated_sentences[sentence] = self._rate_sentence(sentence, significant_words)
 
         return rated_sentences

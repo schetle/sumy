@@ -2,22 +2,21 @@
 
 import argparse
 import sys
-
 from urllib import request as urllib_request
 
 from . import __version__
-from .utils import ItemsCount, get_stop_words, read_stop_words
+from .nlp.stemmers import Stemmer
 from .nlp.tokenizers import Tokenizer
 from .parsers.html import HtmlParser
 from .parsers.plaintext import PlaintextParser
-from .summarizers.luhn import LuhnSummarizer
 from .summarizers.edmundson import EdmundsonSummarizer
-from .summarizers.lsa import LsaSummarizer
-from .summarizers.text_rank import TextRankSummarizer
-from .summarizers.lex_rank import LexRankSummarizer
-from .summarizers.sum_basic import SumBasicSummarizer
 from .summarizers.kl import KLSummarizer
-from .nlp.stemmers import Stemmer
+from .summarizers.lex_rank import LexRankSummarizer
+from .summarizers.lsa import LsaSummarizer
+from .summarizers.luhn import LuhnSummarizer
+from .summarizers.sum_basic import SumBasicSummarizer
+from .summarizers.text_rank import TextRankSummarizer
+from .utils import ItemsCount, get_stop_words, read_stop_words
 
 HEADERS = {
     "User-Agent": f"Sumy (Automatic text summarizer) Version/{__version__}",
@@ -61,7 +60,7 @@ def main(args=None):
     parser.add_argument(
         "--stopwords",
         help="Path to a file containing a list of stopwords. One word per line in UTF-8 encoding. "
-             "If not provided, the default list of stop-words is used according to the chosen language.",
+        "If not provided, the default list of stop-words is used according to the chosen language.",
     )
     parser.add_argument(
         "--format",
@@ -97,9 +96,7 @@ def main(args=None):
 def handle_arguments(args, default_input_stream=sys.stdin):
     document_format = args.format
     if document_format is not None and document_format not in PARSERS:
-        raise ValueError(
-            f"Unsupported format of input document. Possible values are: "
-            f"{', '.join(PARSERS.keys())}. Given: {document_format}.")
+        raise ValueError(f"Unsupported format of input document. Possible values are: {', '.join(PARSERS.keys())}. Given: {document_format}.")
 
     if args.url is not None:
         parser = PARSERS[document_format or "html"]

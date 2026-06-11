@@ -1,31 +1,23 @@
 import unittest
 
-from sumy.nlp.tokenizers import Tokenizer
 from sumy.models.dom import Paragraph, Sentence
+from sumy.nlp.tokenizers import Tokenizer
+
 from ..utils import build_document, build_document_from_string
 
 
 class TestDocument(unittest.TestCase):
     def test_unique_words(self):
         document = build_document(
-            ("Nějaký muž šel kolem naší zahrady", "Nějaký muž šel kolem vaší zahrady",),
+            (
+                "Nějaký muž šel kolem naší zahrady",
+                "Nějaký muž šel kolem vaší zahrady",
+            ),
             ("Už už abych taky šel",),
         )
 
         returned = tuple(sorted(frozenset(document.words)))
-        expected = (
-            "Nějaký",
-            "Už",
-            "abych",
-            "kolem",
-            "muž",
-            "naší",
-            "taky",
-            "už",
-            "vaší",
-            "zahrady",
-            "šel"
-        )
+        expected = ("Nějaký", "Už", "abych", "kolem", "muž", "naší", "taky", "už", "vaší", "zahrady", "šel")
         self.assertEqual(expected, returned)
 
     def test_headings(self):
@@ -50,12 +42,9 @@ class TestDocument(unittest.TestCase):
         """)
 
         self.assertEqual(len(document.sentences), 3)
-        self.assertEqual(str(document.sentences[0]),
-            "Nějaký muž šel kolem naší zahrady")
-        self.assertEqual(str(document.sentences[1]),
-            "Nějaký jiný muž šel kolem vaší zahrady")
-        self.assertEqual(str(document.sentences[2]),
-            "Už už abych taky šel")
+        self.assertEqual(str(document.sentences[0]), "Nějaký muž šel kolem naší zahrady")
+        self.assertEqual(str(document.sentences[1]), "Nějaký jiný muž šel kolem vaší zahrady")
+        self.assertEqual(str(document.sentences[2]), "Už už abych taky šel")
 
     def test_only_instances_of_sentence_allowed(self):
         document = build_document_from_string("""
@@ -66,8 +55,7 @@ class TestDocument(unittest.TestCase):
             Už už abych taky šel
         """)
 
-        self.assertRaises(TypeError, Paragraph,
-            list(document.sentences) + ["Last sentence"])
+        self.assertRaises(TypeError, Paragraph, list(document.sentences) + ["Last sentence"])
 
     def test_sentences_equal(self):
         sentence1 = Sentence("", Tokenizer("czech"))

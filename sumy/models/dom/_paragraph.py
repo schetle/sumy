@@ -1,4 +1,5 @@
 from itertools import chain
+
 from ...utils import cached_property
 from ._sentence import Sentence
 

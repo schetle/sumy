@@ -1,21 +1,19 @@
 import math
-
-from pprint import pformat
 from collections import Counter
 from collections.abc import Sequence
+from pprint import pformat
 
 
 class TfDocumentModel:
     """Term-Frequency document model (term = word)."""
+
     def __init__(self, words, tokenizer=None):
         if isinstance(words, str) and tokenizer is None:
-            raise ValueError(
-                "Tokenizer has to be given if ``words`` is not a sequence.")
+            raise ValueError("Tokenizer has to be given if ``words`` is not a sequence.")
         elif isinstance(words, str):
             words = tokenizer.to_words(str(words))
         elif not isinstance(words, Sequence):
-            raise ValueError(
-                "Parameter ``words`` has to be sequence or string with tokenizer given.")
+            raise ValueError("Parameter ``words`` has to be sequence or string with tokenizer given.")
 
         self._terms = Counter(map(str.lower, words))
         self._max_frequency = max(self._terms.values()) if self._terms else 1
@@ -49,8 +47,7 @@ class TfDocumentModel:
         elif count > 0:
             return terms[:count]
         else:
-            raise ValueError(
-                "Only non-negative values are allowed for count of terms.")
+            raise ValueError("Only non-negative values are allowed for count of terms.")
 
     def term_frequency(self, term):
         """
@@ -77,7 +74,7 @@ class TfDocumentModel:
             and 1 the most frequent term in document.
         """
         frequency = self.term_frequency(term) / self._max_frequency
-        return smooth + (1.0 - smooth)*frequency
+        return smooth + (1.0 - smooth) * frequency
 
     def __repr__(self):
         return f"<TfDocumentModel {pformat(self._terms)}>"

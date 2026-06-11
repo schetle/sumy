@@ -18,8 +18,7 @@ class LuhnSummarizer(AbstractSummarizer):
 
     def __call__(self, document, sentences_count):
         words = self._get_significant_words(document.words)
-        return self._get_best_sentences(document.sentences,
-            sentences_count, self.rate_sentence, words)
+        return self._get_best_sentences(document.sentences, sentences_count, self.rate_sentence, words)
 
     def _get_significant_words(self, words):
         words = map(self.normalize_word, words)
@@ -40,7 +39,7 @@ class LuhnSummarizer(AbstractSummarizer):
 
     def _get_chunk_ratings(self, sentence, significant_stems):
         chunks = []
-        NONSIGNIFICANT_CHUNK = [0]*self.max_gap_size
+        NONSIGNIFICANT_CHUNK = [0] * self.max_gap_size
 
         in_chunk = False
         for order, word in enumerate(sentence.words):
@@ -55,7 +54,7 @@ class LuhnSummarizer(AbstractSummarizer):
                 chunks[-1].append(is_significant_word)
 
             # end of chunk
-            if chunks and chunks[-1][-self.max_gap_size:] == NONSIGNIFICANT_CHUNK:
+            if chunks and chunks[-1][-self.max_gap_size :] == NONSIGNIFICANT_CHUNK:
                 in_chunk = False
 
         return tuple(map(self._get_chunk_rating, chunks))
@@ -77,4 +76,4 @@ class LuhnSummarizer(AbstractSummarizer):
         while index >= 0 and collection[index] == 0:
             index -= 1
 
-        return collection[:index + 1]
+        return collection[: index + 1]

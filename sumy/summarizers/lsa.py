@@ -1,5 +1,4 @@
 import math
-
 from warnings import warn
 
 try:
@@ -16,7 +15,7 @@ from ._summarizer import AbstractSummarizer
 
 class LsaSummarizer(AbstractSummarizer):
     MIN_DIMENSIONS = 3
-    REDUCTION_RATIO = 1/1
+    REDUCTION_RATIO = 1 / 1
     _stop_words = frozenset()
 
     @property
@@ -40,8 +39,7 @@ class LsaSummarizer(AbstractSummarizer):
         u, sigma, v = singular_value_decomposition(matrix, full_matrices=False)
 
         ranks = iter(self._compute_ranks(sigma, v))
-        return self._get_best_sentences(document.sentences, sentences_count,
-            lambda s: next(ranks))
+        return self._get_best_sentences(document.sentences, sentences_count, lambda s: next(ranks))
 
     def _ensure_dependecies_installed(self):
         if numpy is None:
@@ -64,10 +62,7 @@ class LsaSummarizer(AbstractSummarizer):
         words_count = len(dictionary)
         sentences_count = len(sentences)
         if words_count < sentences_count:
-            warn(
-                f"Number of words ({words_count}) is lower than number of sentences ({sentences_count}). "
-                "LSA algorithm may not work properly."
-            )
+            warn(f"Number of words ({words_count}) is lower than number of sentences ({sentences_count}). LSA algorithm may not work properly.")
 
         # create matrix |unique words|x|sentences| filled with zeroes
         matrix = numpy.zeros((words_count, sentences_count))
@@ -94,23 +89,21 @@ class LsaSummarizer(AbstractSummarizer):
             for col in range(cols):
                 max_word_frequency = max_word_frequencies[col]
                 if max_word_frequency != 0:
-                    frequency = matrix[row, col]/max_word_frequency
-                    matrix[row, col] = smooth + (1.0 - smooth)*frequency
+                    frequency = matrix[row, col] / max_word_frequency
+                    matrix[row, col] = smooth + (1.0 - smooth) * frequency
 
         return matrix
 
     def _compute_ranks(self, sigma, v_matrix):
         assert len(sigma) == v_matrix.shape[0], "Matrices should be multiplicable"
 
-        dimensions = max(LsaSummarizer.MIN_DIMENSIONS,
-            int(len(sigma)*LsaSummarizer.REDUCTION_RATIO))
-        powered_sigma = tuple(s**2 if i < dimensions else 0.0
-            for i, s in enumerate(sigma))
+        dimensions = max(LsaSummarizer.MIN_DIMENSIONS, int(len(sigma) * LsaSummarizer.REDUCTION_RATIO))
+        powered_sigma = tuple(s**2 if i < dimensions else 0.0 for i, s in enumerate(sigma))
 
         ranks = []
         # iterate over columns of matrix (rows of transposed matrix)
         for column_vector in v_matrix.T:
-            rank = sum(s*v**2 for s, v in zip(powered_sigma, column_vector))
+            rank = sum(s * v**2 for s, v in zip(powered_sigma, column_vector))
             ranks.append(math.sqrt(rank))
 
         return ranks

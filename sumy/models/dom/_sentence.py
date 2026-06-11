@@ -2,7 +2,12 @@ from ...utils import cached_property
 
 
 class Sentence:
-    __slots__ = ("_text", "_cached_property_words", "_tokenizer", "_is_heading",)
+    __slots__ = (
+        "_text",
+        "_cached_property_words",
+        "_tokenizer",
+        "_is_heading",
+    )
 
     def __init__(self, text, tokenizer, is_heading=False):
         self._text = str(text).strip()

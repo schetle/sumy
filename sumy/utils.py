@@ -1,7 +1,6 @@
 import sys
-
 from functools import wraps
-from os.path import dirname, abspath, join, exists
+from os.path import abspath, dirname, exists, join
 
 
 def cached_property(getter):
@@ -14,6 +13,7 @@ def cached_property(getter):
     functools.cached_property because functools.cached_property
     does NOT work with __slots__-based classes (Sentence, Paragraph, etc.).
     """
+
     @wraps(getter)
     def decorator(self):
         key = "_cached_property_" + getter.__name__
@@ -54,12 +54,12 @@ class ItemsCount:
                 total_count = len(sequence)
                 percentage = int(self._value[:-1])
                 # at least one sentence should be choosen
-                count = max(1, total_count*percentage // 100)
+                count = max(1, total_count * percentage // 100)
                 return sequence[:count]
             else:
-                return sequence[:int(self._value)]
+                return sequence[: int(self._value)]
         elif isinstance(self._value, (int, float)):
-            return sequence[:int(self._value)]
+            return sequence[: int(self._value)]
         else:
             ValueError(f"Unsuported value of items count '{self._value}'.")
 

@@ -1,10 +1,10 @@
 import unittest
 
 from sumy.models.dom._sentence import Sentence
-from sumy.summarizers.sum_basic import SumBasicSummarizer
-from ..utils import build_document, build_document_from_string
 from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.sum_basic import SumBasicSummarizer
 
+from ..utils import build_document
 
 
 class TestSumBasic(unittest.TestCase):
@@ -28,7 +28,7 @@ class TestSumBasic(unittest.TestCase):
         s = Sentence("I am one slightly longer sentence.", Tokenizer("english"))
         document = build_document([s])
         summarizer = self._build_summarizer(self.EMPTY_STOP_WORDS)
-        
+
         returned = summarizer(document, 10)
         self.assertEqual(len(returned), 1)
 
@@ -49,17 +49,16 @@ class TestSumBasic(unittest.TestCase):
         words_correctly_filtered = ["dog", "went", "on", "a", "walk"]
         self.assertEqual(words_filtered, words_correctly_filtered)
 
-
     def test_compute_word_freq(self):
         summarizer = self._build_summarizer(self.EMPTY_STOP_WORDS)
-        
+
         words = ["one", "two", "three", "four"]
         freq = summarizer._compute_word_freq(words)
         self.assertEqual(freq.get("one", 0), 1)
         self.assertEqual(freq.get("two", 0), 1)
         self.assertEqual(freq.get("three", 0), 1)
         self.assertEqual(freq.get("four", 0), 1)
-        
+
         words = ["one", "one", "two", "two"]
         freq = summarizer._compute_word_freq(words)
         self.assertEqual(freq.get("one", 0), 2)
@@ -79,32 +78,31 @@ class TestSumBasic(unittest.TestCase):
         content_words_correct = {"one": 2, "two": 2, "three": 2}
         self.assertEqual(content_words_freq, content_words_correct)
 
-
     def test_compute_tf(self):
         summarizer = self._build_summarizer(self.EMPTY_STOP_WORDS)
         s0 = Sentence("kicking soccer balls.", Tokenizer("english"))
         s1 = Sentence("eating chicken dumplings.", Tokenizer("english"))
         document = build_document([s0, s1])
         freq = summarizer._compute_tf(document.sentences)
-        self.assertEqual(freq["kicking"], 1/6)
-        self.assertEqual(freq["soccer"], 1/6)
-        self.assertEqual(freq["balls"], 1/6)
-        self.assertEqual(freq["eating"], 1/6)
-        self.assertEqual(freq["chicken"], 1/6)
-        self.assertEqual(freq["dumplings"], 1/6)
+        self.assertEqual(freq["kicking"], 1 / 6)
+        self.assertEqual(freq["soccer"], 1 / 6)
+        self.assertEqual(freq["balls"], 1 / 6)
+        self.assertEqual(freq["eating"], 1 / 6)
+        self.assertEqual(freq["chicken"], 1 / 6)
+        self.assertEqual(freq["dumplings"], 1 / 6)
 
         document = build_document([s0, s0, s1])
         freq = summarizer._compute_tf(document.sentences)
-        self.assertEqual(freq["kicking"], 2/9)
-        self.assertEqual(freq["soccer"], 2/9)
-        self.assertEqual(freq["balls"], 2/9)
-        self.assertEqual(freq["eating"], 1/9)
-        self.assertEqual(freq["chicken"], 1/9)
-        self.assertEqual(freq["dumplings"], 1/9)
+        self.assertEqual(freq["kicking"], 2 / 9)
+        self.assertEqual(freq["soccer"], 2 / 9)
+        self.assertEqual(freq["balls"], 2 / 9)
+        self.assertEqual(freq["eating"], 1 / 9)
+        self.assertEqual(freq["chicken"], 1 / 9)
+        self.assertEqual(freq["dumplings"], 1 / 9)
 
     def test_compute_average_probability_of_words(self):
         summarizer = self._build_summarizer(self.EMPTY_STOP_WORDS)
-        word_freq = {"one": 1/6, "two": 2/6, "three": 3/6}
+        word_freq = {"one": 1 / 6, "two": 2 / 6, "three": 3 / 6}
         s0 = []
         s1 = ["one"]
         s2 = ["two", "three"]
@@ -112,10 +110,9 @@ class TestSumBasic(unittest.TestCase):
         EPS = 0.0001
 
         self.assertTrue(abs(summarizer._compute_average_probability_of_words(word_freq, s0) - 0) < EPS)
-        self.assertTrue(abs(summarizer._compute_average_probability_of_words(word_freq, s1) - 1/6) < EPS)
-        self.assertTrue(abs(summarizer._compute_average_probability_of_words(word_freq, s2) - 5/12) < EPS)
-        self.assertTrue(abs(summarizer._compute_average_probability_of_words(word_freq, s3) - 8/18) < EPS)
-
+        self.assertTrue(abs(summarizer._compute_average_probability_of_words(word_freq, s1) - 1 / 6) < EPS)
+        self.assertTrue(abs(summarizer._compute_average_probability_of_words(word_freq, s2) - 5 / 12) < EPS)
+        self.assertTrue(abs(summarizer._compute_average_probability_of_words(word_freq, s3) - 8 / 18) < EPS)
 
     def test_compute_ratings(self):
         summarizer = self._build_summarizer(self.EMPTY_STOP_WORDS)
@@ -130,8 +127,7 @@ class TestSumBasic(unittest.TestCase):
         self.assertEqual(ratings[s1], -2)
         self.assertEqual(ratings[s2], -1)
 
-
-        # Due to the frequency discounting, after finding sentence s0, 
+        # Due to the frequency discounting, after finding sentence s0,
         # s2 should come before s1 since only two of its words get discounted
         # rather than all 3 of s1's
         s0 = Sentence("one two three", Tokenizer("english"))

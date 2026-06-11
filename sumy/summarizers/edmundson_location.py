@@ -1,5 +1,6 @@
 from itertools import chain, filterfalse
 from operator import attrgetter
+
 from ._summarizer import AbstractSummarizer
 
 
@@ -10,8 +11,7 @@ class EdmundsonLocationMethod(AbstractSummarizer):
 
     def __call__(self, document, sentences_count, w_h, w_p1, w_p2, w_s1, w_s2):
         significant_words = self._compute_significant_words(document)
-        ratings = self._rate_sentences(document, significant_words, w_h, w_p1,
-            w_p2, w_s1, w_s2)
+        ratings = self._rate_sentences(document, significant_words, w_h, w_p1, w_p2, w_s1, w_s2)
 
         return self._get_best_sentences(document.sentences, sentences_count, ratings)
 

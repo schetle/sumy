@@ -1,4 +1,5 @@
 from collections import Counter
+
 from ._summarizer import AbstractSummarizer
 
 
@@ -10,8 +11,7 @@ class EdmundsonKeyMethod(AbstractSummarizer):
     def __call__(self, document, sentences_count, weight):
         significant_words = self._compute_significant_words(document, weight)
 
-        return self._get_best_sentences(document.sentences,
-            sentences_count, self._rate_sentence, significant_words)
+        return self._get_best_sentences(document.sentences, sentences_count, self._rate_sentence, significant_words)
 
     def _compute_significant_words(self, document, weight):
         # keep only stems contained in bonus words
@@ -28,8 +28,7 @@ class EdmundsonKeyMethod(AbstractSummarizer):
 
         # return only words greater than weight
         max_word_frequency = max(word_frequencies)
-        return tuple(word for word, frequency in word_counts.items()
-            if frequency/max_word_frequency > weight)
+        return tuple(word for word, frequency in word_counts.items() if frequency / max_word_frequency > weight)
 
     def _is_bonus_word(self, word):
         return word in self._bonus_words
@@ -43,7 +42,6 @@ class EdmundsonKeyMethod(AbstractSummarizer):
 
         rated_sentences = {}
         for sentence in document.sentences:
-            rated_sentences[sentence] = self._rate_sentence(sentence,
-                significant_words)
+            rated_sentences[sentence] = self._rate_sentence(sentence, significant_words)
 
         return rated_sentences

@@ -1,1 +1,1 @@
-from ._summarizer import AbstractSummarizer
+from ._summarizer import AbstractSummarizer as AbstractSummarizer

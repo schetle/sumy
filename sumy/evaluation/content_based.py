@@ -11,8 +11,7 @@ def cosine_similarity(evaluated_model, reference_model):
         exactly the same.
     """
     if not (isinstance(evaluated_model, TfModel) and isinstance(reference_model, TfModel)):
-        raise ValueError(
-            "Arguments has to be instances of 'sumy.models.TfDocumentModel'")
+        raise ValueError("Arguments has to be instances of 'sumy.models.TfDocumentModel'")
 
     terms = frozenset(evaluated_model.terms) | frozenset(reference_model.terms)
 
@@ -22,8 +21,7 @@ def cosine_similarity(evaluated_model, reference_model):
 
     denominator = evaluated_model.magnitude * reference_model.magnitude
     if denominator == 0.0:
-        raise ValueError(
-            f"Document model can't be empty. Given {evaluated_model!r} & {reference_model!r}")
+        raise ValueError(f"Document model can't be empty. Given {evaluated_model!r} & {reference_model!r}")
 
     return numerator / denominator
 
@@ -38,15 +36,13 @@ def unit_overlap(evaluated_model, reference_model):
         exactly the same.
     """
     if not (isinstance(evaluated_model, TfModel) and isinstance(reference_model, TfModel)):
-        raise ValueError(
-            "Arguments has to be instances of 'sumy.models.TfDocumentModel'")
+        raise ValueError("Arguments has to be instances of 'sumy.models.TfDocumentModel'")
 
     terms1 = frozenset(evaluated_model.terms)
     terms2 = frozenset(reference_model.terms)
 
     if not terms1 and not terms2:
-        raise ValueError(
-            "Documents can't be empty. Please pass the valid documents.")
+        raise ValueError("Documents can't be empty. Please pass the valid documents.")
 
     common_terms_count = len(terms1 & terms2)
     return common_terms_count / (len(terms1) + len(terms2) - common_terms_count)

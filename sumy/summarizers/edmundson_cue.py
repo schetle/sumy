@@ -8,9 +8,7 @@ class EdmundsonCueMethod(AbstractSummarizer):
         self._stigma_words = stigma_words
 
     def __call__(self, document, sentences_count, bunus_word_weight, stigma_word_weight):
-        return self._get_best_sentences(document.sentences,
-            sentences_count, self._rate_sentence, bunus_word_weight,
-            stigma_word_weight)
+        return self._get_best_sentences(document.sentences, sentences_count, self._rate_sentence, bunus_word_weight, stigma_word_weight)
 
     def _rate_sentence(self, sentence, bunus_word_weight, stigma_word_weight):
         # count number of bonus/stigma words in sentece
@@ -18,8 +16,8 @@ class EdmundsonCueMethod(AbstractSummarizer):
         bonus_words_count, stigma_words_count = self._count_words(words)
 
         # compute positive & negative rating
-        bonus_rating = bonus_words_count*bunus_word_weight
-        stigma_rating = stigma_words_count*stigma_word_weight
+        bonus_rating = bonus_words_count * bunus_word_weight
+        stigma_rating = stigma_words_count * stigma_word_weight
 
         # rating of sentence is (positive - negative) rating
         return bonus_rating - stigma_rating
@@ -38,7 +36,7 @@ class EdmundsonCueMethod(AbstractSummarizer):
 
         for word in words:
             if word in self._bonus_words:
-                bonus_words_count +=1
+                bonus_words_count += 1
             if word in self._stigma_words:
                 stigma_words_count += 1
 
@@ -47,7 +45,6 @@ class EdmundsonCueMethod(AbstractSummarizer):
     def rate_sentences(self, document, bunus_word_weight=1, stigma_word_weight=1):
         rated_sentences = {}
         for sentence in document.sentences:
-            rated_sentences[sentence] = self._rate_sentence(sentence,
-                bunus_word_weight, stigma_word_weight)
+            rated_sentences[sentence] = self._rate_sentence(sentence, bunus_word_weight, stigma_word_weight)
 
         return rated_sentences

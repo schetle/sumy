@@ -2,28 +2,25 @@
 
 import argparse
 import sys
-
 from itertools import chain
 from urllib import request as urllib_request
 
 from .. import __version__
-from ..utils import ItemsCount, get_stop_words
 from ..models import TfDocumentModel
+from ..nlp.stemmers import Stemmer
 from ..nlp.tokenizers import Tokenizer
 from ..parsers.html import HtmlParser
 from ..parsers.plaintext import PlaintextParser
-from ..summarizers.random import RandomSummarizer
-from ..summarizers.luhn import LuhnSummarizer
 from ..summarizers.edmundson import EdmundsonSummarizer
-from ..summarizers.lsa import LsaSummarizer
-from ..summarizers.text_rank import TextRankSummarizer
-from ..summarizers.lex_rank import LexRankSummarizer
-from ..summarizers.sum_basic import SumBasicSummarizer
 from ..summarizers.kl import KLSummarizer
-from ..nlp.stemmers import Stemmer
-from . import precision, recall, f_score, cosine_similarity, unit_overlap
-from . import rouge_1, rouge_2, rouge_l_sentence_level, rouge_l_summary_level
-
+from ..summarizers.lex_rank import LexRankSummarizer
+from ..summarizers.lsa import LsaSummarizer
+from ..summarizers.luhn import LuhnSummarizer
+from ..summarizers.random import RandomSummarizer
+from ..summarizers.sum_basic import SumBasicSummarizer
+from ..summarizers.text_rank import TextRankSummarizer
+from ..utils import ItemsCount, get_stop_words
+from . import cosine_similarity, f_score, precision, recall, rouge_1, rouge_2, rouge_l_sentence_level, rouge_l_summary_level, unit_overlap
 
 HEADERS = {
     "User-Agent": f"Sumy (Automatic text summarizer) Version/{__version__}",
@@ -129,7 +126,7 @@ AVAILABLE_EVALUATIONS = (
     ("Rouge-1", False, rouge_1),
     ("Rouge-2", False, rouge_2),
     ("Rouge-L (Sentence Level)", False, rouge_l_sentence_level),
-    ("Rouge-L (Summary Level)", False, rouge_l_summary_level)
+    ("Rouge-L (Summary Level)", False, rouge_l_summary_level),
 )
 
 
@@ -183,8 +180,7 @@ def main(args=None):
     summarizer, document, items_count, reference_summary = handle_arguments(parsed_args)
 
     evaluated_sentences = summarizer(document, items_count)
-    reference_document = PlaintextParser.from_string(reference_summary,
-        Tokenizer(parsed_args.language))
+    reference_document = PlaintextParser.from_string(reference_summary, Tokenizer(parsed_args.language))
     reference_sentences = reference_document.document.sentences
 
     for name, evaluate_document, evaluate in AVAILABLE_EVALUATIONS:
@@ -198,9 +194,7 @@ def main(args=None):
 def handle_arguments(args):
     document_format = args.format
     if document_format is not None and document_format not in PARSERS:
-        raise ValueError(
-            f"Unsupported format of input document. Possible values are: "
-            f"{', '.join(PARSERS.keys())}. Given: {document_format}.")
+        raise ValueError(f"Unsupported format of input document. Possible values are: {', '.join(PARSERS.keys())}. Given: {document_format}.")
 
     parser = PARSERS["plaintext"]
     input_stream = sys.stdin

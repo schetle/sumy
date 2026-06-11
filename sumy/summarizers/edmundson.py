@@ -1,11 +1,11 @@
 from collections import defaultdict
+
 from ..nlp.stemmers import null_stemmer
 from ._summarizer import AbstractSummarizer
 from .edmundson_cue import EdmundsonCueMethod
 from .edmundson_key import EdmundsonKeyMethod
-from .edmundson_title import EdmundsonTitleMethod
 from .edmundson_location import EdmundsonLocationMethod
-
+from .edmundson_title import EdmundsonTitleMethod
 
 _EMPTY_SET = frozenset()
 
@@ -15,12 +15,10 @@ class EdmundsonSummarizer(AbstractSummarizer):
     _stigma_words = _EMPTY_SET
     _null_words = _EMPTY_SET
 
-    def __init__(self, stemmer=null_stemmer, cue_weight=1.0, key_weight=0.0,
-            title_weight=1.0, location_weight=1.0):
+    def __init__(self, stemmer=null_stemmer, cue_weight=1.0, key_weight=0.0, title_weight=1.0, location_weight=1.0):
         super().__init__(stemmer)
 
-        self._ensure_correct_weights(cue_weight, key_weight, title_weight,
-            location_weight)
+        self._ensure_correct_weights(cue_weight, key_weight, title_weight, location_weight)
 
         self._cue_weight = float(cue_weight)
         self._key_weight = float(key_weight)
@@ -84,8 +82,7 @@ class EdmundsonSummarizer(AbstractSummarizer):
 
     def cue_method(self, document, sentences_count, bunus_word_value=1, stigma_word_value=1):
         summarization_method = self._build_cue_method_instance()
-        return summarization_method(document, sentences_count, bunus_word_value,
-            stigma_word_value)
+        return summarization_method(document, sentences_count, bunus_word_value, stigma_word_value)
 
     def _build_cue_method_instance(self):
         self.__check_bonus_words()
@@ -100,7 +97,7 @@ class EdmundsonSummarizer(AbstractSummarizer):
     def _build_key_method_instance(self):
         self.__check_bonus_words()
 
-        return  EdmundsonKeyMethod(self._stemmer, self._bonus_words)
+        return EdmundsonKeyMethod(self._stemmer, self._bonus_words)
 
     def title_method(self, document, sentences_count):
         summarization_method = self._build_title_method_instance()

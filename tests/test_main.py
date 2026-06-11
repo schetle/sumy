@@ -1,11 +1,10 @@
-import unittest
 import argparse
-import sys
+import unittest
+from io import StringIO
+
 import pytest
 
-from sumy.__main__ import main, handle_arguments, AVAILABLE_METHODS
-from sumy import __version__
-from io import StringIO
+from sumy.__main__ import handle_arguments, main
 
 
 class TestMain(unittest.TestCase):
