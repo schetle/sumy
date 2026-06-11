@@ -1,6 +1,8 @@
 import math
 from collections import Counter
+from typing import Any
 
+numpy: Any
 try:
     import numpy
 except ImportError:
@@ -17,7 +19,7 @@ class LexRankSummarizer(AbstractSummarizer):
 
     threshold = 0.1
     epsilon = 0.1
-    _stop_words = frozenset()
+    _stop_words: frozenset[str] = frozenset()
 
     @property
     def stop_words(self):

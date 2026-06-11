@@ -7,7 +7,7 @@ from .edmundson_key import EdmundsonKeyMethod
 from .edmundson_location import EdmundsonLocationMethod
 from .edmundson_title import EdmundsonTitleMethod
 
-_EMPTY_SET = frozenset()
+_EMPTY_SET: frozenset[str] = frozenset()
 
 
 class EdmundsonSummarizer(AbstractSummarizer):

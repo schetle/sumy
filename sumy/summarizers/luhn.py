@@ -6,7 +6,7 @@ class LuhnSummarizer(AbstractSummarizer):
     max_gap_size = 4
     # TODO: better recognition of significant words (automatic)
     significant_percentage = 1
-    _stop_words = frozenset()
+    _stop_words: frozenset[str] = frozenset()
 
     @property
     def stop_words(self):

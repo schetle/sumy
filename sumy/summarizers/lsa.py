@@ -1,11 +1,14 @@
 import math
+from typing import Any
 from warnings import warn
 
+numpy: Any
 try:
     import numpy
 except ImportError:
     numpy = None
 
+singular_value_decomposition: Any
 try:
     from numpy.linalg import svd as singular_value_decomposition
 except ImportError:
@@ -16,7 +19,7 @@ from ._summarizer import AbstractSummarizer
 class LsaSummarizer(AbstractSummarizer):
     MIN_DIMENSIONS = 3
     REDUCTION_RATIO = 1 / 1
-    _stop_words = frozenset()
+    _stop_words: frozenset[str] = frozenset()
 
     @property
     def stop_words(self):

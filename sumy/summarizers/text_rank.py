@@ -8,7 +8,7 @@ from ._summarizer import AbstractSummarizer
 class TextRankSummarizer(AbstractSummarizer):
     """Source: https://github.com/adamfabish/Reduction"""
 
-    _stop_words = frozenset()
+    _stop_words: frozenset[str] = frozenset()
 
     @property
     def stop_words(self):
