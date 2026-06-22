@@ -123,8 +123,10 @@ class TestHtmlParser(unittest.TestCase):
         self.assertIsInstance(words, tuple)
 
     def test_significant_words_fallback_on_bad_html(self):
-        parser = HtmlParser.from_string("", None, Tokenizer("english"))
-        words = parser.significant_words
+        html = "<html><body><p>Some text here.</p></body></html>"
+        parser = HtmlParser.from_string(html, None, Tokenizer("english"))
+        with patch("sumy.parsers.html.lxml_html.fromstring", side_effect=Exception("parse error")):
+            words = parser._words_from_tags(HtmlParser.SIGNIFICANT_TAGS, HtmlParser.SIGNIFICANT_WORDS)
         self.assertEqual(words, HtmlParser.SIGNIFICANT_WORDS)
 
     def test_stigma_words_with_links(self):
@@ -140,8 +142,10 @@ class TestHtmlParser(unittest.TestCase):
         self.assertIsInstance(words, tuple)
 
     def test_document_exception_handler(self):
-        parser = HtmlParser("", Tokenizer("english"))
-        document = parser.document
+        html = "<html><body><p>Some content.</p></body></html>"
+        parser = HtmlParser.from_string(html, None, Tokenizer("english"))
+        with patch("sumy.parsers.html.lxml_html.fromstring", side_effect=Exception("parse error")):
+            document = HtmlParser.document.func(parser)
         self.assertEqual(len(document.paragraphs), 0)
 
     def test_skip_tags_excluded(self):
