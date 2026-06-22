@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch, MagicMock
 
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.parsers.html import HtmlParser
@@ -92,3 +93,60 @@ class TestHtmlParser(unittest.TestCase):
             "Tento text je tu aby vyplnil prázdne miesto v srdci súboru.")
         self.assertEqual(str(document.paragraphs[1].sentences[1]),
             "Aj súbory majú predsa city.")
+
+    def test_from_string(self):
+        html = "<html><body><p>First sentence. Second sentence.</p></body></html>"
+        parser = HtmlParser.from_string(html, "http://example.com", Tokenizer("english"))
+        document = parser.document
+        self.assertGreater(len(document.paragraphs), 0)
+
+    def test_from_url(self):
+        html = b"<html><body><p>Test sentence. Another sentence here.</p></body></html>"
+        mock_response = MagicMock()
+        mock_response.read.return_value = html
+        mock_response.close.return_value = None
+        with patch("sumy.parsers.html.urllib.urlopen", return_value=mock_response):
+            parser = HtmlParser.from_url("http://example.com", Tokenizer("english"))
+        document = parser.document
+        self.assertGreater(len(document.paragraphs), 0)
+
+    def test_significant_words_with_marked_text(self):
+        html = "<html><body><p>Normal text. <strong>Important word here.</strong></p></body></html>"
+        parser = HtmlParser.from_string(html, None, Tokenizer("english"))
+        words = parser.significant_words
+        self.assertIsInstance(words, tuple)
+
+    def test_significant_words_fallback_on_empty(self):
+        html = "<html><body><p>No headings or bold text here.</p></body></html>"
+        parser = HtmlParser.from_string(html, None, Tokenizer("english"))
+        words = parser.significant_words
+        self.assertIsInstance(words, tuple)
+
+    def test_significant_words_fallback_on_bad_html(self):
+        parser = HtmlParser.from_string("", None, Tokenizer("english"))
+        words = parser.significant_words
+        self.assertEqual(words, HtmlParser.SIGNIFICANT_WORDS)
+
+    def test_stigma_words_with_links(self):
+        html = "<html><body><p>Normal text. <a href='http://x.com'>Click here.</a></p></body></html>"
+        parser = HtmlParser.from_string(html, None, Tokenizer("english"))
+        words = parser.stigma_words
+        self.assertIsInstance(words, tuple)
+
+    def test_stigma_words_fallback_on_empty(self):
+        html = "<html><body><p>No links or strikethrough here.</p></body></html>"
+        parser = HtmlParser.from_string(html, None, Tokenizer("english"))
+        words = parser.stigma_words
+        self.assertIsInstance(words, tuple)
+
+    def test_document_exception_handler(self):
+        parser = HtmlParser("", Tokenizer("english"))
+        document = parser.document
+        self.assertEqual(len(document.paragraphs), 0)
+
+    def test_skip_tags_excluded(self):
+        html = "<html><body><p>Real content.</p><script>var x=1;</script></body></html>"
+        parser = HtmlParser.from_string(html, None, Tokenizer("english"))
+        document = parser.document
+        all_text = " ".join(str(s) for p in document.paragraphs for s in p.sentences)
+        self.assertNotIn("var x", all_text)
