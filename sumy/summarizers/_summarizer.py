@@ -1,7 +1,6 @@
 from collections import namedtuple
 from operator import attrgetter
 from ..utils import ItemsCount
-from .._compat import to_unicode
 from ..nlp.stemmers import null_stemmer
 
 
@@ -22,7 +21,7 @@ class AbstractSummarizer(object):
         return self._stemmer(self.normalize_word(word))
 
     def normalize_word(self, word):
-        return to_unicode(word).lower()
+        return str(word).lower()
 
     def _get_best_sentences(self, sentences, count, rating, *args, **kwargs):
         rate = rating

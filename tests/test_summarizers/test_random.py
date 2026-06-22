@@ -1,7 +1,6 @@
 import unittest
 
 from sumy.summarizers.random import RandomSummarizer
-from sumy._compat import to_unicode
 from ..utils import build_document, build_document_from_string
 
 
@@ -21,7 +20,7 @@ class TestRandom(unittest.TestCase):
 
         sentences = summarizer(document, 10)
         self.assertEqual(len(sentences), 1)
-        self.assertEqual(to_unicode(sentences[0]), "This is only one sentence.")
+        self.assertEqual(str(sentences[0]), "This is only one sentence.")
 
     def test_sentences_in_right_order(self):
         document = build_document_from_string("""
@@ -34,9 +33,9 @@ class TestRandom(unittest.TestCase):
 
         sentences = summarizer(document, 4)
         self.assertEqual(len(sentences), 3)
-        self.assertEqual(to_unicode(sentences[0]), "First sentence.")
-        self.assertEqual(to_unicode(sentences[1]), "Second sentence.")
-        self.assertEqual(to_unicode(sentences[2]), "Third sentence.")
+        self.assertEqual(str(sentences[0]), "First sentence.")
+        self.assertEqual(str(sentences[1]), "Second sentence.")
+        self.assertEqual(str(sentences[2]), "Third sentence.")
 
     def test_more_sentences_than_requested(self):
         document = build_document_from_string("""

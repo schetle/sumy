@@ -2,7 +2,6 @@ import unittest
 
 from sumy.models.dom._sentence import Sentence
 from sumy.summarizers.sum_basic import SumBasicSummarizer
-from sumy._compat import to_unicode
 from ..utils import build_document, build_document_from_string
 from sumy.nlp.tokenizers import Tokenizer
 

@@ -1,6 +1,5 @@
 from operator import attrgetter
-from itertools import chain
-from .._compat import ffilter
+from itertools import chain, filterfalse as ffilter
 from ._summarizer import AbstractSummarizer
 
 

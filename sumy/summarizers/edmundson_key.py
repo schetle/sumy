@@ -1,4 +1,4 @@
-from .._compat import Counter
+from collections import Counter
 from ._summarizer import AbstractSummarizer
 
 
