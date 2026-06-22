@@ -46,3 +46,13 @@ class ItemsCount(object):
 
     def __repr__(self) -> str:
         return str("<ItemsCount: %r>" % self._value)
+
+
+def validate_method(method: str, available_methods: dict, exit_code: int = 1) -> None:
+    import typer
+    if method not in available_methods:
+        typer.echo(
+            f"Unknown method '{method}'. Valid methods: {', '.join(available_methods)}",
+            err=True,
+        )
+        raise typer.Exit(exit_code)

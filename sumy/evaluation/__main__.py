@@ -8,7 +8,7 @@ import typer
 
 from .. import __version__
 from ..__main__ import _version_callback, HEADERS, PARSERS
-from ..utils import ItemsCount, get_stop_words
+from ..utils import ItemsCount, get_stop_words, validate_method
 from ..models import TfDocumentModel
 from ..nlp.tokenizers import Tokenizer
 from ..parsers.plaintext import PlaintextParser
@@ -141,12 +141,7 @@ def main(
         None, "--version", callback=_version_callback, is_eager=True, help="Show version and exit."
     ),
 ):
-    if method not in AVAILABLE_METHODS:
-        typer.echo(
-            f"Unknown method '{method}'. Valid methods: {', '.join(AVAILABLE_METHODS)}",
-            err=True,
-        )
-        raise typer.Exit(1)
+    validate_method(method, AVAILABLE_METHODS)
 
     summarizer, document, items_count, ref_summary = handle_arguments(
         method=method,

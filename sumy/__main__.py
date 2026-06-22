@@ -5,7 +5,7 @@ from urllib import request as urllib
 import typer
 
 from . import __version__
-from .utils import ItemsCount, get_stop_words, read_stop_words
+from .utils import ItemsCount, get_stop_words, read_stop_words, validate_method
 from .nlp.tokenizers import Tokenizer
 from .parsers.html import HtmlParser
 from .parsers.plaintext import PlaintextParser
@@ -59,12 +59,7 @@ def main(
     url: Optional[str] = typer.Option(None, help="URL address of the web page to summarize."),
     file: Optional[str] = typer.Option(None, help="Path to the text file to summarize."),
 ):
-    if method not in AVAILABLE_METHODS:
-        typer.echo(
-            f"Unknown method '{method}'. Valid methods: {', '.join(AVAILABLE_METHODS)}",
-            err=True,
-        )
-        raise typer.Exit(1)
+    validate_method(method, AVAILABLE_METHODS)
 
     summarizer, parser, items_count = handle_arguments(
         method=method,
