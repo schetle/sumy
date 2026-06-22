@@ -88,8 +88,11 @@ def handle_arguments(
     format: Optional[str] = None,
     url: Optional[str] = None,
     file: Optional[str] = None,
-    default_input_stream=sys.stdin,
+    default_input_stream=None,
 ):
+    if default_input_stream is None:
+        default_input_stream = sys.stdin
+
     if url is not None and file is not None:
         raise ValueError("Cannot specify both --url and --file. Use one or the other.")
 
