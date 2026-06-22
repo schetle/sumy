@@ -193,6 +193,7 @@ def handle_arguments(
     url: Optional[str] = None,
     file: Optional[str] = None,
     format: Optional[str] = None,
+    default_input_stream=None,
 ):
     if url is not None and file is not None:
         raise ValueError("Cannot specify both --url and --file. Use one or the other.")
@@ -205,8 +206,11 @@ def handle_arguments(
             )
         )
 
+    if default_input_stream is None:
+        default_input_stream = sys.stdin
+
     parser_class = PARSERS["plaintext"]
-    input_stream = sys.stdin
+    input_stream = default_input_stream
 
     if url is not None:
         parser_class = PARSERS["html"]
@@ -223,7 +227,7 @@ def handle_arguments(
     if isinstance(content, str):
         content = content.encode("utf-8")
     parser_obj = parser_class(content, Tokenizer(language))
-    if input_stream is not sys.stdin:
+    if input_stream is not default_input_stream:
         input_stream.close()
 
     with open(reference_summary, "rb") as f:
