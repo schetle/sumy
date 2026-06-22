@@ -1,50 +1,62 @@
 import unittest
+from io import StringIO
 
-from docopt import docopt, DocoptExit
-from sumy.__main__ import __doc__ as main_doc
-from sumy.__main__ import handle_arguments, to_string, __version__
-from .utils import StringIO
+from typer.testing import CliRunner
+
+from sumy.__main__ import app, handle_arguments, AVAILABLE_METHODS
 
 
 class TestMain(unittest.TestCase):
-    DEFAULT_ARGS = {
-        '--file': None,
-        '--format': None,
-        '--help': False,
-        '--language': 'english',
-        '--length': '20%',
-        '--stopwords': None,
-        '--url': None,
-        '--version': False,
-        'edmundson': False,
-        'lex-rank': False,
-        'lsa': True,
-        'luhn': False,
-        'text-rank': False,
-        'sum-basic': False,
-        'kl': False,
-    }
-
-    def test_ok_args(self):
-        docopt(to_string(main_doc), 'luhn --url=URL --format=FORMAT'.split(), version=__version__)
-
-    def test_args_none(self):
-        self.assertRaises(DocoptExit, docopt, to_string(main_doc), None, version=__version__)
-
-    def test_args_just_command(self):
-        args = docopt(to_string(main_doc), ['lsa'], version=__version__)
-        self.assertEqual(self.DEFAULT_ARGS, args)
-
-    def test_args_two_commands(self):
-        self.assertRaises(DocoptExit, docopt, to_string(main_doc), 'lsa luhn'.split(), version=__version__)
-
-    def test_args_url_and_file(self):
-        self.assertRaises(DocoptExit, docopt, to_string(main_doc), 'lsa --url=URL --file=FILE'.split(), version=__version__)
-
     def test_handle_default_arguments(self):
-        handle_arguments(self.DEFAULT_ARGS, default_input_stream=StringIO("Whatever."))
+        summarizer, parser, items_count = handle_arguments(
+            method="lsa",
+            default_input_stream=StringIO("Whatever. This is a test sentence. Another sentence here."),
+        )
+        self.assertIsNotNone(summarizer)
+        self.assertIsNotNone(parser)
 
     def test_handle_wrong_format(self):
-        wrong_args = self.DEFAULT_ARGS.copy()
-        wrong_args.update({'--url': 'URL', '--format': 'text'})
-        self.assertRaises(ValueError, handle_arguments, wrong_args, default_input_stream=StringIO("Whatever."))
+        self.assertRaises(
+            ValueError,
+            handle_arguments,
+            method="lsa",
+            url="http://example.com",
+            format="text",  # Invalid format (should be "html" or "plaintext")
+            default_input_stream=StringIO("Whatever."),
+        )
+
+    def test_handle_all_methods(self):
+        for method in ["luhn", "lsa", "kl", "sum-basic"]:
+            summarizer, parser, items_count = handle_arguments(
+                method=method,
+                default_input_stream=StringIO("Whatever. This is test text. Another sentence."),
+            )
+            self.assertIsNotNone(summarizer)
+
+    def test_handle_valid_methods(self):
+        for method in AVAILABLE_METHODS:
+            summarizer, parser, items_count = handle_arguments(
+                method=method,
+                default_input_stream=StringIO(
+                    "Whatever. This is a test sentence. Another sentence here. "
+                    "Yet another sentence to summarize. One more sentence."
+                ),
+            )
+            self.assertIsNotNone(summarizer)
+            self.assertIsNotNone(parser)
+
+    def test_cli_help(self):
+        runner = CliRunner()
+        result = runner.invoke(app, ["--help"])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("method", result.output.lower())
+
+    def test_cli_no_method(self):
+        runner = CliRunner()
+        result = runner.invoke(app, [])
+        self.assertNotEqual(result.exit_code, 0)
+
+    def test_cli_invalid_method(self):
+        runner = CliRunner()
+        result = runner.invoke(app, ["invalidmethod"])
+        self.assertNotEqual(result.exit_code, 0)
