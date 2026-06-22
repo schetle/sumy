@@ -194,6 +194,9 @@ def handle_arguments(
     file: Optional[str] = None,
     format: Optional[str] = None,
 ):
+    if url is not None and file is not None:
+        raise ValueError("Cannot specify both --url and --file. Use one or the other.")
+
     if format is not None and format not in PARSERS:
         raise ValueError(
             "Unsupported format of input document. Possible values are: %s. Given: %s." % (
