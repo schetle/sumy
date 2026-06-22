@@ -1,15 +1,17 @@
+from __future__ import annotations
+
 import nltk.stem.snowball as nltk_stemmers_module
 
 from .czech import stem_word as czech_stemmer
 
 
-def null_stemmer(object):
+def null_stemmer(object: str) -> str:
     "Converts given object to unicode with lower letters."
     return str(object).lower()
 
 
 class Stemmer(object):
-    def __init__(self, language):
+    def __init__(self, language: str) -> None:
         self._stemmer = null_stemmer
         if language.lower() in ('czech', 'slovak'):
             self._stemmer = czech_stemmer
@@ -21,5 +23,5 @@ class Stemmer(object):
             raise LookupError("Stemmer is not available for language %s." % language)
         self._stemmer = stemmer_class().stem
 
-    def __call__(self, word):
+    def __call__(self, word: str) -> str:
         return self._stemmer(word)

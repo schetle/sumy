@@ -78,10 +78,16 @@ where = ["."]
 include = ["sumy*"]
 
 [tool.setuptools.package-data]
-sumy = ["data/stopwords/*.txt"]
+sumy = ["data/stopwords/*.txt", "py.typed"]
 
 [tool.pytest.ini_options]
 addopts = "--quiet --tb=short --color=yes --cov=sumy --cov-report=term-missing --no-cov-on-fail"
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
 
 [tool.bump-my-version]
 current_version = "0.3.0"
