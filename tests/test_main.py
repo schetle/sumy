@@ -111,7 +111,15 @@ class TestMain(unittest.TestCase):
         self.assertIn(__version__, result.output)
 
     def test_cli_length_percentage(self):
-        """--length=20% is handled correctly."""
+        """--length=20% (percent sign in option value) is parsed correctly by typer."""
+        runner = CliRunner()
+        text = "First sentence here. Second sentence there. Third sentence present. Fourth sentence found. Fifth one too."
+        result = runner.invoke(app, ["lsa", "--length=20%"], input=text)
+        self.assertEqual(result.exit_code, 0)
+        self.assertTrue(len(result.output.strip()) > 0)
+
+    def test_cli_length_integer(self):
+        """--length=2 (integer count) is parsed correctly."""
         runner = CliRunner()
         text = "First sentence here. Second sentence there. Third sentence present. Fourth sentence found. Fifth one too."
         result = runner.invoke(app, ["lsa", "--length=2"], input=text)
