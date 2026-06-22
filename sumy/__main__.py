@@ -38,10 +38,19 @@ AVAILABLE_METHODS = {
 app = typer.Typer()
 
 
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(__version__)
+        raise typer.Exit()
+
+
 @app.command()
 def main(
     method: str = typer.Argument(
         ..., help="Summarization method: luhn, edmundson, lsa, text-rank, lex-rank, sum-basic, kl"
+    ),
+    version: Optional[bool] = typer.Option(
+        None, "--version", callback=_version_callback, is_eager=True, help="Show version and exit."
     ),
     length: str = typer.Option("20%", help="Length of summarized text (count of sentences or percentage)."),
     language: str = typer.Option("english", help="Natural language of summarized text."),
@@ -81,6 +90,9 @@ def handle_arguments(
     file: Optional[str] = None,
     default_input_stream=sys.stdin,
 ):
+    if url is not None and file is not None:
+        raise ValueError("Cannot specify both --url and --file. Use one or the other.")
+
     if format is not None and format not in PARSERS:
         raise ValueError(
             "Unsupported format of input document. Possible values are: %s. Given: %s." % (

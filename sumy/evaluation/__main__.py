@@ -135,6 +135,12 @@ AVAILABLE_EVALUATIONS = (
 app = typer.Typer()
 
 
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(__version__)
+        raise typer.Exit()
+
+
 @app.command()
 def main(
     method: str = typer.Argument(
@@ -146,6 +152,9 @@ def main(
     url: Optional[str] = typer.Option(None, help="URL address of the web page to summarize."),
     file: Optional[str] = typer.Option(None, help="Path to file with summarized text."),
     format: Optional[str] = typer.Option(None, help="Format of input file: html or plaintext."),
+    version: Optional[bool] = typer.Option(
+        None, "--version", callback=_version_callback, is_eager=True, help="Show version and exit."
+    ),
 ):
     if method not in AVAILABLE_METHODS:
         typer.echo(
