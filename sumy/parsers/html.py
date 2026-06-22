@@ -42,33 +42,26 @@ class HtmlParser(DocumentParser):
         # Keep the original html for fallback if summary is too short
         self._original_html = html_content
 
-    @cached_property
-    def significant_words(self):
+    def _words_from_tags(self, tags, fallback):
         try:
             tree = lxml_html.fromstring(self._summary_html or self._original_html)
         except Exception:
-            return self.SIGNIFICANT_WORDS
+            return fallback
         words = []
-        for tag in self.SIGNIFICANT_TAGS:
+        for tag in tags:
             for el in tree.xpath(f"//{tag}"):
                 text = (el.text_content() or "").strip()
                 if text:
                     words.extend(self.tokenize_words(text))
-        return tuple(words) if words else self.SIGNIFICANT_WORDS
+        return tuple(words) if words else fallback
+
+    @cached_property
+    def significant_words(self):
+        return self._words_from_tags(self.SIGNIFICANT_TAGS, self.SIGNIFICANT_WORDS)
 
     @cached_property
     def stigma_words(self):
-        try:
-            tree = lxml_html.fromstring(self._summary_html or self._original_html)
-        except Exception:
-            return self.STIGMA_WORDS
-        words = []
-        for tag in ("a", "strike", "s"):
-            for el in tree.xpath(f"//{tag}"):
-                text = (el.text_content() or "").strip()
-                if text:
-                    words.extend(self.tokenize_words(text))
-        return tuple(words) if words else self.STIGMA_WORDS
+        return self._words_from_tags(("a", "strike", "s"), self.STIGMA_WORDS)
 
     @cached_property
     def document(self):
