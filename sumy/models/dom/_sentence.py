@@ -1,10 +1,10 @@
-from __future__ import annotations
+from typing import Union
 
 from ...utils import cached_property
 
 
 class Sentence(object):
-    def __init__(self, text: str | bytes, tokenizer, is_heading: bool = False) -> None:
+    def __init__(self, text: Union[str, bytes], tokenizer, is_heading: bool = False) -> None:
         self._text = (text.decode("utf-8") if isinstance(text, bytes) else str(text)).strip()
         self._tokenizer = tokenizer
         self._is_heading = bool(is_heading)

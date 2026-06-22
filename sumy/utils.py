@@ -1,10 +1,8 @@
-from __future__ import annotations
-
 import sys
 
 from functools import cached_property  # noqa: F401
 from os.path import dirname, abspath, join, exists
-from typing import Any
+from typing import Any, Union
 
 
 def expand_resource_path(path: str) -> str:
@@ -28,7 +26,7 @@ def read_stop_words(filename: str) -> frozenset[str]:
 
 
 class ItemsCount(object):
-    def __init__(self, value: str | int | float) -> None:
+    def __init__(self, value: Union[str, int, float]) -> None:
         self._value = value
 
     def __call__(self, sequence: Any) -> Any:

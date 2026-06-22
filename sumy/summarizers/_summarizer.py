@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from collections import namedtuple
 from operator import attrgetter
 from typing import Callable

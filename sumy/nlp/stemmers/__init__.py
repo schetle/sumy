@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import nltk.stem.snowball as nltk_stemmers_module
 
 from .czech import stem_word as czech_stemmer

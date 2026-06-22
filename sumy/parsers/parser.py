@@ -1,6 +1,3 @@
-from __future__ import annotations
-
-
 class DocumentParser(object):
     """Abstract parser of input format into DOM."""
 
