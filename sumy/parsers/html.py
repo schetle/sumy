@@ -1,8 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 from breadability.readable import Article
 from .._compat import urllib
 from ..utils import cached_property

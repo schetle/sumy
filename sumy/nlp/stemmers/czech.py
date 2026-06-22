@@ -1,5 +1,3 @@
-# -*- coding: utf8 -*-
-
 """
 Czech stemmer
 Copyright © 2010 Luís Gomes <luismsgomes@gmail.com>.
@@ -11,8 +9,6 @@ Usage:
     czech_stemmer.py light|aggressive
 """
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
 
 import re
 import sys
