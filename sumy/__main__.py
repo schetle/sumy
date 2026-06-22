@@ -61,18 +61,23 @@ def main(
 ):
     validate_method(method, AVAILABLE_METHODS)
 
-    summarizer, parser, items_count = handle_arguments(
-        method=method,
-        length=length,
-        language=language,
-        stopwords=stopwords,
-        format=format,
-        url=url,
-        file=file,
-    )
-
-    for sentence in summarizer(parser.document, items_count):
-        print(str(sentence))
+    try:
+        summarizer, parser, items_count = handle_arguments(
+            method=method,
+            length=length,
+            language=language,
+            stopwords=stopwords,
+            format=format,
+            url=url,
+            file=file,
+        )
+        for sentence in summarizer(parser.document, items_count):
+            print(str(sentence))
+    except KeyboardInterrupt:
+        raise typer.Exit(1)
+    except Exception as e:
+        typer.echo(str(e), err=True)
+        raise typer.Exit(1)
 
 
 def handle_arguments(

@@ -143,26 +143,30 @@ def main(
 ):
     validate_method(method, AVAILABLE_METHODS)
 
-    summarizer, document, items_count, ref_summary = handle_arguments(
-        method=method,
-        reference_summary=reference_summary,
-        length=length,
-        language=language,
-        url=url,
-        file=file,
-        format=format,
-    )
-
-    evaluated_sentences = summarizer(document, items_count)
-    reference_document = PlaintextParser.from_string(ref_summary, Tokenizer(language))
-    reference_sentences = reference_document.document.sentences
-
-    for name, evaluate_document, evaluate in AVAILABLE_EVALUATIONS:
-        if evaluate_document:
-            result = evaluate(evaluated_sentences, document.sentences)
-        else:
-            result = evaluate(evaluated_sentences, reference_sentences)
-        print("%s: %f" % (name, result))
+    try:
+        summarizer, document, items_count, ref_summary = handle_arguments(
+            method=method,
+            reference_summary=reference_summary,
+            length=length,
+            language=language,
+            url=url,
+            file=file,
+            format=format,
+        )
+        evaluated_sentences = summarizer(document, items_count)
+        reference_document = PlaintextParser.from_string(ref_summary, Tokenizer(language))
+        reference_sentences = reference_document.document.sentences
+        for name, evaluate_document, evaluate in AVAILABLE_EVALUATIONS:
+            if evaluate_document:
+                result = evaluate(evaluated_sentences, document.sentences)
+            else:
+                result = evaluate(evaluated_sentences, reference_sentences)
+            print("%s: %f" % (name, result))
+    except KeyboardInterrupt:
+        raise typer.Exit(1)
+    except Exception as e:
+        typer.echo(str(e), err=True)
+        raise typer.Exit(1)
 
 
 def handle_arguments(
