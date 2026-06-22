@@ -5,7 +5,7 @@ from urllib import request as urllib
 import typer
 
 from . import __version__
-from .utils import ItemsCount, get_stop_words, read_stop_words, validate_method
+from .utils import ItemsCount, get_stop_words, read_stop_words, read_stream_as_bytes, validate_method
 from .nlp.tokenizers import Tokenizer
 from .parsers.html import HtmlParser
 from .parsers.plaintext import PlaintextParser
@@ -117,9 +117,7 @@ def handle_arguments(
     else:
         stop_words = get_stop_words(language)
 
-    content = input_stream.read()
-    if isinstance(content, str):
-        content = content.encode("utf-8")
+    content = read_stream_as_bytes(input_stream)
     parser_obj = parser_class(content, Tokenizer(language))
     if input_stream is not default_input_stream:
         input_stream.close()
