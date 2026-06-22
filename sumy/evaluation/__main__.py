@@ -217,7 +217,7 @@ def handle_arguments(
         req = urllib.Request(url, headers=HEADERS)
         input_stream = urllib.urlopen(req)
     elif file is not None:
-        parser_class = PARSERS.get(format, PlaintextParser)
+        parser_class = PARSERS[format or "plaintext"]
         input_stream = open(file, "rb")
 
     summarizer_builder = AVAILABLE_METHODS[method]
