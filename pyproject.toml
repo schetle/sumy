@@ -70,8 +70,8 @@ dev = [
 Homepage = "https://github.com/miso-belica/sumy"
 
 [project.scripts]
-sumy = "sumy.__main__:main"
-sumy_eval = "sumy.evaluation.__main__:main"
+sumy = "sumy.__main__:app"
+sumy_eval = "sumy.evaluation.__main__:app"
 
 [tool.setuptools.packages.find]
 where = ["."]
