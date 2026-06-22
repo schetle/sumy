@@ -1,5 +1,6 @@
-from breadability.readable import Article
-from .._compat import urllib
+from readability import Document
+from lxml import html as lxml_html
+from urllib import request as urllib
 from ..utils import cached_property
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
@@ -30,72 +31,120 @@ class HtmlParser(DocumentParser):
         response = urllib.urlopen(url)
         data = response.read()
         response.close()
-
         return cls(data, tokenizer, url)
 
     def __init__(self, html_content, tokenizer, url=None):
-        super(HtmlParser, self).__init__(tokenizer)
-        self._article = Article(html_content, url)
+        super().__init__(tokenizer)
+        if isinstance(html_content, bytes):
+            html_content = html_content.decode("utf-8", errors="replace")
+        doc = Document(html_content)
+        self._summary_html = doc.summary(html_partial=True)
+        # Keep the original html for fallback if summary is too short
+        self._original_html = html_content
 
     @cached_property
     def significant_words(self):
-        words = []
-        for paragraph in self._article.main_text:
-            for text, annotations in paragraph:
-                if self._contains_any(annotations, *self.SIGNIFICANT_TAGS):
-                    words.extend(self.tokenize_words(text))
-
-        if words:
-            return tuple(words)
-        else:
+        try:
+            tree = lxml_html.fromstring(self._summary_html or self._original_html)
+        except Exception:
             return self.SIGNIFICANT_WORDS
+        words = []
+        for tag in self.SIGNIFICANT_TAGS:
+            for el in tree.xpath(f"//{tag}"):
+                text = (el.text_content() or "").strip()
+                if text:
+                    words.extend(self.tokenize_words(text))
+        return tuple(words) if words else self.SIGNIFICANT_WORDS
 
     @cached_property
     def stigma_words(self):
-        words = []
-        for paragraph in self._article.main_text:
-            for text, annotations in paragraph:
-                if self._contains_any(annotations, "a", "strike", "s"):
-                    words.extend(self.tokenize_words(text))
-
-        if words:
-            return tuple(words)
-        else:
+        try:
+            tree = lxml_html.fromstring(self._summary_html or self._original_html)
+        except Exception:
             return self.STIGMA_WORDS
-
-    def _contains_any(self, sequence, *args):
-        if sequence is None:
-            return False
-
-        for item in args:
-            if item in sequence:
-                return True
-
-        return False
+        words = []
+        for tag in ("a", "strike", "s"):
+            for el in tree.xpath(f"//{tag}"):
+                text = (el.text_content() or "").strip()
+                if text:
+                    words.extend(self.tokenize_words(text))
+        return tuple(words) if words else self.STIGMA_WORDS
 
     @cached_property
     def document(self):
-        # "a", "abbr", "acronym", "b", "big", "blink", "blockquote", "cite", "code",
-        # "dd", "del", "dfn", "dir", "dl", "dt", "em", "h", "h1", "h2", "h3", "h4",
-        # "h5", "h6", "i", "ins", "kbd", "li", "marquee", "menu", "ol", "pre", "q",
-        # "s", "samp", "strike", "strong", "sub", "sup", "tt", "u", "ul", "var",
+        try:
+            tree = lxml_html.fromstring(self._original_html)
+        except Exception:
+            return ObjectDocumentModel([])
 
-        annotated_text = self._article.main_text
+        heading_tags = {"h1", "h2", "h3", "h4", "h5", "h6"}
+        block_tags = {"p", "li", "blockquote", "td", "th"}
+        skip_tags = {"script", "style", "pre"}
 
         paragraphs = []
-        for paragraph in annotated_text:
+        # Collect all relevant elements in document order, then group:
+        # a heading and the block elements that immediately follow it
+        # (until the next heading) form one paragraph.
+        # Block elements that come before any heading form their own paragraphs.
+
+        # Gather sequence of (kind, element) tuples
+        elements = []
+        for el in tree.iter():
+            tag = el.tag if isinstance(el.tag, str) else ""
+            tag = tag.lower()
+
+            if tag in skip_tags:
+                continue
+
+            if tag in heading_tags:
+                elements.append(("heading", el))
+            elif tag in block_tags:
+                # Only process leaf-ish block elements (not containers of other blocks)
+                child_tags = {c.tag.lower() for c in el if isinstance(c.tag, str)}
+                if child_tags & (block_tags | heading_tags):
+                    continue  # skip container elements
+                elements.append(("block", el))
+
+        # Group: each block element forms its own paragraph; if the immediately
+        # preceding element was a heading, that heading is prepended into the
+        # same paragraph.  Consecutive headings without an intervening block are
+        # each emitted as a standalone paragraph.
+        groups = []
+        pending_headings = []
+
+        for kind, el in elements:
+            if kind == "heading":
+                pending_headings.append(("heading", el))
+            else:
+                # block element — attach any pending headings to this paragraph
+                group = pending_headings + [("block", el)]
+                pending_headings = []
+                groups.append(group)
+
+        # Flush any trailing headings (no following block) as individual paragraphs
+        for heading in pending_headings:
+            groups.append([heading])
+
+        # Build paragraphs from groups
+        for group in groups:
             sentences = []
+            block_texts = []
 
-            current_text = ""
-            for text, annotations in paragraph:
-                if annotations and ("h1" in annotations or "h2" in annotations or "h3" in annotations):
+            for kind, el in group:
+                text = (el.text_content() or "").strip()
+                if not text:
+                    continue
+                if kind == "heading":
                     sentences.append(Sentence(text, self._tokenizer, is_heading=True))
-                # skip <pre> nodes
-                elif not (annotations and "pre" in annotations):
-                    current_text += " " + text
+                else:
+                    block_texts.append(text)
 
-            new_sentences = self.tokenize_sentences(current_text)
+            # Tokenize all collected block text
+            combined = " ".join(block_texts)
+            new_sentences = self.tokenize_sentences(combined)
             sentences.extend(Sentence(s, self._tokenizer) for s in new_sentences)
-            paragraphs.append(Paragraph(sentences))
+
+            if sentences:
+                paragraphs.append(Paragraph(sentences))
 
         return ObjectDocumentModel(paragraphs)
