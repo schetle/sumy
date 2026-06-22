@@ -37,7 +37,7 @@ class HtmlParser(DocumentParser):
         super().__init__(tokenizer)
         if isinstance(html_content, bytes):
             html_content = html_content.decode("utf-8", errors="replace")
-        doc = Document(html_content)
+        doc = Document(html_content, url=url)
         self._summary_html = doc.summary(html_partial=True)
         # Keep the original html for fallback if summary is too short
         self._original_html = html_content
