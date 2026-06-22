@@ -7,6 +7,7 @@ from urllib import request as urllib
 import typer
 
 from .. import __version__
+from ..__main__ import _version_callback
 from ..utils import ItemsCount, get_stop_words
 from ..models import TfDocumentModel
 from ..nlp.tokenizers import Tokenizer
@@ -133,12 +134,6 @@ AVAILABLE_EVALUATIONS = (
 )
 
 app = typer.Typer()
-
-
-def _version_callback(value: bool) -> None:
-    if value:
-        typer.echo(__version__)
-        raise typer.Exit()
 
 
 @app.command()
