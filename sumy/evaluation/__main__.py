@@ -7,11 +7,10 @@ from urllib import request as urllib
 import typer
 
 from .. import __version__
-from ..__main__ import _version_callback
+from ..__main__ import _version_callback, HEADERS, PARSERS
 from ..utils import ItemsCount, get_stop_words
 from ..models import TfDocumentModel
 from ..nlp.tokenizers import Tokenizer
-from ..parsers.html import HtmlParser
 from ..parsers.plaintext import PlaintextParser
 from ..summarizers.random import RandomSummarizer
 from ..summarizers.luhn import LuhnSummarizer
@@ -24,15 +23,6 @@ from ..summarizers.kl import KLSummarizer
 from ..nlp.stemmers import Stemmer
 from . import precision, recall, f_score, cosine_similarity, unit_overlap
 from . import rouge_1, rouge_2, rouge_l_sentence_level, rouge_l_summary_level
-
-
-HEADERS = {
-    "User-Agent": "Sumy (Automatic text summarizer) Version/%s" % __version__,
-}
-PARSERS = {
-    "html": HtmlParser,
-    "plaintext": PlaintextParser,
-}
 
 
 def build_random(parser, language):
