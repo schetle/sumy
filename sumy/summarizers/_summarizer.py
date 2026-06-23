@@ -27,7 +27,7 @@ class AbstractSummarizer(object):
         return str(self._stemmer(self.normalize_word(word)))
 
     def normalize_word(self, word: str) -> str:
-        return str(word).lower()
+        return null_stemmer(word)
 
     def _get_best_sentences(self, sentences: Iterable, count: Union[int, "ItemsCount"], rating: Union[dict, Callable], *args, **kwargs) -> tuple:
         rate = rating
