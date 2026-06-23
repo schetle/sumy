@@ -1,8 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import math
 
 from warnings import warn

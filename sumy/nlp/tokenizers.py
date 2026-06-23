@@ -1,12 +1,5 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import re
 import nltk
-
-from .._compat import to_string, to_unicode, unicode
 
 
 class Tokenizer(object):
@@ -17,7 +10,7 @@ class Tokenizer(object):
     LANGUAGE_ALIASES = {
         "slovak": "czech",
     }
-    
+
     # improve tokenizer by adding specific abbreviations it has issues with
     # note the final point in these items must not be included
     LANGUAGE_EXTRA_ABREVS = {
@@ -25,29 +18,33 @@ class Tokenizer(object):
         "german": ['al', 'z.B', 'Inc','engl','z. B', 'vgl', 'lat', 'bzw', 'S'],
     }
 
-    def __init__(self, language):
+    def __init__(self, language: str) -> None:
         self._language = language
 
         tokenizer_language = self.LANGUAGE_ALIASES.get(language, language)
-        self._sentence_tokenizer = self._sentence_tokenizer(tokenizer_language)
+        self._sentence_tokenizer = self._load_sentence_tokenizer(tokenizer_language)
 
     @property
-    def language(self):
+    def language(self) -> str:
         return self._language
 
-    def _sentence_tokenizer(self, language):
-        path = to_string("tokenizers/punkt/%s.pickle") % to_string(language)
-        return nltk.data.load(path)
+    def _load_sentence_tokenizer(self, language: str):
+        try:
+            path = "tokenizers/punkt_tab/%s.pickle" % language
+            return nltk.data.load(path)
+        except LookupError:
+            path = "tokenizers/punkt/%s.pickle" % language
+            return nltk.data.load(path)
 
-    def to_sentences(self, paragraph):
+    def to_sentences(self, paragraph: str) -> tuple[str, ...]:
         extra_abbreviations = self.LANGUAGE_EXTRA_ABREVS.get(self._language, [])
         self._sentence_tokenizer._params.abbrev_types.update(extra_abbreviations)
-        sentences = self._sentence_tokenizer.tokenize(to_unicode(paragraph))
-        return tuple(map(unicode.strip, sentences))
+        sentences = self._sentence_tokenizer.tokenize(paragraph)
+        return tuple(map(str.strip, sentences))
 
-    def to_words(self, sentence):
-        words = nltk.word_tokenize(to_unicode(sentence))
+    def to_words(self, sentence: str) -> tuple[str, ...]:
+        words = nltk.word_tokenize(sentence)
         return tuple(filter(self._is_word, words))
 
-    def _is_word(self, word):
+    def _is_word(self, word: str) -> bool:
         return bool(Tokenizer._WORD_PATTERN.search(word))

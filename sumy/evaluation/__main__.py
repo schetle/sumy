@@ -1,41 +1,16 @@
-# -*- coding: utf8 -*-
-
-"""
-Sumy - evaluation of automatic text summary.
-
-Usage:
-    sumy_eval (random | luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) <reference_summary> [--length=<length>] [--language=<lang>]
-    sumy_eval (random | luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) <reference_summary> [--length=<length>] [--language=<lang>] --url=<url>
-    sumy_eval (random | luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) <reference_summary> [--length=<length>] [--language=<lang>] --file=<file_path> --format=<file_format>
-    sumy_eval --version
-    sumy_eval --help
-
-Options:
-    <reference_summary>  Path to the file with reference summary.
-    --url=<url>          URL address of summarizied message.
-    --file=<file>        Path to file with summarizied text.
-    --format=<format>    Format of input file. [default: plaintext]
-    --length=<length>    Length of summarizied text. It may be count of sentences
-                         or percentage of input text. [default: 20%]
-    --language=<lang>    Natural language of summarizied text. [default: english]
-    --version            Displays version of application.
-    --help               Displays this text.
-
-"""
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import sys
 
 from itertools import chain
-from docopt import docopt
+from typing import Optional
+from urllib import request as urllib
+
+import typer
+
 from .. import __version__
-from ..utils import ItemsCount, get_stop_words
+from ..__main__ import _version_callback, HEADERS, PARSERS
+from ..utils import ItemsCount, get_stop_words, read_stream_as_bytes, validate_method
 from ..models import TfDocumentModel
-from .._compat import urllib, to_string
 from ..nlp.tokenizers import Tokenizer
-from ..parsers.html import HtmlParser
 from ..parsers.plaintext import PlaintextParser
 from ..summarizers.random import RandomSummarizer
 from ..summarizers.luhn import LuhnSummarizer
@@ -47,16 +22,7 @@ from ..summarizers.sum_basic import SumBasicSummarizer
 from ..summarizers.kl import KLSummarizer
 from ..nlp.stemmers import Stemmer
 from . import precision, recall, f_score, cosine_similarity, unit_overlap
-from . import rouge_1, rouge_2, rouge_l_sentence_level, rouge_l_summary_level 
-
-
-HEADERS = {
-    "User-Agent": "Sumy (Automatic text summarizer) Version/%s" % __version__,
-}
-PARSERS = {
-    "html": HtmlParser,
-    "plaintext": PlaintextParser,
-}
+from . import rouge_1, rouge_2, rouge_l_sentence_level, rouge_l_summary_level
 
 
 def build_random(parser, language):
@@ -154,70 +120,103 @@ AVAILABLE_EVALUATIONS = (
     ("Rouge-1", False, rouge_1),
     ("Rouge-2", False, rouge_2),
     ("Rouge-L (Sentence Level)", False, rouge_l_sentence_level),
-    ("Rouge-L (Summary Level)", False, rouge_l_summary_level)
+    ("Rouge-L (Summary Level)", False, rouge_l_summary_level),
 )
 
-
-def main(args=None):
-    args = docopt(to_string(__doc__), args, version=__version__)
-    summarizer, document, items_count, reference_summary = handle_arguments(args)
-
-    evaluated_sentences = summarizer(document, items_count)
-    reference_document = PlaintextParser.from_string(reference_summary,
-        Tokenizer(args["--language"]))
-    reference_sentences = reference_document.document.sentences
-
-    for name, evaluate_document, evaluate in AVAILABLE_EVALUATIONS:
-        if evaluate_document:
-            result = evaluate(evaluated_sentences, document.sentences)
-        else:
-            result = evaluate(evaluated_sentences, reference_sentences)
-        print("%s: %f" % (name, result))
+app = typer.Typer()
 
 
-def handle_arguments(args):
-    document_format = args["--format"]
-    if document_format is not None and document_format not in PARSERS:
-        raise ValueError("Unsupported format of input document. Possible values are: %s. Given: %s." % (
-            ", ".join(PARSERS.keys()),
-            document_format,
-        ))
+@app.command()
+def main(
+    method: str = typer.Argument(
+        ..., help="Summarization method: random, luhn, edmundson, lsa, text-rank, lex-rank, sum-basic, kl"
+    ),
+    reference_summary: str = typer.Argument(..., help="Path to file with reference summary."),
+    length: str = typer.Option("20%", help="Length of summarized text."),
+    language: str = typer.Option("english", help="Natural language of summarized text."),
+    url: Optional[str] = typer.Option(None, help="URL address of the web page to summarize."),
+    file: Optional[str] = typer.Option(None, help="Path to file with summarized text."),
+    format: Optional[str] = typer.Option(None, help="Format of input file: html or plaintext."),
+    version: Optional[bool] = typer.Option(
+        None, "--version", callback=_version_callback, is_eager=True, help="Show version and exit."
+    ),
+):
+    validate_method(method, AVAILABLE_METHODS)
 
-    parser = PARSERS["plaintext"]
-    input_stream = sys.stdin
+    try:
+        summarizer, document, items_count, ref_summary = handle_arguments(
+            method=method,
+            reference_summary=reference_summary,
+            length=length,
+            language=language,
+            url=url,
+            file=file,
+            format=format,
+        )
+        evaluated_sentences = summarizer(document, items_count)
+        reference_document = PlaintextParser.from_string(ref_summary, Tokenizer(language))
+        reference_sentences = reference_document.document.sentences
+        for name, evaluate_document, evaluate in AVAILABLE_EVALUATIONS:
+            if evaluate_document:
+                result = evaluate(evaluated_sentences, document.sentences)
+            else:
+                result = evaluate(evaluated_sentences, reference_sentences)
+            print("%s: %f" % (name, result))
+    except KeyboardInterrupt:
+        raise typer.Exit(1)
+    except Exception as e:
+        typer.echo(str(e), err=True)
+        raise typer.Exit(1)
 
-    if args["--url"] is not None:
-        parser = PARSERS["html"]
-        request = urllib.Request(args["--url"], headers=HEADERS)
-        input_stream = urllib.urlopen(request)
-    elif args["--file"] is not None:
-        parser = PARSERS.get(document_format, PlaintextParser)
-        input_stream = open(args["--file"], "rb")
 
-    summarizer_builder = AVAILABLE_METHODS["luhn"]
-    for method, builder in AVAILABLE_METHODS.items():
-        if args[method]:
-            summarizer_builder = builder
-            break
+def handle_arguments(
+    method: str,
+    reference_summary: str,
+    length: str = "20%",
+    language: str = "english",
+    url: Optional[str] = None,
+    file: Optional[str] = None,
+    format: Optional[str] = None,
+    default_input_stream=None,
+):
+    if url is not None and file is not None:
+        raise ValueError("Cannot specify both --url and --file. Use one or the other.")
 
-    items_count = ItemsCount(args["--length"])
+    if format is not None and format not in PARSERS:
+        raise ValueError(
+            "Unsupported format of input document. Possible values are: %s. Given: %s." % (
+                ", ".join(PARSERS.keys()),
+                format,
+            )
+        )
 
-    parser = parser(input_stream.read(), Tokenizer(args["--language"]))
-    if input_stream is not sys.stdin:
+    if default_input_stream is None:
+        default_input_stream = sys.stdin
+
+    parser_class = PARSERS["plaintext"]
+    input_stream = default_input_stream
+
+    if url is not None:
+        parser_class = PARSERS["html"]
+        req = urllib.Request(url, headers=HEADERS)
+        input_stream = urllib.urlopen(req)
+    elif file is not None:
+        parser_class = PARSERS[format or "plaintext"]
+        input_stream = open(file, "rb")
+
+    summarizer_builder = AVAILABLE_METHODS[method]
+    items_count = ItemsCount(length)
+
+    content = read_stream_as_bytes(input_stream)
+    parser_obj = parser_class(content, Tokenizer(language))
+    if input_stream is not default_input_stream:
         input_stream.close()
 
-    with open(args["<reference_summary>"], "rb") as file:
-        reference_summmary = file.read().decode("utf8")
+    with open(reference_summary, "rb") as f:
+        ref_summary_text = f.read().decode("utf8")
 
-    return summarizer_builder(parser, args["--language"]), parser.document, items_count, reference_summmary
+    return summarizer_builder(parser_obj, language), parser_obj.document, items_count, ref_summary_text
 
 
 if __name__ == "__main__":
-    try:
-        exit_code = main()
-        exit(exit_code)
-    except KeyboardInterrupt:
-        exit(1)
-    except Exception as e:
-        print(e)
-        exit(1)
+    app()
