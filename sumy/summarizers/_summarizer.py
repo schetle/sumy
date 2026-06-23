@@ -20,7 +20,7 @@ class AbstractSummarizer(object):
 
         self._stemmer = stemmer
 
-    def __call__(self, document: "ObjectDocumentModel", sentences_count: Union[int, str, "ItemsCount"]) -> tuple:
+    def __call__(self, document: "ObjectDocumentModel", sentences_count: Union[int, str, ItemsCount]) -> tuple:
         raise NotImplementedError("This method should be overriden in subclass")
 
     def stem_word(self, word: str) -> str:
@@ -29,7 +29,7 @@ class AbstractSummarizer(object):
     def normalize_word(self, word: str) -> str:
         return null_stemmer(word)
 
-    def _get_best_sentences(self, sentences: Iterable, count: Union[int, "ItemsCount"], rating: Union[dict, Callable], *args, **kwargs) -> tuple:
+    def _get_best_sentences(self, sentences: Iterable, count: Union[int, ItemsCount], rating: Union[dict, Callable], *args, **kwargs) -> tuple:
         rate = rating
         if isinstance(rating, dict):
             assert not args and not kwargs
