@@ -1,16 +1,17 @@
 import nltk.stem.snowball as nltk_stemmers_module
+from typing import Callable
 
 from .czech import stem_word as czech_stemmer
 
 
-def null_stemmer(object: str) -> str:
-    "Converts given object to unicode with lower letters."
-    return str(object).lower()
+def null_stemmer(word: str) -> str:
+    "Converts given word to unicode with lower letters."
+    return str(word).lower()
 
 
 class Stemmer(object):
     def __init__(self, language: str) -> None:
-        self._stemmer = null_stemmer
+        self._stemmer: Callable[[str], str] = null_stemmer
         if language.lower() in ('czech', 'slovak'):
             self._stemmer = czech_stemmer
             return

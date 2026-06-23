@@ -2,7 +2,7 @@ import sys
 
 from functools import cached_property  # noqa: F401
 from os.path import dirname, abspath, join, exists
-from typing import Any, Union
+from typing import Any, IO, Union
 
 
 def expand_resource_path(path: str) -> str:
@@ -48,14 +48,14 @@ class ItemsCount(object):
         return str("<ItemsCount: %r>" % self._value)
 
 
-def read_stream_as_bytes(stream) -> bytes:
+def read_stream_as_bytes(stream: IO[Any]) -> bytes:
     content = stream.read()
     if isinstance(content, str):
         content = content.encode("utf-8")
     return content
 
 
-def validate_method(method: str, available_methods: dict, exit_code: int = 1) -> None:
+def validate_method(method: str, available_methods: dict[str, Any], exit_code: int = 1) -> None:
     import typer
     if method not in available_methods:
         typer.echo(

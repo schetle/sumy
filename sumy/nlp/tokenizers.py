@@ -1,5 +1,6 @@
 import re
 import nltk
+from typing import Any
 
 
 class Tokenizer(object):
@@ -28,7 +29,7 @@ class Tokenizer(object):
     def language(self) -> str:
         return self._language
 
-    def _load_sentence_tokenizer(self, language: str):
+    def _load_sentence_tokenizer(self, language: str) -> Any:
         try:
             path = "tokenizers/punkt_tab/%s.pickle" % language
             return nltk.data.load(path)

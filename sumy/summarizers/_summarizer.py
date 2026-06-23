@@ -1,9 +1,13 @@
 from collections import namedtuple
+from collections.abc import Iterable
 from operator import attrgetter
-from typing import Callable
+from typing import TYPE_CHECKING, Callable, Union
 
 from ..utils import ItemsCount
 from ..nlp.stemmers import null_stemmer
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel
 
 
 SentenceInfo = namedtuple("SentenceInfo", ("sentence", "order", "rating",))
@@ -16,7 +20,7 @@ class AbstractSummarizer(object):
 
         self._stemmer = stemmer
 
-    def __call__(self, document, sentences_count) -> tuple:
+    def __call__(self, document: "ObjectDocumentModel", sentences_count: Union[int, str, "ItemsCount"]) -> tuple:
         raise NotImplementedError("This method should be overriden in subclass")
 
     def stem_word(self, word: str) -> str:
@@ -25,7 +29,7 @@ class AbstractSummarizer(object):
     def normalize_word(self, word: str) -> str:
         return str(word).lower()
 
-    def _get_best_sentences(self, sentences, count, rating, *args, **kwargs) -> tuple:
+    def _get_best_sentences(self, sentences: Iterable, count: Union[int, "ItemsCount"], rating: Union[dict, Callable], *args, **kwargs) -> tuple:
         rate = rating
         if isinstance(rating, dict):
             assert not args and not kwargs
