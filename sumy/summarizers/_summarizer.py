@@ -7,7 +7,7 @@ from ..utils import ItemsCount
 from ..nlp.stemmers import null_stemmer
 
 if TYPE_CHECKING:
-    from ..models.dom import ObjectDocumentModel
+    from ..models.dom import ObjectDocumentModel, Sentence
 
 
 SentenceInfo = namedtuple("SentenceInfo", ("sentence", "order", "rating",))
@@ -29,7 +29,7 @@ class AbstractSummarizer(object):
     def normalize_word(self, word: str) -> str:
         return null_stemmer(word)
 
-    def _get_best_sentences(self, sentences: Iterable, count: Union[int, ItemsCount], rating: Union[dict, Callable], *args, **kwargs) -> tuple:
+    def _get_best_sentences(self, sentences: 'Iterable[Sentence]', count: Union[int, ItemsCount], rating: Union[dict, Callable], *args, **kwargs) -> tuple:
         rate = rating
         if isinstance(rating, dict):
             assert not args and not kwargs
