@@ -1,10 +1,11 @@
+from collections.abc import Iterable
 from itertools import chain
 from ...utils import cached_property
 from ._sentence import Sentence
 
 
 class Paragraph(object):
-    def __init__(self, sentences) -> None:
+    def __init__(self, sentences: Iterable[Sentence]) -> None:
         sentences = tuple(sentences)
         for sentence in sentences:
             if not isinstance(sentence, Sentence):

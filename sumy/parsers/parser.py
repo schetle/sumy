@@ -1,3 +1,6 @@
+from ..nlp.tokenizers import Tokenizer
+
+
 class DocumentParser(object):
     """Abstract parser of input format into DOM."""
 
@@ -25,7 +28,7 @@ class DocumentParser(object):
         "šeredný",
     )
 
-    def __init__(self, tokenizer) -> None:
+    def __init__(self, tokenizer: Tokenizer) -> None:
         self._tokenizer = tokenizer
 
     def tokenize_sentences(self, paragraph: str) -> tuple[str, ...]:
