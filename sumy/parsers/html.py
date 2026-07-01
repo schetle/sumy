@@ -121,6 +121,7 @@ class HtmlParser(DocumentParser):
     # Annotated-text helpers
     # ------------------------------------------------------------------
 
+    @cached_property
     def _build_annotated_paragraphs(self) -> list[list[tuple[str, frozenset[str]]]]:
         """Walk the readable HTML and return a list of *annotated paragraphs*.
 
@@ -179,7 +180,7 @@ class HtmlParser(DocumentParser):
     @cached_property
     def significant_words(self) -> tuple[str, ...]:
         words: list[str] = []
-        for paragraph in self._build_annotated_paragraphs():
+        for paragraph in self._build_annotated_paragraphs:
             for text, tags in paragraph:
                 if self._contains_any(tags, *self.SIGNIFICANT_TAGS):
                     words.extend(self.tokenize_words(text))
@@ -192,7 +193,7 @@ class HtmlParser(DocumentParser):
     @cached_property
     def stigma_words(self) -> tuple[str, ...]:
         words: list[str] = []
-        for paragraph in self._build_annotated_paragraphs():
+        for paragraph in self._build_annotated_paragraphs:
             for text, tags in paragraph:
                 if self._contains_any(tags, "a", "strike", "s"):
                     words.extend(self.tokenize_words(text))
@@ -204,7 +205,7 @@ class HtmlParser(DocumentParser):
 
     @cached_property
     def document(self) -> ObjectDocumentModel:
-        annotated_paragraphs = self._build_annotated_paragraphs()
+        annotated_paragraphs = self._build_annotated_paragraphs
 
         paragraphs: list[Paragraph] = []
         for paragraph in annotated_paragraphs:
