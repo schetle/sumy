@@ -21,6 +21,7 @@ _BLOCK_TAGS: frozenset[str] = frozenset({
 })
 
 _HEADING_TAGS: frozenset[str] = frozenset({"h1", "h2", "h3", "h4", "h5", "h6"})
+_SENTENCE_HEADING_TAGS: frozenset[str] = frozenset({"h1", "h2", "h3"})
 
 _SKIP_TAGS: frozenset[str] = frozenset({"pre", "script", "style"})
 
@@ -213,7 +214,7 @@ class HtmlParser(DocumentParser):
 
             current_text = ""
             for text, tags in paragraph:
-                if tags and ("h1" in tags or "h2" in tags or "h3" in tags):
+                if tags and tags & _SENTENCE_HEADING_TAGS:
                     sentences.append(Sentence(text, self._tokenizer, is_heading=True))
                 # skip <pre> nodes
                 elif not (tags and "pre" in tags):
