@@ -1,3 +1,5 @@
+import pytest
+
 from sumy.models.dom._sentence import Sentence
 from sumy.summarizers.sum_basic import SumBasicSummarizer
 from ..utils import build_document, build_document_from_string
@@ -111,12 +113,10 @@ def test_compute_average_probability_of_words():
     s1 = ["one"]
     s2 = ["two", "three"]
     s3 = ["two", "three", "three"]
-    EPS = 0.0001
-
-    assert abs(summarizer._compute_average_probability_of_words(word_freq, s0) - 0) < EPS
-    assert abs(summarizer._compute_average_probability_of_words(word_freq, s1) - 1/6) < EPS
-    assert abs(summarizer._compute_average_probability_of_words(word_freq, s2) - 5/12) < EPS
-    assert abs(summarizer._compute_average_probability_of_words(word_freq, s3) - 8/18) < EPS
+    assert summarizer._compute_average_probability_of_words(word_freq, s0) == pytest.approx(0, abs=1e-4)
+    assert summarizer._compute_average_probability_of_words(word_freq, s1) == pytest.approx(1/6, abs=1e-4)
+    assert summarizer._compute_average_probability_of_words(word_freq, s2) == pytest.approx(5/12, abs=1e-4)
+    assert summarizer._compute_average_probability_of_words(word_freq, s3) == pytest.approx(8/18, abs=1e-4)
 
 
 def test_compute_ratings():

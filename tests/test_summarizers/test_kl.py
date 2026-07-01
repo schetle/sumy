@@ -1,6 +1,8 @@
+import pytest
+
 from sumy.models.dom._sentence import Sentence
 from sumy.summarizers.kl import KLSummarizer
-from ..utils import build_document, build_document_from_string
+from ..utils import build_document
 from sumy.nlp.tokenizers import Tokenizer
 
 
@@ -70,20 +72,15 @@ def test_joint_freq():
 
 def test_kl_divergence():
     summarizer = _build_summarizer(EMPTY_STOP_WORDS)
-    EPS = 0.00001
 
     w1 = {"one": .35, "two": .5, "three": .15}
     w2 = {"one": 1.0/3.0, "two": 1.0/3.0, "three": 1.0/3.0}
 
-    # This value comes from scipy.stats.entropy(w2_, w1_)
-    # Note: the order of params is different
     kl_correct = 0.11475080798005841
-    assert abs(summarizer._kl_divergence(w1, w2) - kl_correct < EPS)
+    assert summarizer._kl_divergence(w1, w2) == pytest.approx(kl_correct, abs=1e-5)
 
     w1 = {"one": .1, "two": .2, "three": .7}
     w2 = {"one": .2, "two": .4, "three": .4}
 
-    # This value comes from scipy.stats.entropy(w2_, w1_)
-    # Note: the order of params is different
     kl_correct = 0.1920419931617981
-    assert abs(summarizer._kl_divergence(w1, w2) - kl_correct) < EPS
+    assert summarizer._kl_divergence(w1, w2) == pytest.approx(kl_correct, abs=1e-5)
