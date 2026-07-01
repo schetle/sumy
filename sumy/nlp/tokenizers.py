@@ -1,14 +1,9 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import re
 import nltk
 
 
 
-class Tokenizer(object):
+class Tokenizer:
     """Language dependent tokenizer of text document."""
 
     _WORD_PATTERN = re.compile(r"^[^\W\d_]+$", re.UNICODE)

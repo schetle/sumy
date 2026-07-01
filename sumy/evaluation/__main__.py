@@ -1,5 +1,3 @@
-# -*- coding: utf8 -*-
-
 """
 Sumy - evaluation of automatic text summary.
 
@@ -22,9 +20,6 @@ Options:
     --help               Displays this text.
 
 """
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
 
 import sys
 
@@ -51,7 +46,7 @@ from . import rouge_1, rouge_2, rouge_l_sentence_level, rouge_l_summary_level
 
 
 HEADERS = {
-    "User-Agent": "Sumy (Automatic text summarizer) Version/%s" % __version__,
+    "User-Agent": f"Sumy (Automatic text summarizer) Version/{__version__}",
 }
 PARSERS = {
     "html": HtmlParser,
@@ -172,16 +167,13 @@ def main(args=None):
             result = evaluate(evaluated_sentences, document.sentences)
         else:
             result = evaluate(evaluated_sentences, reference_sentences)
-        print("%s: %f" % (name, result))
+        print(f"{name}: {result:f}")
 
 
 def handle_arguments(args):
     document_format = args["--format"]
     if document_format is not None and document_format not in PARSERS:
-        raise ValueError("Unsupported format of input document. Possible values are: %s. Given: %s." % (
-            ", ".join(PARSERS.keys()),
-            document_format,
-        ))
+        raise ValueError(f"Unsupported format of input document. Possible values are: {', '.join(PARSERS.keys())}. Given: {document_format}.")
 
     parser = PARSERS["plaintext"]
     input_stream = sys.stdin

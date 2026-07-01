@@ -1,7 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
 
 import lxml.html
 from readability import Document as ReadabilityDocument
@@ -107,7 +103,7 @@ class HtmlParser(DocumentParser):
         return cls(data, tokenizer, url)
 
     def __init__(self, html_content, tokenizer, url=None):
-        super(HtmlParser, self).__init__(tokenizer)
+        super().__init__(tokenizer)
         self._url = url
         # readability-lxml expects a string; decode bytes if needed
         if isinstance(html_content, bytes):

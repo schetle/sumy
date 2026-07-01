@@ -1,8 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 from operator import attrgetter
 from itertools import chain
 from itertools import filterfalse
@@ -11,7 +6,7 @@ from ._summarizer import AbstractSummarizer
 
 class EdmundsonTitleMethod(AbstractSummarizer):
     def __init__(self, stemmer, null_words):
-        super(EdmundsonTitleMethod, self).__init__(stemmer)
+        super().__init__(stemmer)
         self._null_words = null_words
 
     def __call__(self, document, sentences_count):

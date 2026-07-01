@@ -1,7 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
 
 from ..utils import cached_property
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
@@ -19,7 +15,7 @@ class PlaintextParser(DocumentParser):
             return cls(file.read(), tokenizer)
 
     def __init__(self, text, tokenizer):
-        super(PlaintextParser, self).__init__(tokenizer)
+        super().__init__(tokenizer)
         self._text = str(text).strip()
 
     @cached_property

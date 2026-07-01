@@ -1,7 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
 
 import sys
 
@@ -34,9 +30,9 @@ def expand_resource_path(path):
 
 
 def get_stop_words(language):
-    path = expand_resource_path("stopwords/%s.txt" % language)
+    path = expand_resource_path(f"stopwords/{language}.txt")
     if not exists(path):
-        raise LookupError("Stop-words are not available for language %s." % language)
+        raise LookupError(f"Stop-words are not available for language {language}.")
     return read_stop_words(path)
 
 
@@ -45,7 +41,7 @@ def read_stop_words(filename):
         return frozenset(str(w.rstrip(), "utf-8") if isinstance(w, bytes) else w.rstrip() for w in open_file.readlines())
 
 
-class ItemsCount(object):
+class ItemsCount:
     def __init__(self, value):
         self._value = value
 
@@ -62,7 +58,7 @@ class ItemsCount(object):
         elif isinstance(self._value, (int, float)):
             return sequence[:int(self._value)]
         else:
-            ValueError("Unsuported value of items count '%s'." % self._value)
+            ValueError(f"Unsuported value of items count '{self._value}'.")
 
     def __repr__(self):
-        return "<ItemsCount: %r>" % self._value
+        return f"<ItemsCount: {self._value!r}>"

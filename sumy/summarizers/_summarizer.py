@@ -1,9 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
-
 from collections import namedtuple
 from operator import attrgetter
 from ..utils import ItemsCount
@@ -13,7 +7,7 @@ from ..nlp.stemmers import null_stemmer
 SentenceInfo = namedtuple("SentenceInfo", ("sentence", "order", "rating",))
 
 
-class AbstractSummarizer(object):
+class AbstractSummarizer:
     def __init__(self, stemmer=null_stemmer):
         if not callable(stemmer):
             raise ValueError("Stemmer has to be a callable object")

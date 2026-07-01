@@ -1,10 +1,7 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 from ...utils import cached_property
-class Sentence(object):
+
+
+class Sentence:
     __slots__ = ("_text", "_cached_property_words", "_tokenizer", "_is_heading",)
 
     def __init__(self, text, tokenizer, is_heading=False):
@@ -34,7 +31,4 @@ class Sentence(object):
         return self._text
 
     def __repr__(self):
-        return "<%s: %s>" % (
-            "Heading" if self._is_heading else "Sentence",
-            self.__str__()
-        )
+        return f"<{'Heading' if self._is_heading else 'Sentence'}: {self.__str__()}>"

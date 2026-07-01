@@ -1,5 +1,3 @@
-# -*- coding: utf8 -*-
-
 """
 Sumy - automatic text summarizer.
 
@@ -24,9 +22,6 @@ Options:
 
 """
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import sys
 
 from docopt_ng import docopt
@@ -46,7 +41,7 @@ from .summarizers.kl import KLSummarizer
 from .nlp.stemmers import Stemmer
 
 HEADERS = {
-    "User-Agent": "Sumy (Automatic text summarizer) Version/%s" % __version__,
+    "User-Agent": f"Sumy (Automatic text summarizer) Version/{__version__}",
 }
 PARSERS = {
     "html": HtmlParser,
@@ -77,10 +72,7 @@ def main(args=None):
 def handle_arguments(args, default_input_stream=sys.stdin):
     document_format = args['--format']
     if document_format is not None and document_format not in PARSERS:
-        raise ValueError("Unsupported format of input document. Possible values are: %s. Given: %s." % (
-            ", ".join(PARSERS.keys()),
-            document_format,
-        ))
+        raise ValueError(f"Unsupported format of input document. Possible values are: {', '.join(PARSERS.keys())}. Given: {document_format}.")
 
     if args["--url"] is not None:
         parser = PARSERS[document_format or "html"]

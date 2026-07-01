@@ -1,8 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 from ..models import TfDocumentModel as TfModel
 
 
@@ -27,8 +22,7 @@ def cosine_similarity(evaluated_model, reference_model):
 
     denominator = evaluated_model.magnitude * reference_model.magnitude
     if denominator == 0.0:
-        raise ValueError("Document model can't be empty. Given %r & %r" % (
-            evaluated_model, reference_model))
+        raise ValueError(f"Document model can't be empty. Given {evaluated_model!r} & {reference_model!r}")
 
     return numerator / denominator
 

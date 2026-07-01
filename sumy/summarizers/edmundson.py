@@ -1,8 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 from collections import defaultdict
 from ..nlp.stemmers import null_stemmer
 from ._summarizer import AbstractSummarizer
@@ -22,7 +17,7 @@ class EdmundsonSummarizer(AbstractSummarizer):
 
     def __init__(self, stemmer=null_stemmer, cue_weight=1.0, key_weight=0.0,
             title_weight=1.0, location_weight=1.0):
-        super(EdmundsonSummarizer, self).__init__(stemmer)
+        super().__init__(stemmer)
 
         self._ensure_correct_weights(cue_weight, key_weight, title_weight,
             location_weight)
