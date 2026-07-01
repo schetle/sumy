@@ -89,3 +89,104 @@ def test_annotated_text():
         "Tento text je tu aby vyplnil prázdne miesto v srdci súboru."
     assert str(document.paragraphs[1].sentences[1]) == \
         "Aj súbory majú predsa city."
+
+
+def test_html_from_string_document():
+    html = "<html><body><p>First sentence. Second sentence.</p></body></html>"
+    parser = HtmlParser.from_string(html, "http://example.com/", Tokenizer("english"))
+    document = parser.document
+    assert len(document.paragraphs) >= 1
+    assert any(len(p.sentences) > 0 for p in document.paragraphs)
+
+
+def test_html_significant_words():
+    html = (
+        "<html><body>"
+        "<p><strong>Important keyword</strong> and some filler text here.</p>"
+        "</body></html>"
+    )
+    parser = HtmlParser.from_string(html, "http://example.com/", Tokenizer("english"))
+    words = parser.significant_words
+    assert isinstance(words, tuple)
+    assert len(words) > 0
+    lower_words = [w.lower() for w in words]
+    assert "important" in lower_words or "keyword" in lower_words
+
+
+def test_html_significant_words_fallback():
+    html = "<html><body><p>Plain text with no significant tags at all.</p></body></html>"
+    parser = HtmlParser.from_string(html, "http://example.com/", Tokenizer("english"))
+    words = parser.significant_words
+    assert words == HtmlParser.SIGNIFICANT_WORDS
+
+
+def test_html_stigma_words():
+    html = (
+        "<html><body>"
+        '<p>Normal text. <a href="http://x.com">click here for more</a> and after.</p>'
+        "</body></html>"
+    )
+    parser = HtmlParser.from_string(html, "http://example.com/", Tokenizer("english"))
+    words = parser.stigma_words
+    assert isinstance(words, tuple)
+    assert len(words) > 0
+
+
+def test_html_stigma_words_fallback():
+    html = "<html><body><p>Plain text with no stigma tags at all.</p></body></html>"
+    parser = HtmlParser.from_string(html, "http://example.com/", Tokenizer("english"))
+    words = parser.stigma_words
+    assert words == HtmlParser.STIGMA_WORDS
+
+
+def test_html_skip_tags_and_tail_text():
+    html = (
+        "<html><body>"
+        "<p>Before code. <pre>ignored snippet</pre> After code.</p>"
+        "</body></html>"
+    )
+    parser = HtmlParser.from_string(html, "http://example.com/", Tokenizer("english"))
+    document = parser.document
+    all_text = " ".join(str(s) for p in document.paragraphs for s in p.sentences)
+    assert "ignored snippet" not in all_text
+
+
+def test_html_with_html_comments():
+    html = (
+        "<html><body>"
+        "<!-- this is a comment -->"
+        "<p>Sentence after comment.</p>"
+        "</body></html>"
+    )
+    parser = HtmlParser.from_string(html, "http://example.com/", Tokenizer("english"))
+    document = parser.document
+    assert len(document.paragraphs) >= 1
+    all_text = " ".join(str(s) for p in document.paragraphs for s in p.sentences)
+    assert "Sentence after comment" in all_text
+
+
+def test_html_paragraphs_no_headings():
+    html = (
+        "<html><body>"
+        "<p>First paragraph sentence one. First paragraph sentence two.</p>"
+        "<p>Second paragraph sentence.</p>"
+        "</body></html>"
+    )
+    parser = HtmlParser.from_string(html, "http://example.com/", Tokenizer("english"))
+    document = parser.document
+    assert len(document.paragraphs) >= 1
+    assert all(len(p.headings) == 0 for p in document.paragraphs)
+
+
+def test_html_trailing_heading():
+    html = (
+        "<html><body>"
+        "<p>Opening sentence here.</p>"
+        "<h2>Trailing heading with no body</h2>"
+        "</body></html>"
+    )
+    parser = HtmlParser.from_string(html, "http://example.com/", Tokenizer("english"))
+    document = parser.document
+    assert len(document.paragraphs) >= 1
+    headings = [h for p in document.paragraphs for h in p.headings]
+    assert len(headings) >= 1
