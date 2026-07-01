@@ -36,7 +36,7 @@ def test_tokenize_sentence():
 
     expected = (
         "I", "am", "a", "very", "nice", "sentence",
-        "with", "comma",
+        "with", "comma", "but",
     )
     assert expected == words
 
