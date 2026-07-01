@@ -16,7 +16,7 @@ class TfDocumentModel:
             raise ValueError(
                 "Tokenizer has to be given if ``words`` is not a sequence.")
         elif isinstance(words, (str, bytes)):
-            words = tokenizer.to_words(str(words))
+            words = tokenizer.to_words(words.decode("utf-8") if isinstance(words, bytes) else str(words))
         elif not isinstance(words, Sequence):
             raise ValueError(
                 "Parameter ``words`` has to be sequence or string with tokenizer given.")

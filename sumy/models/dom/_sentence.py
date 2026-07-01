@@ -8,7 +8,7 @@ class Sentence:
     __slots__ = ("_text", "_cached_property_words", "_tokenizer", "_is_heading",)
 
     def __init__(self, text: str, tokenizer: Tokenizer, is_heading: bool = False) -> None:
-        self._text = str(text).strip()
+        self._text = (text.decode("utf-8") if isinstance(text, bytes) else str(text)).strip()
         self._tokenizer = tokenizer
         self._is_heading = bool(is_heading)
 

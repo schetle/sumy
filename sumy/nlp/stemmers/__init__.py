@@ -9,7 +9,7 @@ from .czech import stem_word as czech_stemmer
 
 def null_stemmer(object: object) -> str:
     "Converts given object to unicode with lower letters."
-    return str(object).lower()
+    return (object.decode("utf-8") if isinstance(object, bytes) else str(object)).lower()
 
 
 class Stemmer:
