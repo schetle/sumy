@@ -1,7 +1,5 @@
-from __future__ import annotations
-
 from collections.abc import Generator
-from typing import Any
+from typing import Any, Self
 
 import lxml.html
 from readability import Document as ReadabilityDocument
@@ -92,16 +90,16 @@ class HtmlParser(DocumentParser):
     )
 
     @classmethod
-    def from_string(cls, string: str | bytes, url: str, tokenizer: Tokenizer) -> HtmlParser:
+    def from_string(cls, string: str | bytes, url: str, tokenizer: Tokenizer) -> Self:
         return cls(string, tokenizer, url)
 
     @classmethod
-    def from_file(cls, file_path: str, url: str, tokenizer: Tokenizer) -> HtmlParser:
+    def from_file(cls, file_path: str, url: str, tokenizer: Tokenizer) -> Self:
         with open(file_path, "rb") as file:
             return cls(file.read(), tokenizer, url)
 
     @classmethod
-    def from_url(cls, url: str, tokenizer: Tokenizer) -> HtmlParser:
+    def from_url(cls, url: str, tokenizer: Tokenizer) -> Self:
         response = urllib.urlopen(url)
         data = response.read()
         response.close()

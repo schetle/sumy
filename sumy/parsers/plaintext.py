@@ -1,4 +1,4 @@
-from __future__ import annotations
+from typing import Self
 
 from ..utils import cached_property
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
@@ -8,11 +8,11 @@ from .parser import DocumentParser
 
 class PlaintextParser(DocumentParser):
     @classmethod
-    def from_string(cls, string: str, tokenizer: Tokenizer) -> PlaintextParser:
+    def from_string(cls, string: str, tokenizer: Tokenizer) -> Self:
         return cls(string, tokenizer)
 
     @classmethod
-    def from_file(cls, file_path: str, tokenizer: Tokenizer) -> PlaintextParser:
+    def from_file(cls, file_path: str, tokenizer: Tokenizer) -> Self:
         with open(file_path) as file:
             return cls(file.read(), tokenizer)
 

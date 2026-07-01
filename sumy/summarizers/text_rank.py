@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 import math
 
@@ -8,8 +7,6 @@ from itertools import combinations
 
 from ..models.dom import ObjectDocumentModel, Sentence
 from ._summarizer import AbstractSummarizer
-
-
 class TextRankSummarizer(AbstractSummarizer):
     """Source: https://github.com/adamfabish/Reduction"""
 

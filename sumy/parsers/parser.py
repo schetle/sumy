@@ -1,8 +1,5 @@
-from __future__ import annotations
 
 from ..nlp.tokenizers import Tokenizer
-
-
 class DocumentParser:
     """Abstract parser of input format into DOM."""
 

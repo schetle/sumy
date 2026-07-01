@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 import math
 
@@ -17,8 +16,6 @@ except ImportError:
     singular_value_decomposition = None
 from ..models.dom import ObjectDocumentModel, Sentence
 from ._summarizer import AbstractSummarizer
-
-
 class LsaSummarizer(AbstractSummarizer):
     MIN_DIMENSIONS: int = 3
     REDUCTION_RATIO: float = 1/1

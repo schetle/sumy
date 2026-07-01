@@ -1,12 +1,9 @@
-from __future__ import annotations
 
 from collections.abc import Iterable
 from itertools import chain
 from ...utils import cached_property
 from ._paragraph import Paragraph
 from ._sentence import Sentence
-
-
 class ObjectDocumentModel:
     def __init__(self, paragraphs: Iterable[Paragraph]) -> None:
         self._paragraphs = tuple(paragraphs)

@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 from collections.abc import Callable
 from itertools import chain, filterfalse
@@ -6,8 +5,6 @@ from operator import attrgetter
 
 from ..models.dom import ObjectDocumentModel, Sentence
 from ._summarizer import AbstractSummarizer
-
-
 class EdmundsonTitleMethod(AbstractSummarizer):
     def __init__(self, stemmer: Callable[[str], str], null_words: frozenset[str]) -> None:
         super().__init__(stemmer)

@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 import math
 
@@ -7,8 +6,6 @@ from collections.abc import KeysView, Sequence
 from pprint import pformat
 
 from ..nlp.tokenizers import Tokenizer
-
-
 class TfDocumentModel:
     """Term-Frequency document model (term = word)."""
     def __init__(self, words: Sequence[str] | str | bytes, tokenizer: Tokenizer | None = None) -> None:

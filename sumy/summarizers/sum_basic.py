@@ -1,10 +1,7 @@
-from __future__ import annotations
 
 from ..models.dom import ObjectDocumentModel, Sentence
 from ._summarizer import AbstractSummarizer
 from ..utils import get_stop_words
-
-
 class SumBasicSummarizer(AbstractSummarizer):
     """
     SumBasic: a frequency-based summarization system that adjusts word frequencies as
@@ -68,8 +65,6 @@ class SumBasicSummarizer(AbstractSummarizer):
         for w in words_to_update:
             word_freq[w] *= word_freq[w]
         return word_freq
-
-
     def _find_index_of_best_sentence(self, word_freq: dict[str, float],
                                      sentences_as_words: list[list[str]]) -> int:
         min_possible_freq = -1
@@ -81,8 +76,6 @@ class SumBasicSummarizer(AbstractSummarizer):
                 max_value = word_freq_avg
                 best_sentence_index = i
         return best_sentence_index
-
-
     def _compute_ratings(self, sentences: tuple[Sentence, ...]) -> dict[Sentence, int]:
         word_freq = self._compute_tf(sentences)
         ratings: dict[Sentence, int] = {}

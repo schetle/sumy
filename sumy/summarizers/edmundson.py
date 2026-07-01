@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Callable, Iterable
@@ -10,11 +9,7 @@ from .edmundson_cue import EdmundsonCueMethod
 from .edmundson_key import EdmundsonKeyMethod
 from .edmundson_title import EdmundsonTitleMethod
 from .edmundson_location import EdmundsonLocationMethod
-
-
 _EMPTY_SET: frozenset[str] = frozenset()
-
-
 class EdmundsonSummarizer(AbstractSummarizer):
     _bonus_words: frozenset[str] = _EMPTY_SET
     _stigma_words: frozenset[str] = _EMPTY_SET

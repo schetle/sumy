@@ -1,12 +1,9 @@
-from __future__ import annotations
 
 import math
 
 from ..models.dom import ObjectDocumentModel, Sentence
 from ._summarizer import AbstractSummarizer
 from ..utils import get_stop_words
-
-
 class KLSummarizer(AbstractSummarizer):
     """
     Method that greedily adds sentences to a summary so long as it decreases the

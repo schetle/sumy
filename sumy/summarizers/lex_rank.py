@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 import math
 
@@ -13,8 +12,6 @@ except ImportError:
 
 from ..models.dom import ObjectDocumentModel, Sentence
 from ._summarizer import AbstractSummarizer
-
-
 class LexRankSummarizer(AbstractSummarizer):
     """
     LexRank: Graph-based Centrality as Salience in Text Summarization

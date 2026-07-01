@@ -1,11 +1,8 @@
-from __future__ import annotations
 
 from collections.abc import Callable, Iterable
 
 from ..models.dom import ObjectDocumentModel, Sentence
 from ._summarizer import AbstractSummarizer
-
-
 class EdmundsonCueMethod(AbstractSummarizer):
     def __init__(self, stemmer: Callable[[str], str], bonus_words: frozenset[str],
                  stigma_words: frozenset[str]) -> None:

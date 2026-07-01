@@ -1,12 +1,9 @@
-from __future__ import annotations
 
 from collections.abc import Iterable
 
 from ..models import TfDocumentModel
 from ..models.dom import ObjectDocumentModel, Sentence
 from ._summarizer import AbstractSummarizer
-
-
 class LuhnSummarizer(AbstractSummarizer):
     max_gap_size: int = 4
     # TODO: better recognition of significant words (automatic)

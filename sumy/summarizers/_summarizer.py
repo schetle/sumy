@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 from collections import namedtuple
 from collections.abc import Callable
@@ -8,11 +7,7 @@ from typing import Any
 from ..models.dom import ObjectDocumentModel, Sentence
 from ..utils import ItemsCount
 from ..nlp.stemmers import null_stemmer
-
-
 SentenceInfo = namedtuple("SentenceInfo", ("sentence", "order", "rating",))
-
-
 class AbstractSummarizer:
     def __init__(self, stemmer: Callable[[str], str] = null_stemmer) -> None:
         if not callable(stemmer):

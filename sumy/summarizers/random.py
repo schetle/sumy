@@ -1,11 +1,8 @@
-from __future__ import annotations
 
 import random
 
 from ..models.dom import ObjectDocumentModel, Sentence
 from ._summarizer import AbstractSummarizer
-
-
 class RandomSummarizer(AbstractSummarizer):
     """Summarizer that picks sentences randomly."""
 

@@ -1,12 +1,9 @@
-from __future__ import annotations
 
 from collections import Counter
 from collections.abc import Callable
 
 from ..models.dom import ObjectDocumentModel, Sentence
 from ._summarizer import AbstractSummarizer
-
-
 class EdmundsonKeyMethod(AbstractSummarizer):
     def __init__(self, stemmer: Callable[[str], str], bonus_words: frozenset[str]) -> None:
         super().__init__(stemmer)

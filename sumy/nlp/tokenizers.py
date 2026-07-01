@@ -1,11 +1,8 @@
-from __future__ import annotations
 
 import re
 from typing import Any
 
 import nltk
-
-
 
 class Tokenizer:
     """Language dependent tokenizer of text document."""

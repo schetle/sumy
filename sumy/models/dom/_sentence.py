@@ -1,9 +1,6 @@
-from __future__ import annotations
 
 from ...utils import cached_property
 from ...nlp.tokenizers import Tokenizer
-
-
 class Sentence:
     __slots__ = ("_text", "_cached_property_words", "_tokenizer", "_is_heading",)
 

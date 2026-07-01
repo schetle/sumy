@@ -1,11 +1,8 @@
-from __future__ import annotations
 
 from collections.abc import Iterable
 from itertools import chain
 from ...utils import cached_property
 from ._sentence import Sentence
-
-
 class Paragraph:
     __slots__ = (
         "_sentences",

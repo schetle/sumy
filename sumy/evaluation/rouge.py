@@ -1,10 +1,7 @@
-from __future__ import annotations
 
 from collections.abc import Sequence
 
 from ..models.dom import Sentence
-
-
 def _get_ngrams(n: int, text: list[str]) -> set[tuple[str, ...]]:
 	ngram_set: set[tuple[str, ...]] = set()
 	text_length = len(text)
@@ -12,8 +9,6 @@ def _get_ngrams(n: int, text: list[str]) -> set[tuple[str, ...]]:
 	for i in range (max_index_ngram_start + 1):
 		ngram_set.add(tuple(text[i:i+n]))
 	return ngram_set
-
-
 def _split_into_words(sentences: Sequence[Sentence]) -> list[str]:
 	fullTextWords: list[str] = []
 	for s in sentences:
@@ -21,20 +16,14 @@ def _split_into_words(sentences: Sequence[Sentence]) -> list[str]:
 			raise (ValueError("Object in collection must be of type Sentence"))
 		fullTextWords.extend(s.words)
 	return fullTextWords
-
-
 def _get_word_ngrams(n: int, sentences: Sequence[Sentence]) -> set[tuple[str, ...]]:
 	assert (len(sentences) > 0)
 	assert (n > 0)
 
 	words = _split_into_words(sentences)
 	return _get_ngrams(n, words)
-
-
 def _get_index_of_lcs(x: list[str], y: list[str]) -> tuple[int, int]:
 	return len(x), len(y)
-
-
 def _len_lcs(x: list[str], y: list[str]) -> int:
 	'''
 	Returns the length of the Longest Common Subsequence between sequences x
@@ -48,8 +37,6 @@ def _len_lcs(x: list[str], y: list[str]) -> int:
 	table = _lcs(x, y)
 	n, m = _get_index_of_lcs(x, y)
 	return table[n, m]
-
-
 def _lcs(x: list[str], y: list[str]) -> dict[tuple[int, int], int]:
 	'''
 	Computes the length of the longest common subsequence (lcs) between two
@@ -72,8 +59,6 @@ def _lcs(x: list[str], y: list[str]) -> dict[tuple[int, int], int]:
 			else:
 				table[i, j] = max(table[i-1, j], table[i, j-1])
 	return table
-
-
 def _recon_lcs(x: list[str], y: list[str]) -> tuple[str, ...]:
 	'''
 	Returns the Longest Subsequence between x and y.
@@ -96,8 +81,6 @@ def _recon_lcs(x: list[str], y: list[str]) -> tuple[str, ...]:
 			return _recon(i, j-1)
 	recon_tuple = tuple(map(lambda x: x[0], _recon(i, j)))
 	return recon_tuple
-
-
 def rouge_n(evaluated_sentences: Sequence[Sentence], reference_sentences: Sequence[Sentence],
             n: int = 2) -> float:
 	"""
@@ -127,8 +110,6 @@ def rouge_n(evaluated_sentences: Sequence[Sentence], reference_sentences: Sequen
 	overlapping_count = len(overlapping_ngrams)
 
 	return overlapping_count / reference_count
-
-
 def rouge_1(evaluated_sentences: Sequence[Sentence], reference_sentences: Sequence[Sentence]) -> float:
 	'''
 	Rouge-N where N=1.  This is a commonly used metric.
@@ -142,8 +123,6 @@ def rouge_1(evaluated_sentences: Sequence[Sentence], reference_sentences: Sequen
 		exactly the same.
 	'''
 	return rouge_n(evaluated_sentences, reference_sentences, 1)
-
-
 def rouge_2(evaluated_sentences: Sequence[Sentence], reference_sentences: Sequence[Sentence]) -> float:
 	'''
 	Rouge-N where N=2.  This is a commonly used metric.
@@ -157,8 +136,6 @@ def rouge_2(evaluated_sentences: Sequence[Sentence], reference_sentences: Sequen
 		exactly the same.
 	'''
 	return rouge_n(evaluated_sentences, reference_sentences, 2)
-
-
 def _f_lcs(llcs: float, m: int, n: int) -> float:
 	'''
 	Computes the LCS-based F-measure score
@@ -176,8 +153,6 @@ def _f_lcs(llcs: float, m: int, n: int) -> float:
 	num = (1 + (beta ** 2)) * r_lcs * p_lcs
 	denom = r_lcs + ((beta ** 2) * p_lcs)
 	return num / denom
-
-
 def rouge_l_sentence_level(evaluated_sentences: Sequence[Sentence],
                            reference_sentences: Sequence[Sentence]) -> float:
 	"""
@@ -211,8 +186,6 @@ def rouge_l_sentence_level(evaluated_sentences: Sequence[Sentence],
 	n = len(evaluated_words)
 	lcs = _len_lcs(evaluated_words, reference_words)
 	return _f_lcs(lcs, m, n)
-
-
 def _union_lcs(evaluated_sentences: Sequence[Sentence], reference_sentence: Sentence) -> float:
 	'''
 	Returns LCS_u(r_i, C) which is the LCS score of the union longest common subsequence
@@ -245,8 +218,6 @@ def _union_lcs(evaluated_sentences: Sequence[Sentence], reference_sentence: Sent
 	union_lcs_count = len(lcs_union)
 	union_lcs_value = union_lcs_count / combined_lcs_length
 	return union_lcs_value
-
-
 def rouge_l_summary_level(evaluated_sentences: Sequence[Sentence],
                           reference_sentences: Sequence[Sentence]) -> float:
 	"""

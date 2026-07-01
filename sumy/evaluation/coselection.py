@@ -1,9 +1,6 @@
-from __future__ import annotations
 
 from collections.abc import Iterable
 from typing import Any
-
-
 def f_score(evaluated_sentences: Iterable[Any], reference_sentences: Iterable[Any],
             weight: float = 1.0) -> float:
     """
@@ -34,8 +31,6 @@ def f_score(evaluated_sentences: Iterable[Any], reference_sentences: Iterable[An
         return 0.0
     else:
         return ((weight + 1) * p * r) / denominator
-
-
 def precision(evaluated_sentences: Iterable[Any], reference_sentences: Iterable[Any]) -> float:
     """
     Intrinsic method of evaluation for extracts. It is computed as
@@ -52,8 +47,6 @@ def precision(evaluated_sentences: Iterable[Any], reference_sentences: Iterable[
         Returns 0.0 <= P(E) <= 1.0
     """
     return _divide_evaluation(reference_sentences, evaluated_sentences)
-
-
 def recall(evaluated_sentences: Iterable[Any], reference_sentences: Iterable[Any]) -> float:
     """
     Intrinsic method of evaluation for extracts. It is computed as
@@ -70,8 +63,6 @@ def recall(evaluated_sentences: Iterable[Any], reference_sentences: Iterable[Any
         Returns 0.0 <= R(E) <= 1.0
     """
     return _divide_evaluation(evaluated_sentences, reference_sentences)
-
-
 def _divide_evaluation(numerator_sentences: Iterable[Any], denominator_sentences: Iterable[Any]) -> float:
     denominator_sentences = frozenset(denominator_sentences)
     numerator_sentences = frozenset(numerator_sentences)
