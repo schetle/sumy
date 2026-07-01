@@ -3,14 +3,10 @@
 from __future__ import absolute_import
 from __future__ import division, print_function, unicode_literals
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from io import StringIO
 
 from os.path import dirname, join, abspath
 from sumy.nlp.tokenizers import Tokenizer
-from sumy._compat import to_string, to_unicode
 from sumy.models.dom import ObjectDocumentModel, Paragraph, Sentence
 
 
@@ -18,13 +14,13 @@ _TOKENIZER = Tokenizer("czech")
 
 
 def expand_resource_path(path):
-    return join(abspath(dirname(__file__)), to_string("data"), to_string(path))
+    return join(abspath(dirname(__file__)), "data", str(path))
 
 
 def load_resource(path):
     path = expand_resource_path(path)
     with open(path, "rb") as file:
-        return to_unicode(file.read())
+        return file.read().decode("utf-8")
 
 
 def build_document(*sets_of_sentences):

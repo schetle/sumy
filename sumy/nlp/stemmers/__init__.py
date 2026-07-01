@@ -7,12 +7,9 @@ import nltk.stem.snowball as nltk_stemmers_module
 
 from .czech import stem_word as czech_stemmer
 
-from ..._compat import to_unicode
-
-
 def null_stemmer(object):
     "Converts given object to unicode with lower letters."
-    return to_unicode(object).lower()
+    return str(object).lower()
 
 
 class Stemmer(object):

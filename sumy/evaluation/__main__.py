@@ -33,7 +33,7 @@ from docopt import docopt
 from .. import __version__
 from ..utils import ItemsCount, get_stop_words
 from ..models import TfDocumentModel
-from .._compat import urllib, to_string
+from urllib import request as urllib
 from ..nlp.tokenizers import Tokenizer
 from ..parsers.html import HtmlParser
 from ..parsers.plaintext import PlaintextParser
@@ -159,7 +159,7 @@ AVAILABLE_EVALUATIONS = (
 
 
 def main(args=None):
-    args = docopt(to_string(__doc__), args, version=__version__)
+    args = docopt(str(__doc__), args, version=__version__)
     summarizer, document, items_count, reference_summary = handle_arguments(args)
 
     evaluated_sentences = summarizer(document, items_count)

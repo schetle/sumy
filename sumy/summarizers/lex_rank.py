@@ -11,7 +11,7 @@ except ImportError:
     numpy = None
 
 from ._summarizer import AbstractSummarizer
-from .._compat import Counter
+from collections import Counter
 
 
 class LexRankSummarizer(AbstractSummarizer):

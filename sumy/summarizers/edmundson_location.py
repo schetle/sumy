@@ -5,7 +5,7 @@ from __future__ import division, print_function, unicode_literals
 
 from itertools import chain
 from operator import attrgetter
-from .._compat import ffilter
+from itertools import filterfalse
 from ._summarizer import AbstractSummarizer
 
 
@@ -26,7 +26,7 @@ class EdmundsonLocationMethod(AbstractSummarizer):
 
         significant_words = chain(*map(attrgetter("words"), headings))
         significant_words = map(self.stem_word, significant_words)
-        significant_words = ffilter(self._is_null_word, significant_words)
+        significant_words = filterfalse(self._is_null_word, significant_words)
 
         return frozenset(significant_words)
 

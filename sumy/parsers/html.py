@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from __future__ import division, print_function, unicode_literals
 
 from breadability.readable import Article
-from .._compat import urllib
+from urllib import request as urllib
 from ..utils import cached_property
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
