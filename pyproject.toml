@@ -8,7 +8,7 @@ version = "0.3.0"
 description = "Module for automatic summarization of text documents and HTML pages."
 authors = [{name = "Michal Belica", email = "miso.belica@gmail.com"}]
 license = "Apache-2.0"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "docopt-ng>=0.9.0",
     "readability-lxml>=0.8.4",
@@ -44,7 +44,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
 ]
 dynamic = ["readme"]
@@ -74,13 +74,13 @@ readme = {file = ["README.rst", "CHANGELOG.rst"], content-type = "text/x-rst"}
 addopts = "--quiet --tb=short --color=yes --no-cov-on-fail"
 
 [tool.ruff]
-target-version = "py313"
+target-version = "py312"
 line-length = 160
 
 [tool.ruff.lint]
 select = ["E", "F", "W"]
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
