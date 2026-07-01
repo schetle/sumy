@@ -29,7 +29,7 @@ from __future__ import division, print_function, unicode_literals
 
 import sys
 
-from docopt import docopt
+from docopt_ng import docopt
 from . import __version__
 from .utils import ItemsCount, get_stop_words, read_stop_words
 from urllib import request as urllib
