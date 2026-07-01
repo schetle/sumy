@@ -1,5 +1,11 @@
+from __future__ import annotations
+
 from collections import namedtuple
+from collections.abc import Callable
 from operator import attrgetter
+from typing import Any
+
+from ..models.dom import ObjectDocumentModel, Sentence
 from ..utils import ItemsCount
 from ..nlp.stemmers import null_stemmer
 
@@ -8,22 +14,24 @@ SentenceInfo = namedtuple("SentenceInfo", ("sentence", "order", "rating",))
 
 
 class AbstractSummarizer:
-    def __init__(self, stemmer=null_stemmer):
+    def __init__(self, stemmer: Callable[[str], str] = null_stemmer) -> None:
         if not callable(stemmer):
             raise ValueError("Stemmer has to be a callable object")
 
-        self._stemmer = stemmer
+        self._stemmer: Callable[[str], str] = stemmer
 
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: ObjectDocumentModel, sentences_count: int) -> tuple[Sentence, ...]:
         raise NotImplementedError("This method should be overriden in subclass")
 
-    def stem_word(self, word):
+    def stem_word(self, word: str) -> str:
         return self._stemmer(self.normalize_word(word))
 
-    def normalize_word(self, word):
+    def normalize_word(self, word: str) -> str:
         return str(word).lower()
 
-    def _get_best_sentences(self, sentences, count, rating, *args, **kwargs):
+    def _get_best_sentences(self, sentences: tuple[Sentence, ...], count: int | ItemsCount,
+                            rating: dict[Sentence, float] | Callable[..., float],
+                            *args: Any, **kwargs: Any) -> tuple[Sentence, ...]:
         rate = rating
         if isinstance(rating, dict):
             assert not args and not kwargs

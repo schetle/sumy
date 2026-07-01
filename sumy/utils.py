@@ -1,18 +1,20 @@
+from __future__ import annotations
 
 import sys
-
-from functools import wraps
+from collections.abc import Callable, Sequence
 from pathlib import Path
+from functools import wraps
+from typing import Any
 
 
-def cached_property(getter):
+def cached_property(getter: Callable[..., Any]) -> property:
     """
     Decorator that converts a method into memoized property.
     The decorator works as expected only for classes with
     attribute '__dict__' and immutable properties.
     """
     @wraps(getter)
-    def decorator(self):
+    def decorator(self: Any) -> Any:
         key = "_cached_property_" + getter.__name__
 
         if not hasattr(self, key):
@@ -23,28 +25,28 @@ def cached_property(getter):
     return property(decorator)
 
 
-def expand_resource_path(path):
+def expand_resource_path(path: str | Path) -> Path:
     directory = Path(sys.modules["sumy"].__file__).resolve().parent
     return directory / "data" / str(path)
 
 
-def get_stop_words(language):
+def get_stop_words(language: str) -> frozenset[str]:
     path = expand_resource_path(f"stopwords/{language}.txt")
     if not path.exists():
         raise LookupError(f"Stop-words are not available for language {language}.")
     return read_stop_words(path)
 
 
-def read_stop_words(filename):
+def read_stop_words(filename: str | Path) -> frozenset[str]:
     with open(filename, "rb") as open_file:
         return frozenset(str(w.rstrip(), "utf-8") if isinstance(w, bytes) else w.rstrip() for w in open_file.readlines())
 
 
 class ItemsCount:
-    def __init__(self, value):
+    def __init__(self, value: int | float | str) -> None:
         self._value = value
 
-    def __call__(self, sequence):
+    def __call__(self, sequence: Sequence[Any]) -> Sequence[Any]:
         if isinstance(self._value, (str, bytes)):
             if self._value.endswith("%"):
                 total_count = len(sequence)
@@ -59,5 +61,5 @@ class ItemsCount:
         else:
             ValueError(f"Unsuported value of items count '{self._value}'.")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<ItemsCount: {self._value!r}>"

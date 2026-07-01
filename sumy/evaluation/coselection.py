@@ -1,4 +1,11 @@
-def f_score(evaluated_sentences, reference_sentences, weight=1.0):
+from __future__ import annotations
+
+from collections.abc import Iterable
+from typing import Any
+
+
+def f_score(evaluated_sentences: Iterable[Any], reference_sentences: Iterable[Any],
+            weight: float = 1.0) -> float:
     """
     Computation of F-Score measure. It is computed as
     F(E) = ( (W^2 + 1) * P(E) * R(E) ) / ( W^2 * P(E) + R(E) ), where:
@@ -29,7 +36,7 @@ def f_score(evaluated_sentences, reference_sentences, weight=1.0):
         return ((weight + 1) * p * r) / denominator
 
 
-def precision(evaluated_sentences, reference_sentences):
+def precision(evaluated_sentences: Iterable[Any], reference_sentences: Iterable[Any]) -> float:
     """
     Intrinsic method of evaluation for extracts. It is computed as
     P(E) = A / B, where:
@@ -47,7 +54,7 @@ def precision(evaluated_sentences, reference_sentences):
     return _divide_evaluation(reference_sentences, evaluated_sentences)
 
 
-def recall(evaluated_sentences, reference_sentences):
+def recall(evaluated_sentences: Iterable[Any], reference_sentences: Iterable[Any]) -> float:
     """
     Intrinsic method of evaluation for extracts. It is computed as
     R(E) = A / C, where:
@@ -65,7 +72,7 @@ def recall(evaluated_sentences, reference_sentences):
     return _divide_evaluation(evaluated_sentences, reference_sentences)
 
 
-def _divide_evaluation(numerator_sentences, denominator_sentences):
+def _divide_evaluation(numerator_sentences: Iterable[Any], denominator_sentences: Iterable[Any]) -> float:
     denominator_sentences = frozenset(denominator_sentences)
     numerator_sentences = frozenset(numerator_sentences)
 

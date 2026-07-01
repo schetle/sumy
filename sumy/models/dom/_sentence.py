@@ -1,34 +1,37 @@
+from __future__ import annotations
+
 from ...utils import cached_property
+from ...nlp.tokenizers import Tokenizer
 
 
 class Sentence:
     __slots__ = ("_text", "_cached_property_words", "_tokenizer", "_is_heading",)
 
-    def __init__(self, text, tokenizer, is_heading=False):
+    def __init__(self, text: str, tokenizer: Tokenizer, is_heading: bool = False) -> None:
         self._text = str(text).strip()
         self._tokenizer = tokenizer
         self._is_heading = bool(is_heading)
 
     @cached_property
-    def words(self):
+    def words(self) -> tuple[str, ...]:
         return self._tokenizer.to_words(self._text)
 
     @property
-    def is_heading(self):
+    def is_heading(self) -> bool:
         return self._is_heading
 
-    def __eq__(self, sentence):
+    def __eq__(self, sentence: object) -> bool:
         assert isinstance(sentence, Sentence)
         return self._is_heading is sentence._is_heading and self._text == sentence._text
 
-    def __ne__(self, sentence):
+    def __ne__(self, sentence: object) -> bool:
         return not self.__eq__(sentence)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self._is_heading, self._text))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self._text
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{'Heading' if self._is_heading else 'Sentence'}: {self.__str__()}>"

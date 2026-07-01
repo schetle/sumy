@@ -1,18 +1,26 @@
+from __future__ import annotations
+
+from collections.abc import Callable, Iterable
+
+from ..models.dom import ObjectDocumentModel, Sentence
 from ._summarizer import AbstractSummarizer
 
 
 class EdmundsonCueMethod(AbstractSummarizer):
-    def __init__(self, stemmer, bonus_words, stigma_words):
+    def __init__(self, stemmer: Callable[[str], str], bonus_words: frozenset[str],
+                 stigma_words: frozenset[str]) -> None:
         super().__init__(stemmer)
-        self._bonus_words = bonus_words
-        self._stigma_words = stigma_words
+        self._bonus_words: frozenset[str] = bonus_words
+        self._stigma_words: frozenset[str] = stigma_words
 
-    def __call__(self, document, sentences_count, bunus_word_weight, stigma_word_weight):
+    def __call__(self, document: ObjectDocumentModel, sentences_count: int,
+                 bunus_word_weight: float = 1, stigma_word_weight: float = 1) -> tuple[Sentence, ...]:
         return self._get_best_sentences(document.sentences,
             sentences_count, self._rate_sentence, bunus_word_weight,
             stigma_word_weight)
 
-    def _rate_sentence(self, sentence, bunus_word_weight, stigma_word_weight):
+    def _rate_sentence(self, sentence: Sentence, bunus_word_weight: float,
+                       stigma_word_weight: float) -> float:
         # count number of bonus/stigma words in sentece
         words = map(self.stem_word, sentence.words)
         bonus_words_count, stigma_words_count = self._count_words(words)
@@ -24,7 +32,7 @@ class EdmundsonCueMethod(AbstractSummarizer):
         # rating of sentence is (positive - negative) rating
         return bonus_rating - stigma_rating
 
-    def _count_words(self, words):
+    def _count_words(self, words: Iterable[str]) -> tuple[int, int]:
         """
         Counts number of bonus/stigma words.
 
@@ -44,8 +52,9 @@ class EdmundsonCueMethod(AbstractSummarizer):
 
         return bonus_words_count, stigma_words_count
 
-    def rate_sentences(self, document, bunus_word_weight=1, stigma_word_weight=1):
-        rated_sentences = {}
+    def rate_sentences(self, document: ObjectDocumentModel, bunus_word_weight: float = 1,
+                       stigma_word_weight: float = 1) -> dict[Sentence, float]:
+        rated_sentences: dict[Sentence, float] = {}
         for sentence in document.sentences:
             rated_sentences[sentence] = self._rate_sentence(sentence,
                 bunus_word_weight, stigma_word_weight)

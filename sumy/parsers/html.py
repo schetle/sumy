@@ -1,26 +1,31 @@
+from __future__ import annotations
+
+from collections.abc import Generator
+from typing import Any
 
 import lxml.html
 from readability import Document as ReadabilityDocument
 from urllib import request as urllib
 from ..utils import cached_property
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
+from ..nlp.tokenizers import Tokenizer
 from .parser import DocumentParser
 
 
 # Block-level elements that start a new paragraph context
-_BLOCK_TAGS = frozenset({
+_BLOCK_TAGS: frozenset[str] = frozenset({
     "p", "div", "blockquote", "ul", "ol", "dl", "table",
     "article", "section", "aside", "header", "footer",
     "li", "dd", "dt", "tr", "td", "th", "figure", "figcaption",
     "details", "summary", "main", "nav", "form", "fieldset",
 })
 
-_HEADING_TAGS = frozenset({"h1", "h2", "h3", "h4", "h5", "h6"})
+_HEADING_TAGS: frozenset[str] = frozenset({"h1", "h2", "h3", "h4", "h5", "h6"})
 
-_SKIP_TAGS = frozenset({"pre", "code", "script", "style"})
+_SKIP_TAGS: frozenset[str] = frozenset({"pre", "code", "script", "style"})
 
 
-def _has_block_children(element):
+def _has_block_children(element: Any) -> bool:
     """Return True if *element* has any direct child that is a block or heading."""
     for child in element:
         if isinstance(child.tag, str) and (child.tag in _BLOCK_TAGS or child.tag in _HEADING_TAGS):
@@ -28,7 +33,7 @@ def _has_block_children(element):
     return False
 
 
-def _iter_leaf_blocks(element):
+def _iter_leaf_blocks(element: Any) -> Generator[Any, None, None]:
     """Yield leaf block-level elements -- blocks with no block children.
 
     This avoids double-counting content inside nested ``<div>`` wrappers:
@@ -48,7 +53,7 @@ def _iter_leaf_blocks(element):
             yield from _iter_leaf_blocks(child)
 
 
-def _iter_text_with_tags(element):
+def _iter_text_with_tags(element: Any) -> Generator[tuple[str, frozenset[str]], None, None]:
     """Yield ``(text, tag_set)`` pairs for every text node under *element*.
 
     *tag_set* is a frozenset of the tag names of all ancestor elements that
@@ -77,7 +82,7 @@ def _iter_text_with_tags(element):
 class HtmlParser(DocumentParser):
     """Parser of text from HTML format into DOM."""
 
-    SIGNIFICANT_TAGS = (
+    SIGNIFICANT_TAGS: tuple[str, ...] = (
         "h1", "h2", "h3",
         "b", "strong",
         "big",
@@ -86,31 +91,31 @@ class HtmlParser(DocumentParser):
     )
 
     @classmethod
-    def from_string(cls, string, url, tokenizer):
+    def from_string(cls, string: str | bytes, url: str, tokenizer: Tokenizer) -> HtmlParser:
         return cls(string, tokenizer, url)
 
     @classmethod
-    def from_file(cls, file_path, url, tokenizer):
+    def from_file(cls, file_path: str, url: str, tokenizer: Tokenizer) -> HtmlParser:
         with open(file_path, "rb") as file:
             return cls(file.read(), tokenizer, url)
 
     @classmethod
-    def from_url(cls, url, tokenizer):
+    def from_url(cls, url: str, tokenizer: Tokenizer) -> HtmlParser:
         response = urllib.urlopen(url)
         data = response.read()
         response.close()
 
         return cls(data, tokenizer, url)
 
-    def __init__(self, html_content, tokenizer, url=None):
+    def __init__(self, html_content: str | bytes, tokenizer: Tokenizer, url: str | None = None) -> None:
         super().__init__(tokenizer)
-        self._url = url
+        self._url: str | None = url
         # readability-lxml expects a string; decode bytes if needed
         if isinstance(html_content, bytes):
             html_content = html_content.decode("utf-8", errors="replace")
-        self._readable_html = ReadabilityDocument(html_content).summary()
+        self._readable_html: str = ReadabilityDocument(html_content).summary()
 
-    def _parse_tree(self):
+    def _parse_tree(self) -> Any:
         """Return the lxml tree for the readable HTML."""
         return lxml.html.fromstring(self._readable_html)
 
@@ -118,7 +123,7 @@ class HtmlParser(DocumentParser):
     # Annotated-text helpers
     # ------------------------------------------------------------------
 
-    def _build_annotated_paragraphs(self):
+    def _build_annotated_paragraphs(self) -> list[list[tuple[str, frozenset[str]]]]:
         """Walk the readable HTML and return a list of *annotated paragraphs*.
 
         Each annotated paragraph is a list of ``(text, tags_frozenset)`` tuples
@@ -130,8 +135,8 @@ class HtmlParser(DocumentParser):
         summariser can use ``paragraph.headings``.
         """
         root = self._parse_tree()
-        paragraphs = []
-        current = []  # accumulator for the current paragraph
+        paragraphs: list[list[tuple[str, frozenset[str]]]] = []
+        current: list[tuple[str, frozenset[str]]] = []  # accumulator for the current paragraph
 
         for element in _iter_leaf_blocks(root):
             tag = element.tag
@@ -163,7 +168,7 @@ class HtmlParser(DocumentParser):
     # Public API
     # ------------------------------------------------------------------
 
-    def _contains_any(self, sequence, *args):
+    def _contains_any(self, sequence: frozenset[str] | None, *args: str) -> bool:
         if sequence is None:
             return False
 
@@ -174,8 +179,8 @@ class HtmlParser(DocumentParser):
         return False
 
     @cached_property
-    def significant_words(self):
-        words = []
+    def significant_words(self) -> tuple[str, ...]:
+        words: list[str] = []
         for paragraph in self._build_annotated_paragraphs():
             for text, tags in paragraph:
                 if self._contains_any(tags, *self.SIGNIFICANT_TAGS):
@@ -187,8 +192,8 @@ class HtmlParser(DocumentParser):
             return self.SIGNIFICANT_WORDS
 
     @cached_property
-    def stigma_words(self):
-        words = []
+    def stigma_words(self) -> tuple[str, ...]:
+        words: list[str] = []
         for paragraph in self._build_annotated_paragraphs():
             for text, tags in paragraph:
                 if self._contains_any(tags, "a", "strike", "s"):
@@ -200,12 +205,12 @@ class HtmlParser(DocumentParser):
             return self.STIGMA_WORDS
 
     @cached_property
-    def document(self):
+    def document(self) -> ObjectDocumentModel:
         annotated_paragraphs = self._build_annotated_paragraphs()
 
-        paragraphs = []
+        paragraphs: list[Paragraph] = []
         for paragraph in annotated_paragraphs:
-            sentences = []
+            sentences: list[Sentence] = []
 
             current_text = ""
             for text, tags in paragraph:
