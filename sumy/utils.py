@@ -2,7 +2,7 @@
 import sys
 
 from functools import wraps
-from os.path import dirname, abspath, join, exists
+from pathlib import Path
 
 
 def cached_property(getter):
@@ -24,14 +24,13 @@ def cached_property(getter):
 
 
 def expand_resource_path(path):
-    directory = dirname(sys.modules["sumy"].__file__)
-    directory = abspath(directory)
-    return join(directory, "data", str(path))
+    directory = Path(sys.modules["sumy"].__file__).resolve().parent
+    return directory / "data" / str(path)
 
 
 def get_stop_words(language):
     path = expand_resource_path(f"stopwords/{language}.txt")
-    if not exists(path):
+    if not path.exists():
         raise LookupError(f"Stop-words are not available for language {language}.")
     return read_stop_words(path)
 

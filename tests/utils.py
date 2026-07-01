@@ -1,6 +1,6 @@
 from io import StringIO
 
-from os.path import dirname, join, abspath
+from pathlib import Path
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.models.dom import ObjectDocumentModel, Paragraph, Sentence
 
@@ -9,7 +9,7 @@ _TOKENIZER = Tokenizer("czech")
 
 
 def expand_resource_path(path):
-    return join(abspath(dirname(__file__)), "data", str(path))
+    return Path(__file__).resolve().parent / "data" / str(path)
 
 
 def load_resource(path):
