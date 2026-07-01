@@ -85,7 +85,7 @@ class EdmundsonSummarizer(AbstractSummarizer):
         return ratings
 
     def cue_method(self, document: ObjectDocumentModel, sentences_count: int,
-                   bunus_word_value: int = 1, stigma_word_value: int = 1) -> tuple[Sentence, ...]:
+                   bunus_word_value: float = 1, stigma_word_value: float = 1) -> tuple[Sentence, ...]:
         summarization_method = self._build_cue_method_instance()
         return summarization_method(document, sentences_count, bunus_word_value,
             stigma_word_value)
@@ -116,8 +116,8 @@ class EdmundsonSummarizer(AbstractSummarizer):
         return EdmundsonTitleMethod(self._stemmer, self._null_words)
 
     def location_method(self, document: ObjectDocumentModel, sentences_count: int,
-                        w_h: int = 1, w_p1: int = 1, w_p2: int = 1,
-                        w_s1: int = 1, w_s2: int = 1) -> tuple[Sentence, ...]:
+                        w_h: float = 1, w_p1: float = 1, w_p2: float = 1,
+                        w_s1: float = 1, w_s2: float = 1) -> tuple[Sentence, ...]:
         summarization_method = self._build_location_method_instance()
         return summarization_method(document, sentences_count, w_h, w_p1, w_p2, w_s1, w_s2)
 
