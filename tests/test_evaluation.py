@@ -2,7 +2,6 @@ import pytest
 
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.parsers.plaintext import PlaintextParser
-from sumy.models.dom._sentence import Sentence
 from sumy.models import TfDocumentModel
 from sumy.evaluation import precision, recall, f_score
 from sumy.evaluation import cosine_similarity, unit_overlap
@@ -307,7 +306,7 @@ def test_rouge_l_sentence_level():
 
     assert rouge_l_sentence_level(candidate1, reference) == pytest.approx(3/4)
     assert rouge_l_sentence_level(candidate2, reference) == pytest.approx(2/4)
-    assert rouge_l_sentence_level(candidate2, reference) == pytest.approx(2/4)
+    assert rouge_l_sentence_level(candidate3, reference) == pytest.approx(2/4)
 
 
 def test_union_lcs():

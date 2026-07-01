@@ -7,7 +7,6 @@ from sumy.nlp.tokenizers import Tokenizer
 
 
 EMPTY_STOP_WORDS = []
-COMMON_STOP_WORDS = ["the", "and", "i"]
 
 
 def _build_summarizer(stop_words):

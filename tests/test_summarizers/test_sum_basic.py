@@ -2,7 +2,7 @@ import pytest
 
 from sumy.models.dom._sentence import Sentence
 from sumy.summarizers.sum_basic import SumBasicSummarizer
-from ..utils import build_document, build_document_from_string
+from ..utils import build_document
 from sumy.nlp.tokenizers import Tokenizer
 
 

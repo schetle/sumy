@@ -132,7 +132,7 @@ def _make_summarizer_and_sentence():
 
 
 def test_significant_words():
-    summarizer, sentence = _make_summarizer_and_sentence()
+    summarizer, _ = _make_summarizer_and_sentence()
     summarizer.significant_percentage = 1/5
     words = summarizer._get_significant_words((
         "wa", "wb", "wc", "wd", "we", "wf", "wg", "wh", "wi", "wj",
@@ -143,7 +143,7 @@ def test_significant_words():
 
 
 def test_stop_words_not_in_significant_words():
-    summarizer, sentence = _make_summarizer_and_sentence()
+    summarizer, _ = _make_summarizer_and_sentence()
     summarizer.stop_words = ["stop", "Halt", "SHUT", "HmMm"]
     words = summarizer._get_significant_words([
         "stop", "Stop", "StOp", "STOP",
