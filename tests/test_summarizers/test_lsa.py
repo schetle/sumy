@@ -96,10 +96,9 @@ def test_article_example():
     assert len(sentences) == 20
 
 
+@pytest.mark.skip(reason="Can't reproduce the issue.")
 def test_issue_5_svd_converges():
     """Source: https://github.com/miso-belica/sumy/issues/5"""
-    pytest.skip("Can't reproduce the issue.")
-
     parser = PlaintextParser.from_string(
         load_resource("articles/svd_converges.txt"),
         Tokenizer("english")
