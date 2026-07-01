@@ -1,10 +1,8 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
 
 import math
 
+from collections.abc import Iterable
+from typing import Any
 from warnings import warn
 
 try:
@@ -16,23 +14,22 @@ try:
     from numpy.linalg import svd as singular_value_decomposition
 except ImportError:
     singular_value_decomposition = None
+from ..models.dom import ObjectDocumentModel, Sentence
 from ._summarizer import AbstractSummarizer
-
-
 class LsaSummarizer(AbstractSummarizer):
-    MIN_DIMENSIONS = 3
-    REDUCTION_RATIO = 1/1
-    _stop_words = frozenset()
+    MIN_DIMENSIONS: int = 3
+    REDUCTION_RATIO: float = 1/1
+    _stop_words: frozenset[str] = frozenset()
 
     @property
-    def stop_words(self):
+    def stop_words(self) -> frozenset[str]:
         return self._stop_words
 
     @stop_words.setter
-    def stop_words(self, words):
+    def stop_words(self, words: Iterable[str]) -> None:
         self._stop_words = frozenset(map(self.normalize_word, words))
 
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: ObjectDocumentModel, sentences_count: int) -> tuple[Sentence, ...]:
         self._ensure_dependecies_installed()
 
         dictionary = self._create_dictionary(document)
@@ -48,18 +45,18 @@ class LsaSummarizer(AbstractSummarizer):
         return self._get_best_sentences(document.sentences, sentences_count,
             lambda s: next(ranks))
 
-    def _ensure_dependecies_installed(self):
+    def _ensure_dependecies_installed(self) -> None:
         if numpy is None:
             raise ValueError("LSA summarizer requires NumPy. Please, install it by command 'pip install numpy'.")
 
-    def _create_dictionary(self, document):
+    def _create_dictionary(self, document: ObjectDocumentModel) -> dict[str, int]:
         """Creates mapping key = word, value = row index"""
         words = map(self.normalize_word, document.words)
         unique_words = frozenset(self.stem_word(w) for w in words if w not in self._stop_words)
 
         return dict((w, i) for i, w in enumerate(unique_words))
 
-    def _create_matrix(self, document, dictionary):
+    def _create_matrix(self, document: ObjectDocumentModel, dictionary: dict[str, int]) -> Any:
         """
         Creates matrix of shape |unique words|×|sentences| where cells
         contains number of occurences of words (rows) in senteces (cols).
@@ -69,11 +66,10 @@ class LsaSummarizer(AbstractSummarizer):
         words_count = len(dictionary)
         sentences_count = len(sentences)
         if words_count < sentences_count:
-            message = (
-                "Number of words (%d) is lower than number of sentences (%d). "
+            warn(
+                f"Number of words ({words_count}) is lower than number of sentences ({sentences_count}). "
                 "LSA algorithm may not work properly."
             )
-            warn(message % (words_count, sentences_count))
 
         # create matrix |unique words|×|sentences| filled with zeroes
         matrix = numpy.zeros((words_count, sentences_count))
@@ -86,7 +82,7 @@ class LsaSummarizer(AbstractSummarizer):
 
         return matrix
 
-    def _compute_term_frequency(self, matrix, smooth=0.4):
+    def _compute_term_frequency(self, matrix: Any, smooth: float = 0.4) -> Any:
         """
         Computes TF metrics for each sentence (column) in the given matrix.
         You can read more about smoothing parameter at URL below:
@@ -105,7 +101,7 @@ class LsaSummarizer(AbstractSummarizer):
 
         return matrix
 
-    def _compute_ranks(self, sigma, v_matrix):
+    def _compute_ranks(self, sigma: Any, v_matrix: Any) -> list[float]:
         assert len(sigma) == v_matrix.shape[0], "Matrices should be multiplicable"
 
         dimensions = max(LsaSummarizer.MIN_DIMENSIONS,
@@ -113,7 +109,7 @@ class LsaSummarizer(AbstractSummarizer):
         powered_sigma = tuple(s**2 if i < dimensions else 0.0
             for i, s in enumerate(sigma))
 
-        ranks = []
+        ranks: list[float] = []
         # iterate over columns of matrix (rows of transposed matrix)
         for column_vector in v_matrix.T:
             rank = sum(s*v**2 for s, v in zip(powered_sigma, column_vector))

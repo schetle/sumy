@@ -1,23 +1,17 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
 
 import sys
-
+from collections.abc import Callable, Sequence
+from pathlib import Path
 from functools import wraps
-from os.path import dirname, abspath, join, exists
-from ._compat import to_string, to_unicode, string_types
-
-
-def cached_property(getter):
+from typing import Any
+def cached_property(getter: Callable[..., Any]) -> property:
     """
     Decorator that converts a method into memoized property.
     The decorator works as expected only for classes with
     attribute '__dict__' and immutable properties.
     """
     @wraps(getter)
-    def decorator(self):
+    def decorator(self: Any) -> Any:
         key = "_cached_property_" + getter.__name__
 
         if not hasattr(self, key):
@@ -26,32 +20,23 @@ def cached_property(getter):
         return getattr(self, key)
 
     return property(decorator)
-
-
-def expand_resource_path(path):
-    directory = dirname(sys.modules["sumy"].__file__)
-    directory = abspath(directory)
-    return join(directory, to_string("data"), to_string(path))
-
-
-def get_stop_words(language):
-    path = expand_resource_path("stopwords/%s.txt" % language)
-    if not exists(path):
-        raise LookupError("Stop-words are not available for language %s." % language)
+def expand_resource_path(path: str | Path) -> Path:
+    directory = Path(sys.modules["sumy"].__file__).resolve().parent
+    return directory / "data" / str(path)
+def get_stop_words(language: str) -> frozenset[str]:
+    path = expand_resource_path(f"stopwords/{language}.txt")
+    if not path.exists():
+        raise LookupError(f"Stop-words are not available for language {language}.")
     return read_stop_words(path)
-
-
-def read_stop_words(filename):
+def read_stop_words(filename: str | Path) -> frozenset[str]:
     with open(filename, "rb") as open_file:
-        return frozenset(to_unicode(w.rstrip()) for w in open_file.readlines())
-
-
-class ItemsCount(object):
-    def __init__(self, value):
+        return frozenset(str(w.rstrip(), "utf-8") if isinstance(w, bytes) else w.rstrip() for w in open_file.readlines())
+class ItemsCount:
+    def __init__(self, value: int | float | str) -> None:
         self._value = value
 
-    def __call__(self, sequence):
-        if isinstance(self._value, string_types):
+    def __call__(self, sequence: Sequence[Any]) -> Sequence[Any]:
+        if isinstance(self._value, (str, bytes)):
             if self._value.endswith("%"):
                 total_count = len(sequence)
                 percentage = int(self._value[:-1])
@@ -63,7 +48,7 @@ class ItemsCount(object):
         elif isinstance(self._value, (int, float)):
             return sequence[:int(self._value)]
         else:
-            ValueError("Unsuported value of items count '%s'." % self._value)
+            raise ValueError(f"Unsupported value of items count '{self._value}'.")
 
-    def __repr__(self):
-        return to_string("<ItemsCount: %r>" % self._value)
+    def __repr__(self) -> str:
+        return f"<ItemsCount: {self._value!r}>"

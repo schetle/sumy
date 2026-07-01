@@ -1,31 +1,28 @@
-# -*- coding: utf8 -*-
+from typing import Self
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
-from .._compat import to_unicode
 from ..utils import cached_property
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
+from ..nlp.tokenizers import Tokenizer
 from .parser import DocumentParser
 
 
 class PlaintextParser(DocumentParser):
     @classmethod
-    def from_string(cls, string, tokenizer):
+    def from_string(cls, string: str, tokenizer: Tokenizer) -> Self:
         return cls(string, tokenizer)
 
     @classmethod
-    def from_file(cls, file_path, tokenizer):
+    def from_file(cls, file_path: str, tokenizer: Tokenizer) -> Self:
         with open(file_path) as file:
             return cls(file.read(), tokenizer)
 
-    def __init__(self, text, tokenizer):
-        super(PlaintextParser, self).__init__(tokenizer)
-        self._text = to_unicode(text).strip()
+    def __init__(self, text: str, tokenizer: Tokenizer) -> None:
+        super().__init__(tokenizer)
+        self._text: str = (text.decode("utf-8") if isinstance(text, bytes) else str(text)).strip()
 
     @cached_property
-    def significant_words(self):
-        words = []
+    def significant_words(self) -> tuple[str, ...]:
+        words: list[str] = []
         for paragraph in self.document.paragraphs:
             for heading in paragraph.headings:
                 words.extend(heading.words)
@@ -36,13 +33,13 @@ class PlaintextParser(DocumentParser):
             return self.SIGNIFICANT_WORDS
 
     @cached_property
-    def stigma_words(self):
+    def stigma_words(self) -> tuple[str, ...]:
         return self.STIGMA_WORDS
 
     @cached_property
-    def document(self):
-        current_paragraph = []
-        paragraphs = []
+    def document(self) -> ObjectDocumentModel:
+        current_paragraph: list[Sentence | str] = []
+        paragraphs: list[Paragraph] = []
         for line in self._text.splitlines():
             line = line.strip()
             if line.isupper():
@@ -60,9 +57,9 @@ class PlaintextParser(DocumentParser):
 
         return ObjectDocumentModel(paragraphs)
 
-    def _to_sentences(self, lines):
+    def _to_sentences(self, lines: list[Sentence | str]) -> list[Sentence]:
         text = ""
-        sentence_objects = []
+        sentence_objects: list[Sentence] = []
 
         for line in lines:
             if isinstance(line, Sentence):
@@ -82,6 +79,6 @@ class PlaintextParser(DocumentParser):
 
         return sentence_objects
 
-    def _to_sentence(self, text):
+    def _to_sentence(self, text: str) -> Sentence:
         assert text.strip()
         return Sentence(text, self._tokenizer)

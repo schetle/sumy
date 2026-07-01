@@ -1,13 +1,9 @@
-# -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
-
-class DocumentParser(object):
+from ..nlp.tokenizers import Tokenizer
+class DocumentParser:
     """Abstract parser of input format into DOM."""
 
-    SIGNIFICANT_WORDS = (
+    SIGNIFICANT_WORDS: tuple[str, ...] = (
         "významný",
         "vynikající",
         "podstatný",
@@ -25,17 +21,17 @@ class DocumentParser(object):
         "optimální",
         "relevantní",
     )
-    STIGMA_WORDS = (
+    STIGMA_WORDS: tuple[str, ...] = (
         "nejhorší",
         "zlý",
         "šeredný",
     )
 
-    def __init__(self, tokenizer):
-        self._tokenizer = tokenizer
+    def __init__(self, tokenizer: Tokenizer) -> None:
+        self._tokenizer: Tokenizer = tokenizer
 
-    def tokenize_sentences(self, paragraph):
+    def tokenize_sentences(self, paragraph: object) -> tuple[str, ...]:
         return self._tokenizer.to_sentences(paragraph)
 
-    def tokenize_words(self, sentence):
+    def tokenize_words(self, sentence: object) -> tuple[str, ...]:
         return self._tokenizer.to_words(sentence)

@@ -1,40 +1,40 @@
-# -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
-from itertools import chain
+from collections.abc import Callable
+from itertools import chain, filterfalse
 from operator import attrgetter
-from .._compat import ffilter
+
+from ..models.dom import ObjectDocumentModel, Sentence
 from ._summarizer import AbstractSummarizer
-
-
 class EdmundsonLocationMethod(AbstractSummarizer):
-    def __init__(self, stemmer, null_words):
-        super(EdmundsonLocationMethod, self).__init__(stemmer)
-        self._null_words = null_words
+    def __init__(self, stemmer: Callable[[str], str], null_words: frozenset[str]) -> None:
+        super().__init__(stemmer)
+        self._null_words: frozenset[str] = null_words
 
-    def __call__(self, document, sentences_count, w_h, w_p1, w_p2, w_s1, w_s2):
+    def __call__(self, document: ObjectDocumentModel, sentences_count: int,
+                 w_h: float = 1, w_p1: float = 1, w_p2: float = 1,
+                 w_s1: float = 1, w_s2: float = 1) -> tuple[Sentence, ...]:
         significant_words = self._compute_significant_words(document)
         ratings = self._rate_sentences(document, significant_words, w_h, w_p1,
             w_p2, w_s1, w_s2)
 
         return self._get_best_sentences(document.sentences, sentences_count, ratings)
 
-    def _compute_significant_words(self, document):
+    def _compute_significant_words(self, document: ObjectDocumentModel) -> frozenset[str]:
         headings = document.headings
 
         significant_words = chain(*map(attrgetter("words"), headings))
         significant_words = map(self.stem_word, significant_words)
-        significant_words = ffilter(self._is_null_word, significant_words)
+        significant_words = filterfalse(self._is_null_word, significant_words)
 
         return frozenset(significant_words)
 
-    def _is_null_word(self, word):
+    def _is_null_word(self, word: str) -> bool:
         return word in self._null_words
 
-    def _rate_sentences(self, document, significant_words, w_h, w_p1, w_p2, w_s1, w_s2):
-        rated_sentences = {}
+    def _rate_sentences(self, document: ObjectDocumentModel, significant_words: frozenset[str],
+                        w_h: float, w_p1: float, w_p2: float,
+                        w_s1: float, w_s2: float) -> dict[Sentence, float]:
+        rated_sentences: dict[Sentence, float] = {}
         paragraphs = document.paragraphs
 
         for paragraph_order, paragraph in enumerate(paragraphs):
@@ -57,10 +57,11 @@ class EdmundsonLocationMethod(AbstractSummarizer):
 
         return rated_sentences
 
-    def _rate_sentence(self, sentence, significant_words):
+    def _rate_sentence(self, sentence: Sentence, significant_words: frozenset[str]) -> int:
         words = map(self.stem_word, sentence.words)
         return sum(w in significant_words for w in words)
 
-    def rate_sentences(self, document, w_h=1, w_p1=1, w_p2=1, w_s1=1, w_s2=1):
+    def rate_sentences(self, document: ObjectDocumentModel, w_h: float = 1, w_p1: float = 1,
+                       w_p2: float = 1, w_s1: float = 1, w_s2: float = 1) -> dict[Sentence, float]:
         significant_words = self._compute_significant_words(document)
         return self._rate_sentences(document, significant_words, w_h, w_p1, w_p2, w_s1, w_s2)
