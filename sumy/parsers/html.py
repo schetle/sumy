@@ -22,7 +22,7 @@ _BLOCK_TAGS: frozenset[str] = frozenset({
 
 _HEADING_TAGS: frozenset[str] = frozenset({"h1", "h2", "h3", "h4", "h5", "h6"})
 
-_SKIP_TAGS: frozenset[str] = frozenset({"pre", "code", "script", "style"})
+_SKIP_TAGS: frozenset[str] = frozenset({"pre", "script", "style"})
 
 
 def _has_block_children(element: Any) -> bool:
