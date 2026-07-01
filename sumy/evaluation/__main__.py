@@ -24,7 +24,7 @@ Options:
 import sys
 
 from itertools import chain
-from docopt_ng import docopt
+from docopt import docopt
 from .. import __version__
 from ..utils import ItemsCount, get_stop_words
 from ..models import TfDocumentModel

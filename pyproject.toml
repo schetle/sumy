@@ -30,7 +30,6 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Education",
-    "License :: OSI Approved :: Apache Software License",
     "Natural Language :: Czech",
     "Natural Language :: Slovak",
     "Natural Language :: English",
