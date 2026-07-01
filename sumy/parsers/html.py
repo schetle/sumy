@@ -109,11 +109,9 @@ class HtmlParser(DocumentParser):
 
     def __init__(self, html_content: str | bytes, tokenizer: Tokenizer, url: str | None = None) -> None:
         super().__init__(tokenizer)
-        self._url: str | None = url
-        # readability-lxml expects a string; decode bytes if needed
         if isinstance(html_content, bytes):
             html_content = html_content.decode("utf-8", errors="replace")
-        self._readable_html: str = ReadabilityDocument(html_content).summary()
+        self._readable_html: str = ReadabilityDocument(html_content, url=url).summary()
 
     def _parse_tree(self) -> Any:
         """Return the lxml tree for the readable HTML."""
