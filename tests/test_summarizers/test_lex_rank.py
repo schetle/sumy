@@ -1,5 +1,7 @@
 import math
 
+import pytest
+
 import sumy.summarizers.lex_rank as lex_rank_module
 
 from sumy.summarizers.lex_rank import LexRankSummarizer
@@ -11,8 +13,6 @@ from ..utils import build_document, load_resource
 
 
 def test_numpy_not_installed():
-    import pytest
-
     summarizer = LexRankSummarizer()
 
     numpy = lex_rank_module.numpy
