@@ -1,9 +1,8 @@
-import sys
 import pytest
 from io import StringIO
 from argparse import Namespace
 
-from sumy.__main__ import build_parser, handle_arguments, AVAILABLE_METHODS, PARSERS, __version__
+from sumy.__main__ import build_parser, handle_arguments, AVAILABLE_METHODS
 
 
 def _make_args(**kwargs):
