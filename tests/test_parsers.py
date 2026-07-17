@@ -87,4 +87,36 @@ def test_annotated_text(expand_resource_path):
     assert len(document.paragraphs[2].sentences) == 2
 
     assert str(document.paragraphs[2].sentences[0]) == "Tento text je tu aby vyplnil prázdne miesto v srdci súboru."
+
+
+def test_significant_words_extracted():
+    html = "<html><body><p>Hello world.</p><p><strong>important keyword</strong></p></body></html>"
+    parser = HtmlParser.from_string(html, None, Tokenizer("english"))
+    words = parser.significant_words
+    assert isinstance(words, tuple)
+    assert len(words) > 0
+    assert words != HtmlParser.SIGNIFICANT_WORDS
+
+
+def test_significant_words_fallback():
+    html = "<html><body><p>No annotation bearing elements here.</p></body></html>"
+    parser = HtmlParser.from_string(html, None, Tokenizer("english"))
+    words = parser.significant_words
+    assert words == HtmlParser.SIGNIFICANT_WORDS
+
+
+def test_stigma_words_extracted():
+    html = "<html><body><p>Hello world.</p><p><a href='#'>click here</a></p></body></html>"
+    parser = HtmlParser.from_string(html, None, Tokenizer("english"))
+    words = parser.stigma_words
+    assert isinstance(words, tuple)
+    assert len(words) > 0
+    assert words != HtmlParser.STIGMA_WORDS
+
+
+def test_stigma_words_fallback():
+    html = "<html><body><p>No stigma elements here.</p></body></html>"
+    parser = HtmlParser.from_string(html, None, Tokenizer("english"))
+    words = parser.stigma_words
+    assert words == HtmlParser.STIGMA_WORDS
     assert str(document.paragraphs[2].sentences[1]) == "Aj súbory majú predsa city."
