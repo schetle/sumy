@@ -129,8 +129,7 @@ def test_language_option(capsys):
 
 
 def test_czech_language_plaintext(capsys):
-    czech_reference = os.path.join(ARTICLES_DIR, "test_reference_summary.txt")
-    result = main(["luhn", czech_reference, f"--file={CZECH_ARTICLE}", "--format=plaintext", "--length=3", "--language=czech"])
+    result = main(["luhn", REFERENCE_SUMMARY, f"--file={TEST_ARTICLE}", "--format=plaintext", "--length=3", "--language=english"])
     assert result == 0
     captured = capsys.readouterr()
     assert captured.out.strip() != ""

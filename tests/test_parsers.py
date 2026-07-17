@@ -87,6 +87,7 @@ def test_annotated_text(expand_resource_path):
     assert len(document.paragraphs[2].sentences) == 2
 
     assert str(document.paragraphs[2].sentences[0]) == "Tento text je tu aby vyplnil prázdne miesto v srdci súboru."
+    assert str(document.paragraphs[2].sentences[1]) == "Aj súbory majú predsa city."
 
 
 def test_significant_words_extracted():
@@ -119,4 +120,3 @@ def test_stigma_words_fallback():
     parser = HtmlParser.from_string(html, None, Tokenizer("english"))
     words = parser.stigma_words
     assert words == HtmlParser.STIGMA_WORDS
-    assert str(document.paragraphs[2].sentences[1]) == "Aj súbory majú predsa city."

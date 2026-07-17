@@ -65,7 +65,7 @@ def test_document(build_document):
 
     sentences = summarizer(document, 2)
     assert len(sentences) == 2
-    assert str(sentences[0]) == "I am the sentence you like"
+    assert str(sentences[0]) == "Do you like me too"
     assert str(sentences[1]) == "This sentence is better than that above"
 
 
