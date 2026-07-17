@@ -9,7 +9,7 @@ import os
 import pytest
 
 from sumy.evaluation.__main__ import main
-from .utils import ARTICLES_DIR, TEST_ARTICLE
+from .utils import ARTICLES_DIR, TEST_ARTICLE, CZECH_ARTICLE
 
 # ---------------------------------------------------------------------------
 # Fixture paths
@@ -101,3 +101,48 @@ def test_edmundson_evaluation(capsys):
     assert result == 0
     captured = capsys.readouterr()
     assert captured.out.strip() != ""
+
+
+def test_invalid_method():
+    with pytest.raises(SystemExit) as exc_info:
+        main(["invalid-method", REFERENCE_SUMMARY, f"--file={TEST_ARTICLE}"])
+    assert exc_info.value.code == 2
+
+
+def test_length_as_count(capsys):
+    result = main(["luhn", REFERENCE_SUMMARY, f"--file={TEST_ARTICLE}", "--format=plaintext", "--length=2"])
+    assert result == 0
+    captured = capsys.readouterr()
+    assert captured.out.strip() != ""
+
+
+def test_length_as_percentage(capsys):
+    result = main(["luhn", REFERENCE_SUMMARY, f"--file={TEST_ARTICLE}", "--format=plaintext", "--length=20%"])
+    assert result == 0
+    captured = capsys.readouterr()
+    assert captured.out.strip() != ""
+
+
+def test_language_option(capsys):
+    result = main(["luhn", REFERENCE_SUMMARY, f"--file={TEST_ARTICLE}", "--format=plaintext", "--length=3", "--language=english"])
+    assert result == 0
+
+
+def test_czech_language_plaintext(capsys):
+    czech_reference = os.path.join(ARTICLES_DIR, "test_reference_summary.txt")
+    result = main(["luhn", czech_reference, f"--file={CZECH_ARTICLE}", "--format=plaintext", "--length=3", "--language=czech"])
+    assert result == 0
+    captured = capsys.readouterr()
+    assert captured.out.strip() != ""
+
+
+def test_url_input_path(capsys):
+    from unittest.mock import patch, MagicMock
+    with open(TEST_ARTICLE, "rb") as fh:
+        article_bytes = fh.read()
+    html_bytes = b"<html><body><p>" + article_bytes + b"</p></body></html>"
+    mock_response = MagicMock()
+    mock_response.read.return_value = html_bytes
+    with patch("sumy.evaluation.__main__.urlopen", return_value=mock_response):
+        result = main(["luhn", REFERENCE_SUMMARY, "--url=http://example.com/article", "--format=html", "--length=2"])
+    assert result == 0
