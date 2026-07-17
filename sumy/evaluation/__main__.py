@@ -1,39 +1,11 @@
-# -*- coding: utf8 -*-
-
-"""
-Sumy - evaluation of automatic text summary.
-
-Usage:
-    sumy_eval (random | luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) <reference_summary> [--length=<length>] [--language=<lang>]
-    sumy_eval (random | luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) <reference_summary> [--length=<length>] [--language=<lang>] --url=<url>
-    sumy_eval (random | luhn | edmundson | lsa | text-rank | lex-rank | sum-basic | kl) <reference_summary> [--length=<length>] [--language=<lang>] --file=<file_path> --format=<file_format>
-    sumy_eval --version
-    sumy_eval --help
-
-Options:
-    <reference_summary>  Path to the file with reference summary.
-    --url=<url>          URL address of summarizied message.
-    --file=<file>        Path to file with summarizied text.
-    --format=<format>    Format of input file. [default: plaintext]
-    --length=<length>    Length of summarizied text. It may be count of sentences
-                         or percentage of input text. [default: 20%]
-    --language=<lang>    Natural language of summarizied text. [default: english]
-    --version            Displays version of application.
-    --help               Displays this text.
-
-"""
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import sys
-
+from argparse import ArgumentParser
 from itertools import chain
-from docopt import docopt
+from urllib.request import Request, urlopen
+
 from .. import __version__
 from ..utils import ItemsCount, get_stop_words
 from ..models import TfDocumentModel
-from .._compat import urllib, to_string
 from ..nlp.tokenizers import Tokenizer
 from ..parsers.html import HtmlParser
 from ..parsers.plaintext import PlaintextParser
@@ -47,7 +19,7 @@ from ..summarizers.sum_basic import SumBasicSummarizer
 from ..summarizers.kl import KLSummarizer
 from ..nlp.stemmers import Stemmer
 from . import precision, recall, f_score, cosine_similarity, unit_overlap
-from . import rouge_1, rouge_2, rouge_l_sentence_level, rouge_l_summary_level 
+from . import rouge_1, rouge_2, rouge_l_sentence_level, rouge_l_summary_level
 
 
 HEADERS = {
@@ -59,88 +31,44 @@ PARSERS = {
 }
 
 
-def build_random(parser, language):
-    return RandomSummarizer()
-
-
-def build_luhn(parser, language):
-    summarizer = LuhnSummarizer(Stemmer(language))
-    summarizer.stop_words = get_stop_words(language)
-
+def build_summarizer(summarizer_class, stop_words, stemmer, parser):
+    if summarizer_class is RandomSummarizer:
+        return RandomSummarizer()
+    summarizer = summarizer_class(stemmer)
+    if summarizer_class is EdmundsonSummarizer:
+        summarizer.null_words = stop_words
+        summarizer.bonus_words = parser.significant_words
+        summarizer.stigma_words = parser.stigma_words
+    else:
+        summarizer.stop_words = stop_words
     return summarizer
 
 
-def build_edmundson(parser, language):
-    summarizer = EdmundsonSummarizer(Stemmer(language))
-    summarizer.null_words = get_stop_words(language)
-    summarizer.bonus_words = parser.significant_words
-    summarizer.stigma_words = parser.stigma_words
-
-    return summarizer
-
-
-def build_lsa(parser, language):
-    summarizer = LsaSummarizer(Stemmer(language))
-    summarizer.stop_words = get_stop_words(language)
-
-    return summarizer
-
-
-def build_text_rank(parser, language):
-    summarizer = TextRankSummarizer(Stemmer(language))
-    summarizer.stop_words = get_stop_words(language)
-
-    return summarizer
-
-
-def build_lex_rank(parser, language):
-    summarizer = LexRankSummarizer(Stemmer(language))
-    summarizer.stop_words = get_stop_words(language)
-
-    return summarizer
-
-
-def build_sum_basic(parser, language):
-    summarizer = SumBasicSummarizer(Stemmer(language))
-    summarizer.stop_words = get_stop_words(language)
-
-    return summarizer
-
-
-def build_kl(parser, language):
-    summarizer = KLSummarizer(Stemmer(language))
-    summarizer.stop_words = get_stop_words(language)
-
-    return summarizer
+def _build_tf_models(evaluated_sentences, reference_sentences):
+    evaluated_words = tuple(chain(*(s.words for s in evaluated_sentences)))
+    reference_words = tuple(chain(*(s.words for s in reference_sentences)))
+    return TfDocumentModel(evaluated_words), TfDocumentModel(reference_words)
 
 
 def evaluate_cosine_similarity(evaluated_sentences, reference_sentences):
-    evaluated_words = tuple(chain(*(s.words for s in evaluated_sentences)))
-    reference_words = tuple(chain(*(s.words for s in reference_sentences)))
-    evaluated_model = TfDocumentModel(evaluated_words)
-    reference_model = TfDocumentModel(reference_words)
-
+    evaluated_model, reference_model = _build_tf_models(evaluated_sentences, reference_sentences)
     return cosine_similarity(evaluated_model, reference_model)
 
 
 def evaluate_unit_overlap(evaluated_sentences, reference_sentences):
-    evaluated_words = tuple(chain(*(s.words for s in evaluated_sentences)))
-    reference_words = tuple(chain(*(s.words for s in reference_sentences)))
-    evaluated_model = TfDocumentModel(evaluated_words)
-    reference_model = TfDocumentModel(reference_words)
-
+    evaluated_model, reference_model = _build_tf_models(evaluated_sentences, reference_sentences)
     return unit_overlap(evaluated_model, reference_model)
 
 
 AVAILABLE_METHODS = {
-    "random": build_random,
-    "luhn": build_luhn,
-    "edmundson": build_edmundson,
-    "lsa": build_lsa,
-    "text-rank": build_text_rank,
-    "lex-rank": build_lex_rank,
-    "sum-basic": build_sum_basic,
-    "kl": build_kl,
+    "random": RandomSummarizer,
+    "luhn": LuhnSummarizer,
+    "edmundson": EdmundsonSummarizer,
+    "lsa": LsaSummarizer,
+    "text-rank": TextRankSummarizer,
+    "lex-rank": LexRankSummarizer,
+    "sum-basic": SumBasicSummarizer,
+    "kl": KLSummarizer,
 }
 
 AVAILABLE_EVALUATIONS = (
@@ -158,13 +86,36 @@ AVAILABLE_EVALUATIONS = (
 )
 
 
+def build_argument_parser():
+    parser = ArgumentParser(
+        description="Evaluation of automatic text summary.",
+        prog="sumy_eval",
+    )
+    parser.add_argument("method", choices=list(AVAILABLE_METHODS.keys()),
+                        help="Summarization algorithm to evaluate.")
+    parser.add_argument("reference_summary",
+                        help="Path to the file with reference summary.")
+    parser.add_argument("--version", action="version", version=__version__)
+    parser.add_argument("--length", default="20%",
+                        help="Length of summarized text (sentence count or %% of input). [default: 20%%]")
+    parser.add_argument("--language", default="english",
+                        help="Natural language of summarized text. [default: english]")
+    parser.add_argument("--format", choices=list(PARSERS.keys()),
+                        help="Format of input document (html or plaintext). [default: plaintext]")
+    input_group = parser.add_mutually_exclusive_group()
+    input_group.add_argument("--url", help="URL address of the web page to summarize.")
+    input_group.add_argument("--file", help="Path to the text file to summarize.")
+    return parser
+
+
 def main(args=None):
-    args = docopt(to_string(__doc__), args, version=__version__)
+    parser = build_argument_parser()
+    args = parser.parse_args(args)
     summarizer, document, items_count, reference_summary = handle_arguments(args)
 
     evaluated_sentences = summarizer(document, items_count)
     reference_document = PlaintextParser.from_string(reference_summary,
-        Tokenizer(args["--language"]))
+        Tokenizer(args.language))
     reference_sentences = reference_document.document.sentences
 
     for name, evaluate_document, evaluate in AVAILABLE_EVALUATIONS:
@@ -174,42 +125,43 @@ def main(args=None):
             result = evaluate(evaluated_sentences, reference_sentences)
         print("%s: %f" % (name, result))
 
+    return 0
+
 
 def handle_arguments(args):
-    document_format = args["--format"]
+    document_format = args.format
     if document_format is not None and document_format not in PARSERS:
         raise ValueError("Unsupported format of input document. Possible values are: %s. Given: %s." % (
             ", ".join(PARSERS.keys()),
             document_format,
         ))
 
-    parser = PARSERS["plaintext"]
+    parser_class = PARSERS["plaintext"]
     input_stream = sys.stdin
 
-    if args["--url"] is not None:
-        parser = PARSERS["html"]
-        request = urllib.Request(args["--url"], headers=HEADERS)
-        input_stream = urllib.urlopen(request)
-    elif args["--file"] is not None:
-        parser = PARSERS.get(document_format, PlaintextParser)
-        input_stream = open(args["--file"], "rb")
+    if args.url is not None:
+        parser_class = PARSERS["html"]
+        request = Request(args.url, headers=HEADERS)
+        input_stream = urlopen(request)
+    elif args.file is not None:
+        parser_class = PARSERS.get(document_format, PlaintextParser)
+        input_stream = open(args.file, "rb")
 
-    summarizer_builder = AVAILABLE_METHODS["luhn"]
-    for method, builder in AVAILABLE_METHODS.items():
-        if args[method]:
-            summarizer_builder = builder
-            break
+    summarizer_class = AVAILABLE_METHODS[args.method]
 
-    items_count = ItemsCount(args["--length"])
+    items_count = ItemsCount(args.length)
 
-    parser = parser(input_stream.read(), Tokenizer(args["--language"]))
+    doc_parser = parser_class(input_stream.read(), Tokenizer(args.language))
     if input_stream is not sys.stdin:
         input_stream.close()
 
-    with open(args["<reference_summary>"], "rb") as file:
-        reference_summmary = file.read().decode("utf8")
+    with open(args.reference_summary, "rb") as file:
+        reference_summary = file.read().decode("utf8")
 
-    return summarizer_builder(parser, args["--language"]), parser.document, items_count, reference_summmary
+    stop_words = get_stop_words(args.language)
+    stemmer = Stemmer(args.language)
+    summarizer = build_summarizer(summarizer_class, stop_words, stemmer, doc_parser)
+    return summarizer, doc_parser.document, items_count, reference_summary
 
 
 if __name__ == "__main__":

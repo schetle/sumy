@@ -1,9 +1,8 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+from __future__ import annotations
 
 import math
+from collections import Counter
+from typing import TYPE_CHECKING
 
 try:
     import numpy
@@ -11,7 +10,10 @@ except ImportError:
     numpy = None
 
 from ._summarizer import AbstractSummarizer
-from .._compat import Counter
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
+    from ..utils import ItemsCount
 
 
 class LexRankSummarizer(AbstractSummarizer):
@@ -21,17 +23,8 @@ class LexRankSummarizer(AbstractSummarizer):
     """
     threshold = 0.1
     epsilon = 0.1
-    _stop_words = frozenset()
 
-    @property
-    def stop_words(self):
-        return self._stop_words
-
-    @stop_words.setter
-    def stop_words(self, words):
-        self._stop_words = frozenset(map(self.normalize_word, words))
-
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount) -> tuple[Sentence, ...]:
         self._ensure_dependencies_installed()
 
         sentences_words = [self._to_words_set(s) for s in document.sentences]
@@ -48,10 +41,6 @@ class LexRankSummarizer(AbstractSummarizer):
     def _ensure_dependencies_installed():
         if numpy is None:
             raise ValueError("LexRank summarizer requires NumPy. Please, install it by command 'pip install numpy'.")
-
-    def _to_words_set(self, sentence):
-        words = map(self.normalize_word, sentence.words)
-        return [self.stem_word(w) for w in words if w not in self._stop_words]
 
     def _compute_tf(self, sentences):
         tf_values = map(Counter, sentences)

@@ -1,20 +1,22 @@
-# -*- coding: utf8 -*-
+from __future__ import annotations
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
-from itertools import chain
+from itertools import chain, filterfalse
 from operator import attrgetter
-from .._compat import ffilter
+from typing import TYPE_CHECKING
+
 from ._summarizer import AbstractSummarizer
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
+    from ..utils import ItemsCount
 
 
 class EdmundsonLocationMethod(AbstractSummarizer):
-    def __init__(self, stemmer, null_words):
+    def __init__(self, stemmer, null_words: frozenset[str]) -> None:
         super(EdmundsonLocationMethod, self).__init__(stemmer)
         self._null_words = null_words
 
-    def __call__(self, document, sentences_count, w_h, w_p1, w_p2, w_s1, w_s2):
+    def __call__(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount, w_h: int, w_p1: int, w_p2: int, w_s1: int, w_s2: int) -> tuple[Sentence, ...]:
         significant_words = self._compute_significant_words(document)
         ratings = self._rate_sentences(document, significant_words, w_h, w_p1,
             w_p2, w_s1, w_s2)
@@ -26,7 +28,7 @@ class EdmundsonLocationMethod(AbstractSummarizer):
 
         significant_words = chain(*map(attrgetter("words"), headings))
         significant_words = map(self.stem_word, significant_words)
-        significant_words = ffilter(self._is_null_word, significant_words)
+        significant_words = filterfalse(self._is_null_word, significant_words)
 
         return frozenset(significant_words)
 
@@ -61,6 +63,6 @@ class EdmundsonLocationMethod(AbstractSummarizer):
         words = map(self.stem_word, sentence.words)
         return sum(w in significant_words for w in words)
 
-    def rate_sentences(self, document, w_h=1, w_p1=1, w_p2=1, w_s1=1, w_s2=1):
+    def rate_sentences(self, document: ObjectDocumentModel, w_h: int = 1, w_p1: int = 1, w_p2: int = 1, w_s1: int = 1, w_s2: int = 1) -> dict[Sentence, float]:
         significant_words = self._compute_significant_words(document)
         return self._rate_sentences(document, significant_words, w_h, w_p1, w_p2, w_s1, w_s2)

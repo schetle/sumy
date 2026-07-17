@@ -1,21 +1,23 @@
-# -*- coding: utf8 -*-
+from __future__ import annotations
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
 import math
+from typing import TYPE_CHECKING
 
 from ._summarizer import AbstractSummarizer
-from ..utils import get_stop_words
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
+    from ..utils import ItemsCount
 
 
 class KLSummarizer(AbstractSummarizer):
     """
-    Method that greedily adds sentences to a summary so long as it decreases the 
+    Method that greedily adds sentences to a summary so long as it decreases the
     KL Divergence.
     Source: http://www.aclweb.org/anthology/N09-1041
     """
 
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount) -> tuple[Sentence, ...]:
         ratings = self._get_ratings(document)
         return self._get_best_sentences(document.sentences, sentences_count, ratings)
 
@@ -29,7 +31,7 @@ class KLSummarizer(AbstractSummarizer):
         return [w for s in sentences for w in s.words]
 
     def _get_content_words_in_sentence(self, sentence):
-        normalized_words = self._normalize_words(sentence.words)   
+        normalized_words = self._normalize_words(sentence.words)
         normalized_content_words = self._filter_out_stop_words(normalized_words)
         return normalized_content_words
 
@@ -50,7 +52,7 @@ class KLSummarizer(AbstractSummarizer):
         content_words = self._filter_out_stop_words(all_words)
         normalized_content_words = self._normalize_words(content_words)
         return normalized_content_words
-        
+
     def _compute_tf(self, sentences):
         '''
         Computes the normalized term frequency as explained in http://www.tfidf.com/
@@ -74,7 +76,7 @@ class KLSummarizer(AbstractSummarizer):
 
         # adds in the counts of the second list
         for k in wc2:
-            if k in joint: 
+            if k in joint:
                 joint[k] += wc2[k]
             else: joint[k] = wc2[k]
 
@@ -88,10 +90,16 @@ class KLSummarizer(AbstractSummarizer):
         '''
         Note: Could import scipy.stats and use scipy.stats.entropy(doc_freq, summary_freq)
         but this gives equivalent value without the import
+
+        Words present in summary_freq but absent from doc_freq (e.g. stop words
+        that were filtered out during TF computation) are skipped to avoid a
+        KeyError and because their document frequency is effectively zero.
         '''
         sum_val = 0
         for w in summary_freq:
-            sum_val += doc_freq[w] * math.log(doc_freq[w] / summary_freq[w])
+            d = doc_freq.get(w, 0)
+            if d > 0 and summary_freq[w] > 0:
+                sum_val += d * math.log(d / summary_freq[w])
         return sum_val
 
     def _find_index_of_best_sentence(self, kls):
@@ -111,15 +119,15 @@ class KLSummarizer(AbstractSummarizer):
 
         # get all content words once for efficiency
         sentences_as_words = [self._get_content_words_in_sentence(s) for s in sentences]
-        
+
         # Removes one sentence per iteration by adding to summary
         while len(sentences_list) > 0:
             # will store all the kls values for this pass
             kls = []
-            
+
             # converts summary to word list
             summary_as_word_list = self._get_all_words_in_doc(summary)
-            
+
             for s in sentences_as_words:
                 # calculates the joint frequency through combining the word lists
                 joint_freq = self._joint_freq(s, summary_as_word_list)
@@ -137,4 +145,3 @@ class KLSummarizer(AbstractSummarizer):
             ratings[best_sentence] =  -1 * len(ratings)
 
         return ratings
-

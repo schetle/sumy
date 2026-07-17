@@ -1,55 +1,87 @@
-# -*- coding: utf8 -*-
+import pytest
+from io import StringIO
+from argparse import Namespace
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
-import unittest
-
-from docopt import docopt, DocoptExit
-from sumy.__main__ import __doc__ as main_doc
-from sumy.__main__ import handle_arguments, to_string, __version__
-from .utils import StringIO
+from sumy.__main__ import build_parser, handle_arguments, AVAILABLE_METHODS
 
 
-class TestMain(unittest.TestCase):
-    DEFAULT_ARGS = {
-        '--file': None,
-        '--format': None,
-        '--help': False,
-        '--language': 'english',
-        '--length': '20%',
-        '--stopwords': None,
-        '--url': None,
-        '--version': False,
-        'edmundson': False,
-        'lex-rank': False,
-        'lsa': True,
-        'luhn': False,
-        'text-rank': False,
-        'sum-basic': False,
-        'kl': False,
+def _make_args(**kwargs):
+    """Build an argparse Namespace from keyword arguments with sensible defaults."""
+    defaults = {
+        'method': 'lsa',
+        'length': '20%',
+        'language': 'english',
+        'stopwords': None,
+        'format': None,
+        'url': None,
+        'file': None,
     }
+    defaults.update(kwargs)
+    return Namespace(**defaults)
 
-    def test_ok_args(self):
-        docopt(to_string(main_doc), 'luhn --url=URL --format=FORMAT'.split(), version=__version__)
 
-    def test_args_none(self):
-        self.assertRaises(DocoptExit, docopt, to_string(main_doc), None, version=__version__)
+def test_parser_creates_successfully():
+    parser = build_parser()
+    assert parser is not None
 
-    def test_args_just_command(self):
-        args = docopt(to_string(main_doc), ['lsa'], version=__version__)
-        self.assertEqual(self.DEFAULT_ARGS, args)
 
-    def test_args_two_commands(self):
-        self.assertRaises(DocoptExit, docopt, to_string(main_doc), 'lsa luhn'.split(), version=__version__)
+def test_parser_valid_methods():
+    parser = build_parser()
+    for method in AVAILABLE_METHODS:
+        args = parser.parse_args([method])
+        assert args.method == method
 
-    def test_args_url_and_file(self):
-        self.assertRaises(DocoptExit, docopt, to_string(main_doc), 'lsa --url=URL --file=FILE'.split(), version=__version__)
 
-    def test_handle_default_arguments(self):
-        handle_arguments(self.DEFAULT_ARGS, default_input_stream=StringIO("Whatever."))
+def test_parser_default_length():
+    parser = build_parser()
+    args = parser.parse_args(['lsa'])
+    assert args.length == '20%'
 
-    def test_handle_wrong_format(self):
-        wrong_args = self.DEFAULT_ARGS.copy()
-        wrong_args.update({'--url': 'URL', '--format': 'text'})
-        self.assertRaises(ValueError, handle_arguments, wrong_args, default_input_stream=StringIO("Whatever."))
+
+def test_parser_default_language():
+    parser = build_parser()
+    args = parser.parse_args(['lsa'])
+    assert args.language == 'english'
+
+
+def test_parser_invalid_method_raises():
+    parser = build_parser()
+    with pytest.raises(SystemExit):
+        parser.parse_args(['klingon_summarizer'])
+
+
+def test_handle_default_arguments():
+    args = _make_args()
+    summarizer, doc_parser, items_count = handle_arguments(
+        args, default_input_stream=StringIO("Whatever.")
+    )
+    assert summarizer is not None
+    assert doc_parser is not None
+    assert items_count is not None
+
+
+def test_handle_wrong_format_raises():
+    args = _make_args(url='http://example.com', format='text')
+    with pytest.raises(ValueError):
+        handle_arguments(args, default_input_stream=StringIO("Whatever."))
+
+
+def test_handle_plaintext_format():
+    args = _make_args(format='plaintext')
+    summarizer, doc_parser, items_count = handle_arguments(
+        args, default_input_stream=StringIO("This is a sentence.")
+    )
+    assert summarizer is not None
+
+
+def test_version_accessible():
+    from sumy import __version__ as pkg_version
+    assert isinstance(pkg_version, str)
+    assert len(pkg_version) > 0
+
+
+def test_url_and_file_mutually_exclusive():
+    parser = build_parser()
+    with pytest.raises(SystemExit) as exc_info:
+        parser.parse_args(['lsa', '--url=http://example.com', '--file=some.txt'])
+    assert exc_info.value.code == 2

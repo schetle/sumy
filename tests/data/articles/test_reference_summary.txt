@@ -1,0 +1,5 @@
+Automatic text summarization is the process of reducing a text document with a computer program in order to create a summary that retains the most important points of the original document.
+There are broadly two types of summarization: extractive and abstractive summarization.
+Extractive summarization methods work by selecting a subset of existing words, phrases or sentences from the original text to form the summary.
+The Luhn heuristic method was one of the earliest approaches to automatic summarization, proposed by Hans Peter Luhn in 1958.
+Evaluation of automatic summarization systems is typically done using the ROUGE metric.

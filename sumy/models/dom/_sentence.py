@@ -1,44 +1,47 @@
-# -*- coding: utf8 -*-
+from __future__ import annotations
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+from functools import cached_property
+from typing import TYPE_CHECKING
 
-from ...utils import cached_property
-from ..._compat import to_unicode, to_string, unicode_compatible
+from ...utils import _ensure_str
+
+if TYPE_CHECKING:
+    from ...nlp.tokenizers import Tokenizer
 
 
-@unicode_compatible
 class Sentence(object):
-    __slots__ = ("_text", "_cached_property_words", "_tokenizer", "_is_heading",)
-
-    def __init__(self, text, tokenizer, is_heading=False):
-        self._text = to_unicode(text).strip()
+    def __init__(self, text: str | bytes, tokenizer: "Tokenizer", is_heading: bool = False) -> None:
+        self._text = _ensure_str(text).strip()
         self._tokenizer = tokenizer
         self._is_heading = bool(is_heading)
 
     @cached_property
-    def words(self):
+    def words(self) -> tuple[str, ...]:
         return self._tokenizer.to_words(self._text)
 
     @property
-    def is_heading(self):
+    def is_heading(self) -> bool:
         return self._is_heading
 
-    def __eq__(self, sentence):
-        assert isinstance(sentence, Sentence)
+    def __eq__(self, sentence: object) -> bool:
+        if not isinstance(sentence, Sentence):
+            return NotImplemented
         return self._is_heading is sentence._is_heading and self._text == sentence._text
 
-    def __ne__(self, sentence):
-        return not self.__eq__(sentence)
+    def __ne__(self, sentence: object) -> bool:
+        result = self.__eq__(sentence)
+        if result is NotImplemented:
+            return result
+        return not result
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self._is_heading, self._text))
 
-    def __unicode__(self):
+    def __str__(self) -> str:
         return self._text
 
-    def __repr__(self):
-        return to_string("<%s: %s>") % (
+    def __repr__(self) -> str:
+        return "<%s: %s>" % (
             "Heading" if self._is_heading else "Sentence",
             self.__str__()
         )

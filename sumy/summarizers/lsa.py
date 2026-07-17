@@ -1,10 +1,8 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+from __future__ import annotations
 
 import math
 
+from typing import TYPE_CHECKING
 from warnings import warn
 
 try:
@@ -18,21 +16,16 @@ except ImportError:
     singular_value_decomposition = None
 from ._summarizer import AbstractSummarizer
 
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
+    from ..utils import ItemsCount
+
 
 class LsaSummarizer(AbstractSummarizer):
     MIN_DIMENSIONS = 3
     REDUCTION_RATIO = 1/1
-    _stop_words = frozenset()
 
-    @property
-    def stop_words(self):
-        return self._stop_words
-
-    @stop_words.setter
-    def stop_words(self, words):
-        self._stop_words = frozenset(map(self.normalize_word, words))
-
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount) -> tuple[Sentence, ...]:
         self._ensure_dependecies_installed()
 
         dictionary = self._create_dictionary(document)

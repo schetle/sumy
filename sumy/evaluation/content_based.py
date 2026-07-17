@@ -1,12 +1,9 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+from __future__ import annotations
 
 from ..models import TfDocumentModel as TfModel
 
 
-def cosine_similarity(evaluated_model, reference_model):
+def cosine_similarity(evaluated_model: TfModel, reference_model: TfModel) -> float:
     """
     Computes cosine similarity of two text documents. Each document
     has to be represented as TF model of non-empty document.
@@ -33,7 +30,7 @@ def cosine_similarity(evaluated_model, reference_model):
     return numerator / denominator
 
 
-def unit_overlap(evaluated_model, reference_model):
+def unit_overlap(evaluated_model: TfModel, reference_model: TfModel) -> float:
     """
     Computes unit overlap of two text documents. Documents
     has to be represented as TF models of non-empty document.

@@ -1,20 +1,22 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+from __future__ import annotations
 
 from operator import attrgetter
-from itertools import chain
-from .._compat import ffilter
+from itertools import chain, filterfalse
+from typing import TYPE_CHECKING
+
 from ._summarizer import AbstractSummarizer
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
+    from ..utils import ItemsCount
 
 
 class EdmundsonTitleMethod(AbstractSummarizer):
-    def __init__(self, stemmer, null_words):
+    def __init__(self, stemmer, null_words: frozenset[str]) -> None:
         super(EdmundsonTitleMethod, self).__init__(stemmer)
         self._null_words = null_words
 
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount) -> tuple[Sentence, ...]:
         sentences = document.sentences
         significant_words = self._compute_significant_words(document)
 
@@ -26,7 +28,7 @@ class EdmundsonTitleMethod(AbstractSummarizer):
 
         significant_words = chain(*heading_words)
         significant_words = map(self.stem_word, significant_words)
-        significant_words = ffilter(self._is_null_word, significant_words)
+        significant_words = filterfalse(self._is_null_word, significant_words)
 
         return frozenset(significant_words)
 
@@ -37,10 +39,10 @@ class EdmundsonTitleMethod(AbstractSummarizer):
         words = map(self.stem_word, sentence.words)
         return sum(w in significant_words for w in words)
 
-    def rate_sentences(self, document):
+    def rate_sentences(self, document: ObjectDocumentModel) -> dict[Sentence, int]:
         significant_words = self._compute_significant_words(document)
 
-        rated_sentences = {}
+        rated_sentences: dict[Sentence, int] = {}
         for sentence in document.sentences:
             rated_sentences[sentence] = self._rate_sentence(sentence,
                 significant_words)

@@ -1,57 +1,39 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+from __future__ import annotations
 
 import sys
 
-from functools import wraps
+from collections.abc import Sequence
 from os.path import dirname, abspath, join, exists
-from ._compat import to_string, to_unicode, string_types
 
 
-def cached_property(getter):
-    """
-    Decorator that converts a method into memoized property.
-    The decorator works as expected only for classes with
-    attribute '__dict__' and immutable properties.
-    """
-    @wraps(getter)
-    def decorator(self):
-        key = "_cached_property_" + getter.__name__
-
-        if not hasattr(self, key):
-            setattr(self, key, getter(self))
-
-        return getattr(self, key)
-
-    return property(decorator)
+def _ensure_str(obj: object) -> str:
+    return obj.decode("utf-8") if isinstance(obj, bytes) else str(obj)
 
 
-def expand_resource_path(path):
+def expand_resource_path(path: str) -> str:
     directory = dirname(sys.modules["sumy"].__file__)
     directory = abspath(directory)
-    return join(directory, to_string("data"), to_string(path))
+    return join(directory, "data", str(path))
 
 
-def get_stop_words(language):
+def get_stop_words(language: str) -> frozenset[str]:
     path = expand_resource_path("stopwords/%s.txt" % language)
     if not exists(path):
         raise LookupError("Stop-words are not available for language %s." % language)
     return read_stop_words(path)
 
 
-def read_stop_words(filename):
+def read_stop_words(filename: str) -> frozenset[str]:
     with open(filename, "rb") as open_file:
-        return frozenset(to_unicode(w.rstrip()) for w in open_file.readlines())
+        return frozenset(_ensure_str(w.rstrip()) for w in open_file.readlines())
 
 
 class ItemsCount(object):
-    def __init__(self, value):
+    def __init__(self, value: str | int | float) -> None:
         self._value = value
 
-    def __call__(self, sequence):
-        if isinstance(self._value, string_types):
+    def __call__(self, sequence: Sequence) -> Sequence:
+        if isinstance(self._value, str):
             if self._value.endswith("%"):
                 total_count = len(sequence)
                 percentage = int(self._value[:-1])
@@ -63,7 +45,7 @@ class ItemsCount(object):
         elif isinstance(self._value, (int, float)):
             return sequence[:int(self._value)]
         else:
-            ValueError("Unsuported value of items count '%s'." % self._value)
+            raise ValueError("Unsuported value of items count '%s'." % self._value)
 
-    def __repr__(self):
-        return to_string("<ItemsCount: %r>" % self._value)
+    def __repr__(self) -> str:
+        return "<ItemsCount: %r>" % self._value

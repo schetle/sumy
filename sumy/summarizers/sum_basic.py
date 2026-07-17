@@ -1,22 +1,23 @@
-# -*- coding: utf8 -*-
+from __future__ import annotations
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-import math
+from typing import TYPE_CHECKING
 
 from ._summarizer import AbstractSummarizer
-from ..utils import get_stop_words
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
+    from ..utils import ItemsCount
 
 
 class SumBasicSummarizer(AbstractSummarizer):
     """
-    SumBasic: a frequency-based summarization system that adjusts word frequencies as 
+    SumBasic: a frequency-based summarization system that adjusts word frequencies as
     sentences are extracted.
     Source: http://www.cis.upenn.edu/~nenkova/papers/ipm.pdf
 
     """
 
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount) -> tuple[Sentence, ...]:
         sentences = document.sentences
         ratings = self._compute_ratings(sentences)
         return self._get_best_sentences(document.sentences, sentences_count, ratings)
@@ -25,7 +26,7 @@ class SumBasicSummarizer(AbstractSummarizer):
         return [w for s in sentences for w in s.words]
 
     def _get_content_words_in_sentence(self, sentence):
-        normalized_words = self._normalize_words(sentence.words)   
+        normalized_words = self._normalize_words(sentence.words)
         normalized_content_words = self._filter_out_stop_words(normalized_words)
         return normalized_content_words
 
@@ -63,7 +64,7 @@ class SumBasicSummarizer(AbstractSummarizer):
             word_freq_sum = sum([word_freq_in_doc[w] for w in content_words_in_sentence])
             word_freq_avg = word_freq_sum / content_words_count
             return word_freq_avg
-        else: 
+        else:
             return 0
 
     def _update_tf(self, word_freq, words_to_update):
@@ -78,7 +79,7 @@ class SumBasicSummarizer(AbstractSummarizer):
         best_sentence_index = 0
         for i, words in enumerate(sentences_as_words):
             word_freq_avg = self._compute_average_probability_of_words(word_freq, words)
-            if (word_freq_avg > max_value): 
+            if (word_freq_avg > max_value):
                 max_value = word_freq_avg
                 best_sentence_index = i
         return best_sentence_index
@@ -87,13 +88,13 @@ class SumBasicSummarizer(AbstractSummarizer):
     def _compute_ratings(self, sentences):
         word_freq = self._compute_tf(sentences)
         ratings = {}
-        
+
         # make it a list so that it can be modified
         sentences_list = list(sentences)
 
         # get all content words once for efficiency
         sentences_as_words = [self._get_content_words_in_sentence(s) for s in sentences]
-        
+
         # Removes one sentence per iteration by adding to summary
         while len(sentences_list) > 0:
             best_sentence_index = self._find_index_of_best_sentence(word_freq, sentences_as_words)

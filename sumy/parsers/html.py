@@ -1,106 +1,81 @@
-# -*- coding: utf8 -*-
+from __future__ import annotations
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+from functools import cached_property
+from typing import TYPE_CHECKING
+from urllib.request import urlopen
+import lxml.html
+from readability import Document
 
-from breadability.readable import Article
-from .._compat import urllib
-from ..utils import cached_property
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
+
+if TYPE_CHECKING:
+    from ..nlp.tokenizers import Tokenizer
 
 
 class HtmlParser(DocumentParser):
     """Parser of text from HTML format into DOM."""
 
-    SIGNIFICANT_TAGS = (
-        "h1", "h2", "h3",
-        "b", "strong",
-        "big",
-        "dfn",
-        "em",
-    )
+    SIGNIFICANT_TAGS = ("h1", "h2", "h3", "b", "strong", "big", "dfn", "em")
+    STIGMA_TAGS = ("a", "strike", "s")
+    HEADING_TAGS = ("h1", "h2", "h3")
 
     @classmethod
-    def from_string(cls, string, url, tokenizer):
+    def from_string(cls, string: str | bytes, url: str | None, tokenizer: Tokenizer) -> HtmlParser:
         return cls(string, tokenizer, url)
 
     @classmethod
-    def from_file(cls, file_path, url, tokenizer):
-        with open(file_path, "rb") as file:
-            return cls(file.read(), tokenizer, url)
+    def from_file(cls, file_path: str, url: str | None, tokenizer: Tokenizer) -> HtmlParser:
+        with open(file_path, "rb") as f:
+            return cls(f.read(), tokenizer, url)
 
     @classmethod
-    def from_url(cls, url, tokenizer):
-        response = urllib.urlopen(url)
+    def from_url(cls, url: str, tokenizer: Tokenizer) -> HtmlParser:
+        response = urlopen(url)
         data = response.read()
         response.close()
-
         return cls(data, tokenizer, url)
 
-    def __init__(self, html_content, tokenizer, url=None):
-        super(HtmlParser, self).__init__(tokenizer)
-        self._article = Article(html_content, url)
+    def __init__(self, html_content: str | bytes, tokenizer: Tokenizer, url: str | None = None) -> None:
+        super().__init__(tokenizer)
+        if isinstance(html_content, bytes):
+            html_content = html_content.decode("utf-8", errors="replace")
+        doc = Document(html_content)
+        summary_html = doc.summary(html_partial=True)
+        self._root = lxml.html.fromstring(summary_html)
 
-    @cached_property
-    def significant_words(self):
+    def _words_for_tags(self, tags: tuple[str, ...], fallback: tuple[str, ...]) -> tuple[str, ...]:
         words = []
-        for paragraph in self._article.main_text:
-            for text, annotations in paragraph:
-                if self._contains_any(annotations, *self.SIGNIFICANT_TAGS):
-                    words.extend(self.tokenize_words(text))
-
-        if words:
-            return tuple(words)
-        else:
-            return self.SIGNIFICANT_WORDS
+        tag_set = set(tags)
+        for element in self._root.iter():
+            if element.tag in tag_set and element.text_content().strip():
+                if not any(anc.tag in tag_set for anc in element.iterancestors()):
+                    words.extend(self.tokenize_words(element.text_content()))
+        return tuple(words) if words else fallback
 
     @cached_property
-    def stigma_words(self):
-        words = []
-        for paragraph in self._article.main_text:
-            for text, annotations in paragraph:
-                if self._contains_any(annotations, "a", "strike", "s"):
-                    words.extend(self.tokenize_words(text))
-
-        if words:
-            return tuple(words)
-        else:
-            return self.STIGMA_WORDS
-
-    def _contains_any(self, sequence, *args):
-        if sequence is None:
-            return False
-
-        for item in args:
-            if item in sequence:
-                return True
-
-        return False
+    def significant_words(self) -> tuple[str, ...]:
+        return self._words_for_tags(self.SIGNIFICANT_TAGS, self.SIGNIFICANT_WORDS)
 
     @cached_property
-    def document(self):
-        # "a", "abbr", "acronym", "b", "big", "blink", "blockquote", "cite", "code",
-        # "dd", "del", "dfn", "dir", "dl", "dt", "em", "h", "h1", "h2", "h3", "h4",
-        # "h5", "h6", "i", "ins", "kbd", "li", "marquee", "menu", "ol", "pre", "q",
-        # "s", "samp", "strike", "strong", "sub", "sup", "tt", "u", "ul", "var",
+    def stigma_words(self) -> tuple[str, ...]:
+        return self._words_for_tags(self.STIGMA_TAGS, self.STIGMA_WORDS)
 
-        annotated_text = self._article.main_text
-
+    @cached_property
+    def document(self) -> ObjectDocumentModel:
         paragraphs = []
-        for paragraph in annotated_text:
-            sentences = []
-
-            current_text = ""
-            for text, annotations in paragraph:
-                if annotations and ("h1" in annotations or "h2" in annotations or "h3" in annotations):
+        for element in self._root.iter():
+            if element.tag in ("p", "h1", "h2", "h3"):
+                text = element.text_content().strip()
+                if not text:
+                    continue
+                sentences = []
+                is_heading = element.tag in self.HEADING_TAGS
+                if is_heading:
                     sentences.append(Sentence(text, self._tokenizer, is_heading=True))
-                # skip <pre> nodes
-                elif not (annotations and "pre" in annotations):
-                    current_text += " " + text
-
-            new_sentences = self.tokenize_sentences(current_text)
-            sentences.extend(Sentence(s, self._tokenizer) for s in new_sentences)
-            paragraphs.append(Paragraph(sentences))
-
+                else:
+                    for s in self.tokenize_sentences(text):
+                        sentences.append(Sentence(s, self._tokenizer))
+                if sentences:
+                    paragraphs.append(Paragraph(sentences))
         return ObjectDocumentModel(paragraphs)

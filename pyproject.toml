@@ -1,0 +1,81 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sumy"
+version = "0.3.0"
+description = "Module for automatic summarization of text documents and HTML pages."
+readme = "README.rst"
+license = { text = "Apache License, Version 2.0" }
+authors = [
+    { name = "Michal Belica", email = "miso.belica@gmail.com" },
+]
+keywords = [
+    "data mining",
+    "automatic summarization",
+    "data reduction",
+    "web-data extraction",
+    "NLP",
+    "natural language processing",
+    "latent semantic analysis",
+    "LSA",
+    "TextRank",
+    "LexRank",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: Czech",
+    "Natural Language :: Slovak",
+    "Natural Language :: English",
+    "Natural Language :: German",
+    "Natural Language :: French",
+    "Topic :: Education",
+    "Topic :: Internet",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Text Processing :: Filters",
+    "Topic :: Text Processing :: Linguistic",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "readability-lxml>=0.8",
+    "nltk>=3.8",
+    "lxml>=4.9",
+]
+
+[project.urls]
+Homepage = "https://github.com/miso-belica/sumy"
+
+[project.optional-dependencies]
+LSA = ["numpy"]
+LexRank = ["numpy"]
+dev = ["pytest>=7", "pytest-cov", "mypy"]
+
+[project.scripts]
+sumy = "sumy.__main__:main"
+sumy_eval = "sumy.evaluation.__main__:main"
+
+[tool.pytest.ini_options]
+addopts = "--tb=short --color=yes --cov=sumy --cov-report=term-missing"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["sumy"]
+
+[tool.setuptools.package-data]
+sumy = ["data/stopwords/*.txt"]
+
+[tool.pycodestyle]
+max-line-length = 160
