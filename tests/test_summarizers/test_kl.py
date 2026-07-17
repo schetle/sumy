@@ -1,3 +1,5 @@
+import math
+
 from sumy.models.dom._sentence import Sentence
 from sumy.summarizers.kl import KLSummarizer
 from sumy.nlp.tokenizers import Tokenizer
@@ -86,3 +88,13 @@ def test_kl_divergence():
     # Note: the order of params is different
     kl_correct = 0.1920419931617981
     assert abs(summarizer._kl_divergence(w1, w2) - kl_correct) < EPS
+
+
+def test_kl_divergence_word_absent_from_doc_freq():
+    summarizer = _build_summarizer(EMPTY_STOP_WORDS)
+
+    summary_freq = {"one": 0.5, "extra": 0.5}
+    doc_freq = {"one": 1.0}  # "extra" absent => d == 0, skipped
+
+    expected = 1.0 * math.log(1.0 / 0.5)
+    assert abs(summarizer._kl_divergence(summary_freq, doc_freq) - expected) < 1e-9
