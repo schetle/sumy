@@ -6,10 +6,13 @@ algorithm by calling main() with argparse-style argument lists and verifying
 correct exit behaviour and non-empty output.
 """
 
+import os
 import pytest
 
 from sumy.__main__ import main
 from .utils import DATA_DIR, ARTICLES_DIR, TEST_ARTICLE, CZECH_ARTICLE
+
+STOPWORDS_FILE = os.path.join(DATA_DIR, "stopwords", "language.txt")
 
 
 # ===========================================================================
@@ -179,3 +182,39 @@ def test_czech_language_plaintext(capsys):
     assert result == 0
     captured = capsys.readouterr()
     assert captured.out.strip() != ""
+
+
+def test_custom_stopwords_file(capsys):
+    """--stopwords should load stop words from the given file and still produce output."""
+    result = main([
+        "luhn",
+        f"--file={TEST_ARTICLE}",
+        "--format=plaintext",
+        "--length=3",
+        f"--stopwords={STOPWORDS_FILE}",
+    ])
+    assert result == 0
+    captured = capsys.readouterr()
+    assert captured.out.strip() != ""
+
+
+def test_url_input_path(capsys):
+    """--url should open the URL via urlopen and summarize the returned HTML."""
+    from unittest.mock import patch, MagicMock
+
+    with open(TEST_ARTICLE, "rb") as fh:
+        article_bytes = fh.read()
+
+    html_bytes = b"<html><body><p>" + article_bytes + b"</p></body></html>"
+
+    mock_response = MagicMock()
+    mock_response.read.return_value = html_bytes
+
+    with patch("sumy.__main__.urlopen", return_value=mock_response):
+        result = main([
+            "luhn",
+            "--url=http://example.com/article",
+            "--format=html",
+            "--length=2",
+        ])
+    assert result == 0
