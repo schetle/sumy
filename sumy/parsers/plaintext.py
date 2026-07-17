@@ -1,26 +1,31 @@
 from functools import cached_property
+from typing import TYPE_CHECKING
+
 from ..utils import _ensure_str
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
 
+if TYPE_CHECKING:
+    from ..nlp.tokenizers import Tokenizer
+
 
 class PlaintextParser(DocumentParser):
     @classmethod
-    def from_string(cls, string, tokenizer):
+    def from_string(cls, string: str | bytes, tokenizer: "Tokenizer") -> "PlaintextParser":
         return cls(string, tokenizer)
 
     @classmethod
-    def from_file(cls, file_path, tokenizer):
+    def from_file(cls, file_path: str, tokenizer: "Tokenizer") -> "PlaintextParser":
         with open(file_path) as file:
             return cls(file.read(), tokenizer)
 
-    def __init__(self, text, tokenizer):
+    def __init__(self, text: str | bytes, tokenizer: "Tokenizer") -> None:
         super(PlaintextParser, self).__init__(tokenizer)
         self._text = _ensure_str(text).strip()
 
     @cached_property
-    def significant_words(self):
-        words = []
+    def significant_words(self) -> tuple[str, ...]:
+        words: list[str] = []
         for paragraph in self.document.paragraphs:
             for heading in paragraph.headings:
                 words.extend(heading.words)
@@ -31,13 +36,13 @@ class PlaintextParser(DocumentParser):
             return self.SIGNIFICANT_WORDS
 
     @cached_property
-    def stigma_words(self):
+    def stigma_words(self) -> tuple[str, ...]:
         return self.STIGMA_WORDS
 
     @cached_property
-    def document(self):
-        current_paragraph = []
-        paragraphs = []
+    def document(self) -> ObjectDocumentModel:
+        current_paragraph: list[Sentence | str] = []
+        paragraphs: list[Paragraph] = []
         for line in self._text.splitlines():
             line = line.strip()
             if line.isupper():
@@ -55,9 +60,9 @@ class PlaintextParser(DocumentParser):
 
         return ObjectDocumentModel(paragraphs)
 
-    def _to_sentences(self, lines):
+    def _to_sentences(self, lines: list[Sentence | str]) -> list[Sentence]:
         text = ""
-        sentence_objects = []
+        sentence_objects: list[Sentence] = []
 
         for line in lines:
             if isinstance(line, Sentence):
@@ -77,6 +82,6 @@ class PlaintextParser(DocumentParser):
 
         return sentence_objects
 
-    def _to_sentence(self, text):
+    def _to_sentence(self, text: str) -> Sentence:
         assert text.strip()
         return Sentence(text, self._tokenizer)
