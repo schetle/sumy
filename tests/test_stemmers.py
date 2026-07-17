@@ -27,6 +27,11 @@ def test_czech_stemmer():
     assert "pěkn" == czech_stemmer("pěkný")
 
 
+def test_czech_stemmer_bytes_input():
+    from sumy.nlp.stemmers.czech import stem_word
+    assert stem_word("pěkný".encode("utf-8")) == stem_word("pěkný")
+
+
 def test_french_stemmer():
     french_stemmer = Stemmer('czech')
     assert "jol" == french_stemmer("jolies")
