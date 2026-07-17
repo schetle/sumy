@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-	from ..models.dom import Sentence
+from ..models.dom import Sentence
 
 
 def _get_ngrams(n: int, text: Sequence[str]) -> set[tuple[str, ...]]:
