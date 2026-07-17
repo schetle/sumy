@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 
 from pprint import pformat
-from collections.abc import Sequence
+from collections.abc import KeysView, Sequence
 from collections import Counter
 
 
@@ -31,7 +31,7 @@ class TfDocumentModel(object):
         return math.sqrt(sum(t**2 for t in self._terms.values()))
 
     @property
-    def terms(self) -> frozenset[str]:
+    def terms(self) -> KeysView[str]:
         return self._terms.keys()
 
     def most_frequent_terms(self, count: int = 0) -> tuple[str, ...]:
