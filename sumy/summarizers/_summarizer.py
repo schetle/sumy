@@ -37,6 +37,10 @@ class AbstractSummarizer(object):
     def normalize_word(self, word: str) -> str:
         return str(word).lower()
 
+    def _to_words_set(self, sentence: Any) -> list[str]:
+        words = map(self.normalize_word, sentence.words)
+        return [self.stem_word(w) for w in words if w not in self._stop_words]
+
     def _get_best_sentences(
         self,
         sentences: Sequence[Any],

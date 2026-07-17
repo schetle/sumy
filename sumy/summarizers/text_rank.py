@@ -31,10 +31,6 @@ class TextRankSummarizer(AbstractSummarizer):
 
         return ratings
 
-    def _to_words_set(self, sentence):
-        words = map(self.normalize_word, sentence.words)
-        return [self.stem_word(w) for w in words if w not in self._stop_words]
-
     def _rate_sentences_edge(self, words1, words2):
         rank = 0
         for w1 in words1:

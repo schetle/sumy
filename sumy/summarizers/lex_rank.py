@@ -42,10 +42,6 @@ class LexRankSummarizer(AbstractSummarizer):
         if numpy is None:
             raise ValueError("LexRank summarizer requires NumPy. Please, install it by command 'pip install numpy'.")
 
-    def _to_words_set(self, sentence):
-        words = map(self.normalize_word, sentence.words)
-        return [self.stem_word(w) for w in words if w not in self._stop_words]
-
     def _compute_tf(self, sentences):
         tf_values = map(Counter, sentences)
 
