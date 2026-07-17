@@ -294,7 +294,7 @@ def test_rouge_l_sentence_level():
 
     assert abs(rouge_l_sentence_level(candidate1, reference) - 3/4) < 1e-7
     assert abs(rouge_l_sentence_level(candidate2, reference) - 2/4) < 1e-7
-    assert abs(rouge_l_sentence_level(candidate2, reference) - 2/4) < 1e-7
+    assert abs(rouge_l_sentence_level(candidate3, reference) - 2/4) < 1e-7
 
 
 def test_union_lcs():
