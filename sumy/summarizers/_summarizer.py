@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import namedtuple
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from operator import attrgetter
 from typing import Any
 from ..utils import ItemsCount
@@ -17,6 +17,16 @@ class AbstractSummarizer(object):
             raise ValueError("Stemmer has to be a callable object")
 
         self._stemmer = stemmer
+
+    _stop_words: frozenset[str] = frozenset()
+
+    @property
+    def stop_words(self) -> frozenset[str]:
+        return self._stop_words
+
+    @stop_words.setter
+    def stop_words(self, words: Iterable[str]) -> None:
+        self._stop_words = frozenset(map(self.normalize_word, words))
 
     def __call__(self, document: Any, sentences_count: int) -> tuple[Any, ...]:
         raise NotImplementedError("This method should be overriden in subclass")

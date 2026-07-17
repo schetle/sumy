@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
 from ._summarizer import AbstractSummarizer
-from ..utils import get_stop_words
 
 if TYPE_CHECKING:
     from ..models.dom import ObjectDocumentModel, Sentence
@@ -18,15 +16,6 @@ class KLSummarizer(AbstractSummarizer):
     KL Divergence.
     Source: http://www.aclweb.org/anthology/N09-1041
     """
-    _stop_words: frozenset[str] = frozenset()
-
-    @property
-    def stop_words(self) -> frozenset[str]:
-        return self._stop_words
-
-    @stop_words.setter
-    def stop_words(self, words: Iterable[str]) -> None:
-        self._stop_words = frozenset(map(self.normalize_word, words))
 
     def __call__(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount) -> tuple[Sentence, ...]:
         ratings = self._get_ratings(document)

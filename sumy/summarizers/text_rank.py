@@ -3,7 +3,6 @@ from __future__ import annotations
 import math
 
 from collections import defaultdict
-from collections.abc import Iterable
 from itertools import combinations
 from typing import TYPE_CHECKING
 
@@ -16,16 +15,6 @@ if TYPE_CHECKING:
 
 class TextRankSummarizer(AbstractSummarizer):
     """Source: https://github.com/adamfabish/Reduction"""
-
-    _stop_words: frozenset[str] = frozenset()
-
-    @property
-    def stop_words(self) -> frozenset[str]:
-        return self._stop_words
-
-    @stop_words.setter
-    def stop_words(self, words: Iterable[str]) -> None:
-        self._stop_words = frozenset(map(self.normalize_word, words))
 
     def __call__(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount) -> tuple[Sentence, ...]:
         ratings = self.rate_sentences(document)
