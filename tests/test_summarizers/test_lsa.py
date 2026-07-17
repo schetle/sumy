@@ -46,7 +46,7 @@ def test_empty_document(build_document):
 def test_single_sentence(build_document):
     document = build_document(("I am the sentence you like",))
     summarizer = LsaSummarizer()
-    summarizer.stopwords = ("I", "am", "the",)
+    summarizer.stop_words = ("I", "am", "the",)
 
     sentences = summarizer(document, 10)
     assert len(sentences) == 1
@@ -59,7 +59,7 @@ def test_document(build_document):
         ("This sentence is better than that above", "Are you kidding me",)
     )
     summarizer = LsaSummarizer()
-    summarizer.stopwords = (
+    summarizer.stop_words = (
         "I", "am", "the", "you", "are", "me", "is", "than", "that", "this",
     )
 
