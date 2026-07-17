@@ -1,5 +1,10 @@
 from os.path import dirname, join, abspath
 from sumy.nlp.tokenizers import Tokenizer
+
+DATA_DIR = join(abspath(dirname(__file__)), "data")
+ARTICLES_DIR = join(DATA_DIR, "articles")
+TEST_ARTICLE = join(ARTICLES_DIR, "test_article.txt")
+CZECH_ARTICLE = join(ARTICLES_DIR, "prevko_cz_1.txt")
 from sumy.models.dom import ObjectDocumentModel, Paragraph, Sentence
 
 

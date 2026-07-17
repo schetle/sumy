@@ -6,23 +6,10 @@ algorithm by calling main() with argparse-style argument lists and verifying
 correct exit behaviour and non-empty output.
 """
 
-import os
 import pytest
 
 from sumy.__main__ import main
-
-# ---------------------------------------------------------------------------
-# Fixture paths
-# ---------------------------------------------------------------------------
-
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
-ARTICLES_DIR = os.path.join(DATA_DIR, "articles")
-
-# A multi-sentence English plaintext article that all algorithms can process.
-TEST_ARTICLE = os.path.join(ARTICLES_DIR, "test_article.txt")
-
-# The Czech article is used for language-specific smoke tests.
-CZECH_ARTICLE = os.path.join(ARTICLES_DIR, "prevko_cz_1.txt")
+from .utils import DATA_DIR, ARTICLES_DIR, TEST_ARTICLE, CZECH_ARTICLE
 
 
 # ===========================================================================

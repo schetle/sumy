@@ -9,15 +9,12 @@ import os
 import pytest
 
 from sumy.evaluation.__main__ import main
+from .utils import ARTICLES_DIR, TEST_ARTICLE
 
 # ---------------------------------------------------------------------------
 # Fixture paths
 # ---------------------------------------------------------------------------
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
-ARTICLES_DIR = os.path.join(DATA_DIR, "articles")
-
-TEST_ARTICLE = os.path.join(ARTICLES_DIR, "test_article.txt")
 REFERENCE_SUMMARY = os.path.join(ARTICLES_DIR, "test_reference_summary.txt")
 
 
