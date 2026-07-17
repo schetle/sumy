@@ -10,7 +10,7 @@ import os
 import pytest
 
 from sumy.__main__ import main
-from .utils import DATA_DIR, ARTICLES_DIR, TEST_ARTICLE, CZECH_ARTICLE
+from .utils import DATA_DIR, TEST_ARTICLE, CZECH_ARTICLE
 
 STOPWORDS_FILE = os.path.join(DATA_DIR, "stopwords", "language.txt")
 
