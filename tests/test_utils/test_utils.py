@@ -63,3 +63,9 @@ def test_unsuported_items_count():
     count = ItemsCount("Hacker")
     with pytest.raises(ValueError):
         count([])
+
+
+def test_unsuported_type_items_count():
+    count = ItemsCount(None)
+    with pytest.raises(ValueError):
+        count([])
