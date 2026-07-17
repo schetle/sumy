@@ -1,28 +1,23 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import math
 
 from pprint import pformat
-from collections import Sequence
-from .._compat import to_unicode, unicode, string_types, Counter
+from collections.abc import Sequence
+from collections import Counter
 
 
 class TfDocumentModel(object):
     """Term-Frequency document model (term = word)."""
     def __init__(self, words, tokenizer=None):
-        if isinstance(words, string_types) and tokenizer is None:
+        if isinstance(words, str) and tokenizer is None:
             raise ValueError(
                 "Tokenizer has to be given if ``words`` is not a sequence.")
-        elif isinstance(words, string_types):
-            words = tokenizer.to_words(to_unicode(words))
+        elif isinstance(words, str):
+            words = tokenizer.to_words(words)
         elif not isinstance(words, Sequence):
             raise ValueError(
                 "Parameter ``words`` has to be sequence or string with tokenizer given.")
 
-        self._terms = Counter(map(unicode.lower, words))
+        self._terms = Counter(map(str.lower, words))
         self._max_frequency = max(self._terms.values()) if self._terms else 1
 
     @property

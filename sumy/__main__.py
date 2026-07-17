@@ -1,5 +1,3 @@
-# -*- coding: utf8 -*-
-
 """
 Sumy - automatic text summarizer.
 
@@ -24,15 +22,12 @@ Options:
 
 """
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import sys
+from urllib import request as urllib
 
 from docopt import docopt
 from . import __version__
 from .utils import ItemsCount, get_stop_words, read_stop_words
-from ._compat import urllib, to_string, to_unicode, to_bytes, PY3
 from .nlp.tokenizers import Tokenizer
 from .parsers.html import HtmlParser
 from .parsers.plaintext import PlaintextParser
@@ -64,15 +59,16 @@ AVAILABLE_METHODS = {
 }
 
 
+def to_string(text):
+    return str(text)
+
+
 def main(args=None):
-    args = docopt(to_string(__doc__), args, version=__version__)
+    args = docopt(__doc__, args, version=__version__)
     summarizer, parser, items_count = handle_arguments(args)
 
     for sentence in summarizer(parser.document, items_count):
-        if PY3:
-            print(to_unicode(sentence))
-        else:
-            print(to_bytes(sentence))
+        print(str(sentence))
 
     return 0
 

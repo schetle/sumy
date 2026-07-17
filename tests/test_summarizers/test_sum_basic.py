@@ -1,16 +1,9 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import unittest
 
 from sumy.models.dom._sentence import Sentence
 from sumy.summarizers.sum_basic import SumBasicSummarizer
-from sumy._compat import to_unicode
 from ..utils import build_document, build_document_from_string
 from sumy.nlp.tokenizers import Tokenizer
-
 
 
 class TestSumBasic(unittest.TestCase):
@@ -34,7 +27,7 @@ class TestSumBasic(unittest.TestCase):
         s = Sentence("I am one slightly longer sentence.", Tokenizer("english"))
         document = build_document([s])
         summarizer = self._build_summarizer(self.EMPTY_STOP_WORDS)
-        
+
         returned = summarizer(document, 10)
         self.assertEqual(len(returned), 1)
 
@@ -58,14 +51,14 @@ class TestSumBasic(unittest.TestCase):
 
     def test_compute_word_freq(self):
         summarizer = self._build_summarizer(self.EMPTY_STOP_WORDS)
-        
+
         words = ["one", "two", "three", "four"]
         freq = summarizer._compute_word_freq(words)
         self.assertEqual(freq.get("one", 0), 1)
         self.assertEqual(freq.get("two", 0), 1)
         self.assertEqual(freq.get("three", 0), 1)
         self.assertEqual(freq.get("four", 0), 1)
-        
+
         words = ["one", "one", "two", "two"]
         freq = summarizer._compute_word_freq(words)
         self.assertEqual(freq.get("one", 0), 2)
@@ -137,7 +130,7 @@ class TestSumBasic(unittest.TestCase):
         self.assertEqual(ratings[s2], -1)
 
 
-        # Due to the frequency discounting, after finding sentence s0, 
+        # Due to the frequency discounting, after finding sentence s0,
         # s2 should come before s1 since only two of its words get discounted
         # rather than all 3 of s1's
         s0 = Sentence("one two three", Tokenizer("english"))

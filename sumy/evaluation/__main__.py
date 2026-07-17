@@ -1,5 +1,3 @@
-# -*- coding: utf8 -*-
-
 """
 Sumy - evaluation of automatic text summary.
 
@@ -23,17 +21,14 @@ Options:
 
 """
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import sys
-
 from itertools import chain
+from urllib import request as urllib
+
 from docopt import docopt
 from .. import __version__
 from ..utils import ItemsCount, get_stop_words
 from ..models import TfDocumentModel
-from .._compat import urllib, to_string
 from ..nlp.tokenizers import Tokenizer
 from ..parsers.html import HtmlParser
 from ..parsers.plaintext import PlaintextParser
@@ -47,7 +42,7 @@ from ..summarizers.sum_basic import SumBasicSummarizer
 from ..summarizers.kl import KLSummarizer
 from ..nlp.stemmers import Stemmer
 from . import precision, recall, f_score, cosine_similarity, unit_overlap
-from . import rouge_1, rouge_2, rouge_l_sentence_level, rouge_l_summary_level 
+from . import rouge_1, rouge_2, rouge_l_sentence_level, rouge_l_summary_level
 
 
 HEADERS = {
@@ -159,7 +154,7 @@ AVAILABLE_EVALUATIONS = (
 
 
 def main(args=None):
-    args = docopt(to_string(__doc__), args, version=__version__)
+    args = docopt(__doc__, args, version=__version__)
     summarizer, document, items_count, reference_summary = handle_arguments(args)
 
     evaluated_sentences = summarizer(document, items_count)

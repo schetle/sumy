@@ -1,13 +1,7 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import unittest
 
 from sumy.models.dom._sentence import Sentence
 from sumy.summarizers.kl import KLSummarizer
-from sumy._compat import to_unicode
 from ..utils import build_document, build_document_from_string
 from sumy.nlp.tokenizers import Tokenizer
 
@@ -38,16 +32,16 @@ class TestKL(unittest.TestCase):
         self.assertEqual(len(returned), 1)
 
     def test_compute_word_freq(self):
-        
+
         summarizer = self._build_summarizer(self.EMPTY_STOP_WORDS)
-        
+
         words = ["one", "two", "three", "four"]
         freq = summarizer._compute_word_freq(words)
         self.assertEqual(freq.get("one", 0), 1)
         self.assertEqual(freq.get("two", 0), 1)
         self.assertEqual(freq.get("three", 0), 1)
         self.assertEqual(freq.get("four", 0), 1)
-        
+
         words = ["one", "one", "two", "two"]
         freq = summarizer._compute_word_freq(words)
         self.assertEqual(freq.get("one", 0), 2)
@@ -94,10 +88,8 @@ class TestKL(unittest.TestCase):
 
         w1_ = [.1, .2, .7]
         w2_ = [.2, .4, .4]
-        
+
         # This value comes from scipy.stats.entropy(w2_, w1_)
         # Note: the order of params is different
         kl_correct = 0.1920419931617981
         self.assertTrue(abs(summarizer._kl_divergence(w1, w2) - kl_correct) < EPS)
-
-
