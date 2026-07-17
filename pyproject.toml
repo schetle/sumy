@@ -74,5 +74,8 @@ testpaths = ["tests"]
 [tool.coverage.run]
 source = ["sumy"]
 
+[tool.setuptools.package-data]
+sumy = ["data/stopwords/*.txt"]
+
 [tool.pycodestyle]
 max-line-length = 160
