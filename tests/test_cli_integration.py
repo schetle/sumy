@@ -178,3 +178,17 @@ def test_language_option(capsys):
         "--language=english",
     ])
     assert result == 0
+
+
+def test_czech_language_plaintext(capsys):
+    """Czech language smoke test: luhn summarizer should produce output for Czech text."""
+    result = main([
+        "luhn",
+        f"--file={CZECH_ARTICLE}",
+        "--format=plaintext",
+        "--length=3",
+        "--language=czech",
+    ])
+    assert result == 0
+    captured = capsys.readouterr()
+    assert captured.out.strip() != ""
