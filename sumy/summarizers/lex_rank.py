@@ -1,5 +1,9 @@
+from __future__ import annotations
+
 import math
 from collections import Counter
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
 try:
     import numpy
@@ -7,6 +11,10 @@ except ImportError:
     numpy = None
 
 from ._summarizer import AbstractSummarizer
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
+    from ..utils import ItemsCount
 
 
 class LexRankSummarizer(AbstractSummarizer):
@@ -16,17 +24,17 @@ class LexRankSummarizer(AbstractSummarizer):
     """
     threshold = 0.1
     epsilon = 0.1
-    _stop_words = frozenset()
+    _stop_words: frozenset[str] = frozenset()
 
     @property
-    def stop_words(self):
+    def stop_words(self) -> frozenset[str]:
         return self._stop_words
 
     @stop_words.setter
-    def stop_words(self, words):
+    def stop_words(self, words: Iterable[str]) -> None:
         self._stop_words = frozenset(map(self.normalize_word, words))
 
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount) -> tuple[Sentence, ...]:
         self._ensure_dependencies_installed()
 
         sentences_words = [self._to_words_set(s) for s in document.sentences]

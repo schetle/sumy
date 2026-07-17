@@ -1,7 +1,14 @@
-import math
+from __future__ import annotations
+
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
 from ._summarizer import AbstractSummarizer
 from ..utils import get_stop_words
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
+    from ..utils import ItemsCount
 
 
 class SumBasicSummarizer(AbstractSummarizer):
@@ -11,8 +18,17 @@ class SumBasicSummarizer(AbstractSummarizer):
     Source: http://www.cis.upenn.edu/~nenkova/papers/ipm.pdf
 
     """
+    _stop_words: frozenset[str] = frozenset()
 
-    def __call__(self, document, sentences_count):
+    @property
+    def stop_words(self) -> frozenset[str]:
+        return self._stop_words
+
+    @stop_words.setter
+    def stop_words(self, words: Iterable[str]) -> None:
+        self._stop_words = frozenset(map(self.normalize_word, words))
+
+    def __call__(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount) -> tuple[Sentence, ...]:
         sentences = document.sentences
         ratings = self._compute_ratings(sentences)
         return self._get_best_sentences(document.sentences, sentences_count, ratings)

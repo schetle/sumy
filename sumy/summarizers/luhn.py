@@ -1,22 +1,31 @@
+from __future__ import annotations
+
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
+
 from ..models import TfDocumentModel
 from ._summarizer import AbstractSummarizer
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
+    from ..utils import ItemsCount
 
 
 class LuhnSummarizer(AbstractSummarizer):
     max_gap_size = 4
     # TODO: better recognition of significant words (automatic)
     significant_percentage = 1
-    _stop_words = frozenset()
+    _stop_words: frozenset[str] = frozenset()
 
     @property
-    def stop_words(self):
+    def stop_words(self) -> frozenset[str]:
         return self._stop_words
 
     @stop_words.setter
-    def stop_words(self, words):
+    def stop_words(self, words: Iterable[str]) -> None:
         self._stop_words = frozenset(map(self.normalize_word, words))
 
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount) -> tuple[Sentence, ...]:
         words = self._get_significant_words(document.words)
         return self._get_best_sentences(document.sentences,
             sentences_count, self.rate_sentence, words)
@@ -34,7 +43,7 @@ class LuhnSummarizer(AbstractSummarizer):
         # take only words contained multiple times in document
         return tuple(t for t in words if model.term_frequency(t) > 1)
 
-    def rate_sentence(self, sentence, significant_stems):
+    def rate_sentence(self, sentence: Sentence, significant_stems: tuple[str, ...]) -> float:
         ratings = self._get_chunk_ratings(sentence, significant_stems)
         return max(ratings) if ratings else 0
 

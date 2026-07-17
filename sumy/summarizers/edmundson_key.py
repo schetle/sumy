@@ -1,13 +1,21 @@
+from __future__ import annotations
+
 from collections import Counter
+from typing import TYPE_CHECKING
+
 from ._summarizer import AbstractSummarizer
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
+    from ..utils import ItemsCount
 
 
 class EdmundsonKeyMethod(AbstractSummarizer):
-    def __init__(self, stemmer, bonus_words):
+    def __init__(self, stemmer, bonus_words: frozenset[str]) -> None:
         super(EdmundsonKeyMethod, self).__init__(stemmer)
         self._bonus_words = bonus_words
 
-    def __call__(self, document, sentences_count, weight):
+    def __call__(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount, weight: float) -> tuple[Sentence, ...]:
         significant_words = self._compute_significant_words(document, weight)
 
         return self._get_best_sentences(document.sentences,
@@ -38,10 +46,10 @@ class EdmundsonKeyMethod(AbstractSummarizer):
         words = map(self.stem_word, sentence.words)
         return sum(w in significant_words for w in words)
 
-    def rate_sentences(self, document, weight=0.5):
+    def rate_sentences(self, document: ObjectDocumentModel, weight: float = 0.5) -> dict[Sentence, int]:
         significant_words = self._compute_significant_words(document, weight)
 
-        rated_sentences = {}
+        rated_sentences: dict[Sentence, int] = {}
         for sentence in document.sentences:
             rated_sentences[sentence] = self._rate_sentence(sentence,
                 significant_words)

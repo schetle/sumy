@@ -1,4 +1,9 @@
+from __future__ import annotations
+
 from collections import defaultdict
+from collections.abc import Callable, Iterable
+from typing import TYPE_CHECKING
+
 from ..nlp.stemmers import null_stemmer
 from ._summarizer import AbstractSummarizer
 from .edmundson_cue import EdmundsonCueMethod
@@ -6,17 +11,27 @@ from .edmundson_key import EdmundsonKeyMethod
 from .edmundson_title import EdmundsonTitleMethod
 from .edmundson_location import EdmundsonLocationMethod
 
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
+    from ..utils import ItemsCount
 
-_EMPTY_SET = frozenset()
+
+_EMPTY_SET: frozenset[str] = frozenset()
 
 
 class EdmundsonSummarizer(AbstractSummarizer):
-    _bonus_words = _EMPTY_SET
-    _stigma_words = _EMPTY_SET
-    _null_words = _EMPTY_SET
+    _bonus_words: frozenset[str] = _EMPTY_SET
+    _stigma_words: frozenset[str] = _EMPTY_SET
+    _null_words: frozenset[str] = _EMPTY_SET
 
-    def __init__(self, stemmer=null_stemmer, cue_weight=1.0, key_weight=0.0,
-            title_weight=1.0, location_weight=1.0):
+    def __init__(
+        self,
+        stemmer: Callable[[str], str] = null_stemmer,
+        cue_weight: float = 1.0,
+        key_weight: float = 0.0,
+        title_weight: float = 1.0,
+        location_weight: float = 1.0,
+    ) -> None:
         super(EdmundsonSummarizer, self).__init__(stemmer)
 
         self._ensure_correct_weights(cue_weight, key_weight, title_weight,
@@ -33,31 +48,31 @@ class EdmundsonSummarizer(AbstractSummarizer):
                 raise ValueError("Negative wights are not allowed.")
 
     @property
-    def bonus_words(self):
+    def bonus_words(self) -> frozenset[str]:
         return self._bonus_words
 
     @bonus_words.setter
-    def bonus_words(self, collection):
+    def bonus_words(self, collection: Iterable[str]) -> None:
         self._bonus_words = frozenset(map(self.stem_word, collection))
 
     @property
-    def stigma_words(self):
+    def stigma_words(self) -> frozenset[str]:
         return self._stigma_words
 
     @stigma_words.setter
-    def stigma_words(self, collection):
+    def stigma_words(self, collection: Iterable[str]) -> None:
         self._stigma_words = frozenset(map(self.stem_word, collection))
 
     @property
-    def null_words(self):
+    def null_words(self) -> frozenset[str]:
         return self._null_words
 
     @null_words.setter
-    def null_words(self, collection):
+    def null_words(self, collection: Iterable[str]) -> None:
         self._null_words = frozenset(map(self.stem_word, collection))
 
-    def __call__(self, document, sentences_count):
-        ratings = defaultdict(int)
+    def __call__(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount) -> tuple[Sentence, ...]:
+        ratings: defaultdict[Sentence, int] = defaultdict(int)
 
         if self._cue_weight > 0.0:
             method = self._build_cue_method_instance()
@@ -82,7 +97,7 @@ class EdmundsonSummarizer(AbstractSummarizer):
 
         return ratings
 
-    def cue_method(self, document, sentences_count, bunus_word_value=1, stigma_word_value=1):
+    def cue_method(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount, bunus_word_value: int = 1, stigma_word_value: int = 1) -> tuple[Sentence, ...]:
         summarization_method = self._build_cue_method_instance()
         return summarization_method(document, sentences_count, bunus_word_value,
             stigma_word_value)
@@ -93,7 +108,7 @@ class EdmundsonSummarizer(AbstractSummarizer):
 
         return EdmundsonCueMethod(self._stemmer, self._bonus_words, self._stigma_words)
 
-    def key_method(self, document, sentences_count, weight=0.5):
+    def key_method(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount, weight: float = 0.5) -> tuple[Sentence, ...]:
         summarization_method = self._build_key_method_instance()
         return summarization_method(document, sentences_count, weight)
 
@@ -102,7 +117,7 @@ class EdmundsonSummarizer(AbstractSummarizer):
 
         return  EdmundsonKeyMethod(self._stemmer, self._bonus_words)
 
-    def title_method(self, document, sentences_count):
+    def title_method(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount) -> tuple[Sentence, ...]:
         summarization_method = self._build_title_method_instance()
         return summarization_method(document, sentences_count)
 
@@ -111,7 +126,7 @@ class EdmundsonSummarizer(AbstractSummarizer):
 
         return EdmundsonTitleMethod(self._stemmer, self._null_words)
 
-    def location_method(self, document, sentences_count, w_h=1, w_p1=1, w_p2=1, w_s1=1, w_s2=1):
+    def location_method(self, document: ObjectDocumentModel, sentences_count: int | ItemsCount, w_h: int = 1, w_p1: int = 1, w_p2: int = 1, w_s1: int = 1, w_s2: int = 1) -> tuple[Sentence, ...]:
         summarization_method = self._build_location_method_instance()
         return summarization_method(document, sentences_count, w_h, w_p1, w_p2, w_s1, w_s2)
 
