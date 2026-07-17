@@ -24,11 +24,15 @@ class Sentence(object):
         return self._is_heading
 
     def __eq__(self, sentence: object) -> bool:
-        assert isinstance(sentence, Sentence)
+        if not isinstance(sentence, Sentence):
+            return NotImplemented
         return self._is_heading is sentence._is_heading and self._text == sentence._text
 
     def __ne__(self, sentence: object) -> bool:
-        return not self.__eq__(sentence)
+        result = self.__eq__(sentence)
+        if result is NotImplemented:
+            return result
+        return not result
 
     def __hash__(self) -> int:
         return hash((self._is_heading, self._text))
