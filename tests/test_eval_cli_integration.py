@@ -69,13 +69,14 @@ def test_algorithm_evaluation_output(algorithm, capsys):
     Each algorithm should run to completion when given an article file and a
     reference summary, printing evaluation metric scores to stdout.
     """
-    main([
+    result = main([
         algorithm,
         REFERENCE_SUMMARY,
         f"--file={TEST_ARTICLE}",
         "--format=plaintext",
         "--length=3",
     ])
+    assert result == 0
     captured = capsys.readouterr()
     # The evaluation CLI prints lines like "Precision: 0.250000"
     output = captured.out.strip()
@@ -93,12 +94,13 @@ def test_edmundson_evaluation(capsys):
     Edmundson evaluation should succeed with plaintext format (bonus/stigma
     words sourced from the parser, empty lists acceptable).
     """
-    main([
+    result = main([
         "edmundson",
         REFERENCE_SUMMARY,
         f"--file={TEST_ARTICLE}",
         "--format=plaintext",
         "--length=3",
     ])
+    assert result == 0
     captured = capsys.readouterr()
     assert captured.out.strip() != ""
