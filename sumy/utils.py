@@ -3,7 +3,6 @@ from __future__ import annotations
 import sys
 
 from collections.abc import Sequence
-from functools import cached_property
 from os.path import dirname, abspath, join, exists
 
 
