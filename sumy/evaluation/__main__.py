@@ -86,21 +86,19 @@ def build_kl(parser, language):
     return summarizer
 
 
-def evaluate_cosine_similarity(evaluated_sentences, reference_sentences):
+def _build_tf_models(evaluated_sentences, reference_sentences):
     evaluated_words = tuple(chain(*(s.words for s in evaluated_sentences)))
     reference_words = tuple(chain(*(s.words for s in reference_sentences)))
-    evaluated_model = TfDocumentModel(evaluated_words)
-    reference_model = TfDocumentModel(reference_words)
+    return TfDocumentModel(evaluated_words), TfDocumentModel(reference_words)
 
+
+def evaluate_cosine_similarity(evaluated_sentences, reference_sentences):
+    evaluated_model, reference_model = _build_tf_models(evaluated_sentences, reference_sentences)
     return cosine_similarity(evaluated_model, reference_model)
 
 
 def evaluate_unit_overlap(evaluated_sentences, reference_sentences):
-    evaluated_words = tuple(chain(*(s.words for s in evaluated_sentences)))
-    reference_words = tuple(chain(*(s.words for s in reference_sentences)))
-    evaluated_model = TfDocumentModel(evaluated_words)
-    reference_model = TfDocumentModel(reference_words)
-
+    evaluated_model, reference_model = _build_tf_models(evaluated_sentences, reference_sentences)
     return unit_overlap(evaluated_model, reference_model)
 
 
