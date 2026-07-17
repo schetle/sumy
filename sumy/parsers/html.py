@@ -64,7 +64,7 @@ class HtmlParser(DocumentParser):
     def document(self) -> ObjectDocumentModel:
         paragraphs = []
         for element in self._root.iter():
-            if element.tag in ("p", "h1", "h2", "h3", "h4", "h5", "h6"):
+            if element.tag in ("p", "h1", "h2", "h3"):
                 text = element.text_content().strip()
                 if not text:
                     continue
