@@ -84,10 +84,16 @@ class KLSummarizer(AbstractSummarizer):
         '''
         Note: Could import scipy.stats and use scipy.stats.entropy(doc_freq, summary_freq)
         but this gives equivalent value without the import
+
+        Words present in summary_freq but absent from doc_freq (e.g. stop words
+        that were filtered out during TF computation) are skipped to avoid a
+        KeyError and because their document frequency is effectively zero.
         '''
         sum_val = 0
         for w in summary_freq:
-            sum_val += doc_freq[w] * math.log(doc_freq[w] / summary_freq[w])
+            d = doc_freq.get(w, 0)
+            if d > 0 and summary_freq[w] > 0:
+                sum_val += d * math.log(d / summary_freq[w])
         return sum_val
 
     def _find_index_of_best_sentence(self, kls):

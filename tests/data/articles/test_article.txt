@@ -1,0 +1,41 @@
+Automatic text summarization is the process of reducing a text document with a computer program in order to create a summary that retains the most important points of the original document.
+Technologies that can make a coherent summary take into account variables such as length, writing style and syntax.
+An example of the use of summarization technology is search engines such as Google.
+Document summarization is another.
+
+There are broadly two types of summarization: extractive and abstractive summarization.
+Extractive summarization methods work by selecting a subset of existing words, phrases or sentences from the original text to form the summary.
+Abstractive summarization methods generate new sentences to describe the main points of the input document.
+Abstractive methods build an internal semantic representation and then use natural language generation techniques to create a summary that is closer to what a human might express.
+
+The Luhn heuristic method was one of the earliest approaches to automatic summarization, proposed by Hans Peter Luhn in 1958.
+Luhn used the frequency of important words to identify key sentences in a document.
+The method assigns a score to each sentence based on the frequency of significant words within it.
+Sentences with higher scores are more likely to be included in the final summary.
+
+Latent Semantic Analysis, or LSA, is a mathematical method for extracting and representing the contextual-usage meaning of words by statistical computations applied to a large corpus of text.
+LSA captures higher-order relationships between terms and documents using singular value decomposition.
+This approach allows LSA-based summarizers to identify important sentences that capture the main topics of a document.
+
+TextRank is a graph-based ranking algorithm for NLP tasks inspired by PageRank.
+TextRank builds a graph where sentences are vertices and edges represent similarity between sentences.
+The algorithm iterates until convergence to assign importance scores to each sentence.
+Sentences with higher scores are selected for the final summary.
+
+LexRank is another graph-based approach that uses the concept of centrality in a graph to determine sentence importance.
+It computes sentence similarity using cosine similarity with TF-IDF term vectors.
+LexRank selects the most central sentences as the summary.
+
+The KL-Sum method selects sentences that minimize the KL-divergence between the word distribution of the summary and the word distribution of the source document.
+It greedily adds sentences to the summary that reduce the divergence at each step.
+This statistical approach ensures the summary preserves the overall word distribution of the original text.
+
+The SumBasic algorithm is a simple word-frequency approach to summarization.
+SumBasic assigns probabilities to words based on their frequency in the document.
+It then selects sentences with words that have the highest average probability.
+After each selection, the probabilities of the selected words are updated to penalize repetition.
+
+Evaluation of automatic summarization systems is typically done using the ROUGE metric.
+ROUGE stands for Recall-Oriented Understudy for Gisting Evaluation.
+It measures the overlap between the automatically generated summary and one or more reference summaries.
+ROUGE-1 counts unigram overlaps, ROUGE-2 counts bigram overlaps, and ROUGE-L uses the longest common subsequence.
