@@ -1,9 +1,8 @@
 from sumy.summarizers.text_rank import TextRankSummarizer
 from sumy.nlp.stemmers import Stemmer
-from ..utils import build_document
 
 
-def test_empty_document():
+def test_empty_document(build_document):
     document = build_document()
     summarizer = TextRankSummarizer(Stemmer("english"))
 
@@ -11,7 +10,7 @@ def test_empty_document():
     assert len(returned) == 0
 
 
-def test_single_sentence():
+def test_single_sentence(build_document):
     document = build_document(("I am one sentence",))
     summarizer = TextRankSummarizer()
     summarizer.stop_words = ("I", "am",)
@@ -20,7 +19,7 @@ def test_single_sentence():
     assert len(returned) == 1
 
 
-def test_two_sentences():
+def test_two_sentences(build_document):
     document = build_document(("I am that 1. sentence", "And I am 2. winning prize"))
     summarizer = TextRankSummarizer()
     summarizer.stop_words = ("I", "am", "and", "that",)
@@ -31,7 +30,7 @@ def test_two_sentences():
     assert str(returned[1]) == "And I am 2. winning prize"
 
 
-def test_stop_words_correctly_removed():
+def test_stop_words_correctly_removed(build_document):
     summarizer = TextRankSummarizer()
     summarizer.stop_words = ["stop", "Halt", "SHUT", "HmMm"]
 
@@ -60,7 +59,7 @@ def test_stop_words_correctly_removed():
     assert expected == returned
 
 
-def test_three_sentences_but_second_winner():
+def test_three_sentences_but_second_winner(build_document):
     document = build_document([
         "I am that 1. sentence",
         "And I am 2. sentence - winning sentence",
@@ -74,7 +73,7 @@ def test_three_sentences_but_second_winner():
     assert str(returned[0]) == "And I am 2. sentence - winning sentence"
 
 
-def test_sentences_rating():
+def test_sentences_rating(build_document):
     document = build_document([
         "a c e g",
         "a b c d e f g",

@@ -1,7 +1,6 @@
 import pytest
 
 from sumy.utils import get_stop_words, read_stop_words, ItemsCount
-from ..utils import expand_resource_path
 
 
 def test_ok_stop_words_language():
@@ -14,12 +13,12 @@ def test_missing_stop_words_language():
         get_stop_words("klingon")
 
 
-def test_ok_custom_stopwords_file():
+def test_ok_custom_stopwords_file(expand_resource_path):
     stop_words = read_stop_words(expand_resource_path("stopwords/language.txt"))
     assert len(stop_words) == 4
 
 
-def test_custom_stop_words_file_not_found():
+def test_custom_stop_words_file_not_found(expand_resource_path):
     with pytest.raises(IOError):
         read_stop_words(expand_resource_path("stopwords/klingon.txt"))
 

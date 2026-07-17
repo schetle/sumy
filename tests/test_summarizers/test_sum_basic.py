@@ -1,6 +1,5 @@
 from sumy.models.dom._sentence import Sentence
 from sumy.summarizers.sum_basic import SumBasicSummarizer
-from ..utils import build_document, build_document_from_string
 from sumy.nlp.tokenizers import Tokenizer
 
 
@@ -14,7 +13,7 @@ def _build_summarizer(stop_words):
     return summarizer
 
 
-def test_empty_document():
+def test_empty_document(build_document):
     document = build_document()
     summarizer = _build_summarizer(EMPTY_STOP_WORDS)
 
@@ -22,7 +21,7 @@ def test_empty_document():
     assert len(returned) == 0
 
 
-def test_single_sentence():
+def test_single_sentence(build_document):
     s = Sentence("I am one slightly longer sentence.", Tokenizer("english"))
     document = build_document([s])
     summarizer = _build_summarizer(EMPTY_STOP_WORDS)
@@ -67,7 +66,7 @@ def test_compute_word_freq():
     assert freq.get("three", 0) == 0
 
 
-def test_get_all_content_words_in_doc():
+def test_get_all_content_words_in_doc(build_document):
     summarizer = _build_summarizer(EMPTY_STOP_WORDS)
     s0 = Sentence("One two three.", Tokenizer("english"))
     s1 = Sentence("One two three.", Tokenizer("english"))
@@ -81,7 +80,7 @@ def test_get_all_content_words_in_doc():
     assert content_words_freq == content_words_correct
 
 
-def test_compute_tf():
+def test_compute_tf(build_document):
     summarizer = _build_summarizer(EMPTY_STOP_WORDS)
     s0 = Sentence("kicking soccer balls.", Tokenizer("english"))
     s1 = Sentence("eating chicken dumplings.", Tokenizer("english"))
@@ -119,7 +118,7 @@ def test_compute_average_probability_of_words():
     assert abs(summarizer._compute_average_probability_of_words(word_freq, s3) - 8/18) < EPS
 
 
-def test_compute_ratings():
+def test_compute_ratings(build_document):
     summarizer = _build_summarizer(EMPTY_STOP_WORDS)
 
     s0 = Sentence("Dog cat fish.", Tokenizer("english"))

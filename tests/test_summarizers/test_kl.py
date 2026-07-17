@@ -1,6 +1,5 @@
 from sumy.models.dom._sentence import Sentence
 from sumy.summarizers.kl import KLSummarizer
-from ..utils import build_document, build_document_from_string
 from sumy.nlp.tokenizers import Tokenizer
 
 
@@ -14,7 +13,7 @@ def _build_summarizer(stop_words):
     return summarizer
 
 
-def test_empty_document():
+def test_empty_document(build_document):
     document = build_document()
     summarizer = _build_summarizer(EMPTY_STOP_WORDS)
 
@@ -22,7 +21,7 @@ def test_empty_document():
     assert len(returned) == 0
 
 
-def test_single_sentence():
+def test_single_sentence(build_document):
     s = Sentence("I am one slightly longer sentence.", Tokenizer("english"))
     document = build_document([s])
     summarizer = _build_summarizer(EMPTY_STOP_WORDS)

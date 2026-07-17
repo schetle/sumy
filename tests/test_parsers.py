@@ -1,7 +1,6 @@
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.parsers.html import HtmlParser
 from sumy.nlp.tokenizers import Tokenizer
-from .utils import expand_resource_path
 
 
 def test_parse_plaintext():
@@ -65,7 +64,7 @@ def test_parse_plaintext_long():
     assert len(document.paragraphs[4].sentences) == 1
 
 
-def test_annotated_text():
+def test_annotated_text(expand_resource_path):
     path = expand_resource_path("snippets/paragraphs.html")
     url = "http://www.snippet.org/paragraphs.html"
     parser = HtmlParser.from_file(path, url, Tokenizer("czech"))

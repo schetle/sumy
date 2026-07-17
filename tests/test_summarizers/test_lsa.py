@@ -6,10 +6,9 @@ from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.nlp.stemmers import Stemmer
 from sumy.utils import get_stop_words
-from ..utils import build_document, load_resource
 
 
-def test_numpy_not_installed():
+def test_numpy_not_installed(build_document):
     summarizer = LsaSummarizer()
 
     numpy = lsa_module.numpy
@@ -21,7 +20,7 @@ def test_numpy_not_installed():
     lsa_module.numpy = numpy
 
 
-def test_dictionary_without_stop_words():
+def test_dictionary_without_stop_words(build_document):
     summarizer = LsaSummarizer()
     summarizer.stop_words = ["stop", "Halt", "SHUT", "HmMm"]
 
@@ -36,7 +35,7 @@ def test_dictionary_without_stop_words():
     assert expected == frozenset(dictionary.keys())
 
 
-def test_empty_document():
+def test_empty_document(build_document):
     document = build_document()
     summarizer = LsaSummarizer()
 
@@ -44,7 +43,7 @@ def test_empty_document():
     assert len(sentences) == 0
 
 
-def test_single_sentence():
+def test_single_sentence(build_document):
     document = build_document(("I am the sentence you like",))
     summarizer = LsaSummarizer()
     summarizer.stopwords = ("I", "am", "the",)
@@ -54,7 +53,7 @@ def test_single_sentence():
     assert str(sentences[0]) == "I am the sentence you like"
 
 
-def test_document():
+def test_document(build_document):
     document = build_document(
         ("I am the sentence you like", "Do you like me too",),
         ("This sentence is better than that above", "Are you kidding me",)
@@ -70,7 +69,7 @@ def test_document():
     assert str(sentences[1]) == "This sentence is better than that above"
 
 
-def test_real_example():
+def test_real_example(load_resource):
     """Source: http://www.prevko.cz/dite/skutecne-pribehy-deti"""
     parser = PlaintextParser.from_string(
         load_resource("snippets/prevko.txt"),
@@ -83,7 +82,7 @@ def test_real_example():
     assert len(sentences) == 2
 
 
-def test_article_example():
+def test_article_example(load_resource):
     """Source: http://www.prevko.cz/dite/skutecne-pribehy-deti"""
     parser = PlaintextParser.from_string(
         load_resource("articles/prevko_cz_1.txt"),
@@ -96,7 +95,7 @@ def test_article_example():
     assert len(sentences) == 20
 
 
-def test_issue_5_svd_converges():
+def test_issue_5_svd_converges(load_resource):
     """Source: https://github.com/miso-belica/sumy/issues/5"""
     pytest.skip("Can't reproduce the issue.")
 

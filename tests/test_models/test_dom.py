@@ -2,10 +2,9 @@ import pytest
 
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.models.dom import Paragraph, Sentence
-from ..utils import build_document, build_document_from_string
 
 
-def test_unique_words():
+def test_unique_words(build_document):
     document = build_document(
         ("Nějaký muž šel kolem naší zahrady", "Nějaký muž šel kolem vaší zahrady",),
         ("Už už abych taky šel",),
@@ -28,7 +27,7 @@ def test_unique_words():
     assert expected == returned
 
 
-def test_headings():
+def test_headings(build_document_from_string):
     document = build_document_from_string("""
         Nějaký muž šel kolem naší zahrady
         Nějaký jiný muž šel kolem vaší zahrady
@@ -41,7 +40,7 @@ def test_headings():
     assert str(document.headings[0]) == "Nová myšlenka"
 
 
-def test_sentences():
+def test_sentences(build_document_from_string):
     document = build_document_from_string("""
         Nějaký muž šel kolem naší zahrady
         Nějaký jiný muž šel kolem vaší zahrady
@@ -56,7 +55,7 @@ def test_sentences():
     assert str(document.sentences[2]) == "Už už abych taky šel"
 
 
-def test_only_instances_of_sentence_allowed():
+def test_only_instances_of_sentence_allowed(build_document_from_string):
     document = build_document_from_string("""
         Nějaký muž šel kolem naší zahrady
         Nějaký jiný muž šel kolem vaší zahrady

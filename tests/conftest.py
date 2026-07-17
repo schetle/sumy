@@ -1,32 +1,37 @@
 """
 Shared pytest fixtures and helpers for the sumy test suite.
 
-The module-level functions (build_document, build_document_from_string,
-build_sentence, load_resource, expand_resource_path) mirror those in
-tests/utils.py and are kept here as plain functions so that test files
-can import them either way.  They are also exposed as pytest fixtures for
-tests that prefer dependency injection.
+Helper functions from tests/utils.py are exposed as pytest fixtures so that
+test functions receive them via dependency injection instead of direct imports.
 """
 import pytest
-from .utils import (
-    build_document,
-    build_document_from_string,
-    build_sentence,
-    load_resource,
-    expand_resource_path,
-)
+from .utils import build_document as _build_document
+from .utils import build_document_from_string as _build_document_from_string
+from .utils import build_sentence as _build_sentence
+from .utils import load_resource as _load_resource
+from .utils import expand_resource_path as _expand_resource_path
 
 
 @pytest.fixture
-def build_document_fixture():
-    return build_document
+def build_document():
+    return _build_document
 
 
 @pytest.fixture
-def build_document_from_string_fixture():
-    return build_document_from_string
+def build_document_from_string():
+    return _build_document_from_string
 
 
 @pytest.fixture
-def load_resource_fixture():
-    return load_resource
+def build_sentence():
+    return _build_sentence
+
+
+@pytest.fixture
+def load_resource():
+    return _load_resource
+
+
+@pytest.fixture
+def expand_resource_path():
+    return _expand_resource_path

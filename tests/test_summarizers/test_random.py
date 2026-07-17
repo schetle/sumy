@@ -1,8 +1,7 @@
 from sumy.summarizers.random import RandomSummarizer
-from ..utils import build_document, build_document_from_string
 
 
-def test_empty_document():
+def test_empty_document(build_document):
     document = build_document()
     summarizer = RandomSummarizer()
 
@@ -10,7 +9,7 @@ def test_empty_document():
     assert len(sentences) == 0
 
 
-def test_less_sentences_than_requested():
+def test_less_sentences_than_requested(build_document_from_string):
     document = build_document_from_string("""
         This is only one sentence.
     """)
@@ -21,7 +20,7 @@ def test_less_sentences_than_requested():
     assert str(sentences[0]) == "This is only one sentence."
 
 
-def test_sentences_in_right_order():
+def test_sentences_in_right_order(build_document_from_string):
     document = build_document_from_string("""
         # Heading one
         First sentence.
@@ -37,7 +36,7 @@ def test_sentences_in_right_order():
     assert str(sentences[2]) == "Third sentence."
 
 
-def test_more_sentences_than_requested():
+def test_more_sentences_than_requested(build_document_from_string):
     document = build_document_from_string("""
         # Heading one
         First sentence.
