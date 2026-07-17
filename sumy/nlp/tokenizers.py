@@ -31,8 +31,7 @@ class Tokenizer(object):
         return self._language
 
     def _sentence_tokenizer(self, language: str) -> object:
-        path = "tokenizers/punkt_tab/%s.pickle" % language
-        return nltk.data.load(path)
+        return nltk.tokenize.PunktTokenizer(language)
 
     def to_sentences(self, paragraph: str) -> tuple[str, ...]:
         extra_abbreviations = self.LANGUAGE_EXTRA_ABREVS.get(self._language, [])
