@@ -2,7 +2,6 @@ import pytest
 
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.parsers.plaintext import PlaintextParser
-from sumy.models.dom._sentence import Sentence
 from sumy.models import TfDocumentModel
 from sumy.evaluation import precision, recall, f_score
 from sumy.evaluation import cosine_similarity, unit_overlap
