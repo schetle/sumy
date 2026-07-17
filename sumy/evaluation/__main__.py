@@ -168,6 +168,8 @@ def main(args=None):
             result = evaluate(evaluated_sentences, reference_sentences)
         print("%s: %f" % (name, result))
 
+    return 0
+
 
 def handle_arguments(args):
     document_format = args.format
