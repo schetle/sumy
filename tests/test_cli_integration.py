@@ -63,6 +63,7 @@ def test_invalid_method():
 
 ALGORITHM_PARAMS = [
     "luhn",
+    "edmundson",
     "lsa",
     "text-rank",
     "lex-rank",
@@ -126,9 +127,7 @@ def test_edmundson_plaintext(capsys):
     ])
     assert result == 0
     captured = capsys.readouterr()
-    # Edmundson may return fewer sentences when significant_words is empty,
-    # but it must not crash and must return 0.
-    assert isinstance(captured.out, str)
+    assert captured.out.strip() != "", "edmundson produced no output"
 
 
 # ===========================================================================
