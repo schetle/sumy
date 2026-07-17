@@ -42,7 +42,7 @@ def build_parser():
     parser.add_argument("method", choices=list(AVAILABLE_METHODS.keys()),
                         help="Summarization algorithm to use.")
     parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
-    parser.add_argument("--length", default="20%%",
+    parser.add_argument("--length", default="20%",
                         help="Length of summarized text (sentence count or %% of input). [default: 20%%]")
     parser.add_argument("--language", default="english",
                         help="Natural language of summarized text. [default: english]")
