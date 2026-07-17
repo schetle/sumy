@@ -44,25 +44,22 @@ class HtmlParser(DocumentParser):
         summary_html = doc.summary(html_partial=True)
         self._root = lxml.html.fromstring(summary_html)
 
+    def _words_for_tags(self, tags: tuple[str, ...], fallback: tuple[str, ...]) -> tuple[str, ...]:
+        words = []
+        tag_set = set(tags)
+        for element in self._root.iter():
+            if element.tag in tag_set and element.text_content().strip():
+                if not any(anc.tag in tag_set for anc in element.iterancestors()):
+                    words.extend(self.tokenize_words(element.text_content()))
+        return tuple(words) if words else fallback
+
     @cached_property
     def significant_words(self) -> tuple[str, ...]:
-        words = []
-        sig_set = set(self.SIGNIFICANT_TAGS)
-        for element in self._root.iter():
-            if element.tag in sig_set and element.text_content().strip():
-                if not any(anc.tag in sig_set for anc in element.iterancestors()):
-                    words.extend(self.tokenize_words(element.text_content()))
-        return tuple(words) if words else self.SIGNIFICANT_WORDS
+        return self._words_for_tags(self.SIGNIFICANT_TAGS, self.SIGNIFICANT_WORDS)
 
     @cached_property
     def stigma_words(self) -> tuple[str, ...]:
-        words = []
-        stigma_set = set(self.STIGMA_TAGS)
-        for element in self._root.iter():
-            if element.tag in stigma_set and element.text_content().strip():
-                if not any(anc.tag in stigma_set for anc in element.iterancestors()):
-                    words.extend(self.tokenize_words(element.text_content()))
-        return tuple(words) if words else self.STIGMA_WORDS
+        return self._words_for_tags(self.STIGMA_TAGS, self.STIGMA_WORDS)
 
     @cached_property
     def document(self) -> ObjectDocumentModel:
