@@ -31,58 +31,16 @@ PARSERS = {
 }
 
 
-def build_random(parser, language):
-    return RandomSummarizer()
-
-
-def build_luhn(parser, language):
-    summarizer = LuhnSummarizer(Stemmer(language))
-    summarizer.stop_words = get_stop_words(language)
-
-    return summarizer
-
-
-def build_edmundson(parser, language):
-    summarizer = EdmundsonSummarizer(Stemmer(language))
-    summarizer.null_words = get_stop_words(language)
-    summarizer.bonus_words = parser.significant_words
-    summarizer.stigma_words = parser.stigma_words
-
-    return summarizer
-
-
-def build_lsa(parser, language):
-    summarizer = LsaSummarizer(Stemmer(language))
-    summarizer.stop_words = get_stop_words(language)
-
-    return summarizer
-
-
-def build_text_rank(parser, language):
-    summarizer = TextRankSummarizer(Stemmer(language))
-    summarizer.stop_words = get_stop_words(language)
-
-    return summarizer
-
-
-def build_lex_rank(parser, language):
-    summarizer = LexRankSummarizer(Stemmer(language))
-    summarizer.stop_words = get_stop_words(language)
-
-    return summarizer
-
-
-def build_sum_basic(parser, language):
-    summarizer = SumBasicSummarizer(Stemmer(language))
-    summarizer.stop_words = get_stop_words(language)
-
-    return summarizer
-
-
-def build_kl(parser, language):
-    summarizer = KLSummarizer(Stemmer(language))
-    summarizer.stop_words = get_stop_words(language)
-
+def build_summarizer(summarizer_class, stop_words, stemmer, parser):
+    if summarizer_class is RandomSummarizer:
+        return RandomSummarizer()
+    summarizer = summarizer_class(stemmer)
+    if summarizer_class is EdmundsonSummarizer:
+        summarizer.null_words = stop_words
+        summarizer.bonus_words = parser.significant_words
+        summarizer.stigma_words = parser.stigma_words
+    else:
+        summarizer.stop_words = stop_words
     return summarizer
 
 
@@ -103,14 +61,14 @@ def evaluate_unit_overlap(evaluated_sentences, reference_sentences):
 
 
 AVAILABLE_METHODS = {
-    "random": build_random,
-    "luhn": build_luhn,
-    "edmundson": build_edmundson,
-    "lsa": build_lsa,
-    "text-rank": build_text_rank,
-    "lex-rank": build_lex_rank,
-    "sum-basic": build_sum_basic,
-    "kl": build_kl,
+    "random": RandomSummarizer,
+    "luhn": LuhnSummarizer,
+    "edmundson": EdmundsonSummarizer,
+    "lsa": LsaSummarizer,
+    "text-rank": TextRankSummarizer,
+    "lex-rank": LexRankSummarizer,
+    "sum-basic": SumBasicSummarizer,
+    "kl": KLSummarizer,
 }
 
 AVAILABLE_EVALUATIONS = (
@@ -189,7 +147,7 @@ def handle_arguments(args):
         parser_class = PARSERS.get(document_format, PlaintextParser)
         input_stream = open(args.file, "rb")
 
-    summarizer_builder = AVAILABLE_METHODS[args.method]
+    summarizer_class = AVAILABLE_METHODS[args.method]
 
     items_count = ItemsCount(args.length)
 
@@ -200,7 +158,10 @@ def handle_arguments(args):
     with open(args.reference_summary, "rb") as file:
         reference_summary = file.read().decode("utf8")
 
-    return summarizer_builder(doc_parser, args.language), doc_parser.document, items_count, reference_summary
+    stop_words = get_stop_words(args.language)
+    stemmer = Stemmer(args.language)
+    summarizer = build_summarizer(summarizer_class, stop_words, stemmer, doc_parser)
+    return summarizer, doc_parser.document, items_count, reference_summary
 
 
 if __name__ == "__main__":
