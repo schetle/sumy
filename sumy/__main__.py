@@ -50,8 +50,9 @@ def build_parser():
                         help="Path to a file containing stopwords (one word per line, UTF-8).")
     parser.add_argument("--format", choices=list(PARSERS.keys()),
                         help="Format of input document (html or plaintext).")
-    parser.add_argument("--url", help="URL address of the web page to summarize.")
-    parser.add_argument("--file", help="Path to the text file to summarize.")
+    input_group = parser.add_mutually_exclusive_group()
+    input_group.add_argument("--url", help="URL address of the web page to summarize.")
+    input_group.add_argument("--file", help="Path to the text file to summarize.")
     return parser
 
 

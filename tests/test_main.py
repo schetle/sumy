@@ -79,3 +79,10 @@ def test_version_accessible():
     from sumy import __version__ as pkg_version
     assert isinstance(pkg_version, str)
     assert len(pkg_version) > 0
+
+
+def test_url_and_file_mutually_exclusive():
+    parser = build_parser()
+    with pytest.raises(SystemExit) as exc_info:
+        parser.parse_args(['lsa', '--url=http://example.com', '--file=some.txt'])
+    assert exc_info.value.code == 2

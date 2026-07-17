@@ -146,8 +146,9 @@ def build_argument_parser():
                         help="Natural language of summarized text. [default: english]")
     parser.add_argument("--format", choices=list(PARSERS.keys()),
                         help="Format of input document (html or plaintext). [default: plaintext]")
-    parser.add_argument("--url", help="URL address of the web page to summarize.")
-    parser.add_argument("--file", help="Path to the text file to summarize.")
+    input_group = parser.add_mutually_exclusive_group()
+    input_group.add_argument("--url", help="URL address of the web page to summarize.")
+    input_group.add_argument("--file", help="Path to the text file to summarize.")
     return parser
 
 
