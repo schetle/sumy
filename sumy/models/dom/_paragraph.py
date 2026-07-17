@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from itertools import chain
 from functools import cached_property
 from ._sentence import Sentence

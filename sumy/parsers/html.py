@@ -1,10 +1,16 @@
+from __future__ import annotations
+
 from functools import cached_property
+from typing import TYPE_CHECKING
 from urllib.request import urlopen
 import lxml.html
 from readability import Document
 
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
+
+if TYPE_CHECKING:
+    from ..nlp.tokenizers import Tokenizer
 
 
 class HtmlParser(DocumentParser):
@@ -15,22 +21,22 @@ class HtmlParser(DocumentParser):
     HEADING_TAGS = ("h1", "h2", "h3")
 
     @classmethod
-    def from_string(cls, string, url, tokenizer):
+    def from_string(cls, string: str | bytes, url: str | None, tokenizer: Tokenizer) -> HtmlParser:
         return cls(string, tokenizer, url)
 
     @classmethod
-    def from_file(cls, file_path, url, tokenizer):
+    def from_file(cls, file_path: str, url: str | None, tokenizer: Tokenizer) -> HtmlParser:
         with open(file_path, "rb") as f:
             return cls(f.read(), tokenizer, url)
 
     @classmethod
-    def from_url(cls, url, tokenizer):
+    def from_url(cls, url: str, tokenizer: Tokenizer) -> HtmlParser:
         response = urlopen(url)
         data = response.read()
         response.close()
         return cls(data, tokenizer, url)
 
-    def __init__(self, html_content, tokenizer, url=None):
+    def __init__(self, html_content: str | bytes, tokenizer: Tokenizer, url: str | None = None) -> None:
         super().__init__(tokenizer)
         if isinstance(html_content, bytes):
             html_content = html_content.decode("utf-8", errors="replace")
