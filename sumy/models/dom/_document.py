@@ -1,14 +1,9 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 from itertools import chain
-from ...utils import cached_property
-from ..._compat import unicode_compatible
+from functools import cached_property
 
 
-@unicode_compatible
 class ObjectDocumentModel(object):
     def __init__(self, paragraphs):
         self._paragraphs = tuple(paragraphs)
@@ -32,7 +27,7 @@ class ObjectDocumentModel(object):
         words = (p.words for p in self._paragraphs)
         return tuple(chain(*words))
 
-    def __unicode__(self):
+    def __str__(self):
         return "<DOM with %d paragraphs>" % len(self.paragraphs)
 
     def __repr__(self):

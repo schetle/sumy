@@ -1,13 +1,48 @@
 # Python
 __pycache__/
-*.py[co]
-*.egg-info
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
 
-# tests
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Testing
+.pytest_cache/
 .coverage
+htmlcov/
+.tox/
+coverage.xml
+*.cover
+
+# Distribution / packaging
+MANIFEST
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
 
 # working folders
 /experiments/
-
-# IDE files
-.idea

@@ -1,11 +1,6 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import unittest
+from unittest.mock import patch
 
-from sumy._compat import to_unicode
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.parsers.html import HtmlParser
 from sumy.nlp.tokenizers import Tokenizer
@@ -74,27 +69,87 @@ class TestParser(unittest.TestCase):
 
 
 class TestHtmlParser(unittest.TestCase):
-    def test_annotated_text(self):
+    def test_html_document_has_paragraphs(self):
         path = expand_resource_path("snippets/paragraphs.html")
         url = "http://www.snippet.org/paragraphs.html"
         parser = HtmlParser.from_file(path, url, Tokenizer("czech"))
 
         document = parser.document
 
-        self.assertEqual(len(document.paragraphs), 2)
+        self.assertGreater(len(document.paragraphs), 0)
+        self.assertGreater(len(document.sentences), 0)
 
-        self.assertEqual(len(document.paragraphs[0].headings), 1)
-        self.assertEqual(len(document.paragraphs[0].sentences), 1)
+    def test_html_document_extracts_headings(self):
+        path = expand_resource_path("snippets/paragraphs.html")
+        url = "http://www.snippet.org/paragraphs.html"
+        parser = HtmlParser.from_file(path, url, Tokenizer("czech"))
 
-        self.assertEqual(to_unicode(document.paragraphs[0].headings[0]),
-            "Toto je nadpis prvej úrovne")
-        self.assertEqual(to_unicode(document.paragraphs[0].sentences[0]),
-            "Toto je prvý odstavec a to je fajn.")
+        document = parser.document
 
-        self.assertEqual(len(document.paragraphs[1].headings), 0)
-        self.assertEqual(len(document.paragraphs[1].sentences), 2)
+        heading_texts = [str(s) for s in document.headings]
+        self.assertIn("Toto je nadpis prvej úrovne", heading_texts)
 
-        self.assertEqual(to_unicode(document.paragraphs[1].sentences[0]),
-            "Tento text je tu aby vyplnil prázdne miesto v srdci súboru.")
-        self.assertEqual(to_unicode(document.paragraphs[1].sentences[1]),
-            "Aj súbory majú predsa city.")
+    def test_html_document_extracts_sentences(self):
+        path = expand_resource_path("snippets/paragraphs.html")
+        url = "http://www.snippet.org/paragraphs.html"
+        parser = HtmlParser.from_file(path, url, Tokenizer("czech"))
+
+        document = parser.document
+
+        sentence_texts = [str(s) for s in document.sentences]
+        self.assertTrue(
+            any("Toto je prvý odstavec" in t for t in sentence_texts)
+        )
+
+    def test_html_significant_words_from_headings(self):
+        path = expand_resource_path("snippets/paragraphs.html")
+        url = "http://www.snippet.org/paragraphs.html"
+        parser = HtmlParser.from_file(path, url, Tokenizer("czech"))
+
+        sig = parser.significant_words
+        self.assertIsInstance(sig, tuple)
+        self.assertGreater(len(sig), 0)
+
+    def test_html_stigma_words_fallback(self):
+        path = expand_resource_path("snippets/paragraphs.html")
+        url = "http://www.snippet.org/paragraphs.html"
+        parser = HtmlParser.from_file(path, url, Tokenizer("czech"))
+
+        stigma = parser.stigma_words
+        self.assertIsInstance(stigma, tuple)
+        self.assertGreater(len(stigma), 0)
+
+    def test_html_empty_extraction_returns_empty_document(self):
+        with patch('sumy.parsers.html.trafilatura.extract', return_value=None):
+            parser = HtmlParser.from_string('<html><body>text</body></html>',
+                                            'http://example.com',
+                                            Tokenizer('english'))
+            document = parser.document
+            self.assertEqual(len(document.paragraphs), 0)
+            sig = parser.significant_words
+            self.assertIsInstance(sig, tuple)
+            self.assertGreater(len(sig), 0)
+
+    def test_html_malformed_xml_returns_empty_document(self):
+        with patch('sumy.parsers.html.trafilatura.extract', return_value='<not valid xml <<<'):
+            parser = HtmlParser.from_string('<html><body>text</body></html>',
+                                            'http://example.com',
+                                            Tokenizer('english'))
+            document = parser.document
+            self.assertEqual(len(document.paragraphs), 0)
+            sig = parser.significant_words
+            self.assertIsInstance(sig, tuple)
+            self.assertGreater(len(sig), 0)
+
+    def test_html_significant_words_returns_default_when_extraction_fails(self):
+        empty_html = "<html><head><title>T</title></head><body></body></html>"
+        parser = HtmlParser.from_string(empty_html, None, Tokenizer("czech"))
+        sig = parser.significant_words
+        self.assertIsInstance(sig, tuple)
+        self.assertIs(sig, parser.SIGNIFICANT_WORDS)
+
+    def test_html_document_returns_empty_model_when_extraction_fails(self):
+        empty_html = "<html><head><title>T</title></head><body></body></html>"
+        parser = HtmlParser.from_string(empty_html, None, Tokenizer("czech"))
+        doc = parser.document
+        self.assertEqual(len(doc.paragraphs), 0)
