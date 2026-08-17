@@ -144,9 +144,12 @@ def main(method, reference_summary, length, language, document_format, url, file
         print("%s: %f" % (name, result))
 
 
-def handle_arguments(method, reference_summary_path, length, language, document_format, url, file_path):
+def handle_arguments(method, reference_summary_path, length, language, document_format, url, file_path,
+                     default_input_stream=None):
+    if default_input_stream is None:
+        default_input_stream = sys.stdin
     parser_cls = PARSERS["plaintext"]
-    input_stream = sys.stdin
+    input_stream = default_input_stream
 
     if url is not None:
         parser_cls = PARSERS["html"]
@@ -161,7 +164,7 @@ def handle_arguments(method, reference_summary_path, length, language, document_
     try:
         content = input_stream.read()
     finally:
-        if input_stream is not sys.stdin:
+        if input_stream is not default_input_stream:
             input_stream.close()
 
     parser = parser_cls(content, Tokenizer(language))
