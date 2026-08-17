@@ -11,14 +11,6 @@ from .parser import DocumentParser
 class HtmlParser(DocumentParser):
     """Parser of text from HTML format into DOM."""
 
-    SIGNIFICANT_TAGS = (
-        "h1", "h2", "h3",
-        "b", "strong",
-        "big",
-        "dfn",
-        "em",
-    )
-
     @classmethod
     def from_string(cls, string, url, tokenizer):
         return cls(string, tokenizer, url)
