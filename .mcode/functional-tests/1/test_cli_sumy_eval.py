@@ -34,7 +34,7 @@ def reference_summary_file():
         f.write(content)
         fname = f.name
     yield fname
-    os.unlink(fname)
+    Path(fname).unlink(missing_ok=True)
 
 
 class TestSumyEvalLsa:
