@@ -1,9 +1,9 @@
-# -*- coding: utf8 -*-
-
 import urllib.request
-
 from functools import cached_property
-from breadability.readable import Article
+
+import trafilatura
+from lxml import etree
+
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
 
@@ -25,80 +25,83 @@ class HtmlParser(DocumentParser):
 
     @classmethod
     def from_file(cls, file_path, url, tokenizer):
-        with open(file_path, "rb") as file:
-            return cls(file.read(), tokenizer, url)
+        with open(file_path, "rb") as f:
+            return cls(f.read(), tokenizer, url)
 
     @classmethod
     def from_url(cls, url, tokenizer):
         response = urllib.request.urlopen(url)
         data = response.read()
         response.close()
-
         return cls(data, tokenizer, url)
 
     def __init__(self, html_content, tokenizer, url=None):
-        super(HtmlParser, self).__init__(tokenizer)
-        self._article = Article(html_content, url)
+        super().__init__(tokenizer)
+        if isinstance(html_content, bytes):
+            html_content = html_content.decode("utf-8", errors="replace")
+        self._html_content = html_content
+        self._url = url
+
+    def _extract_xml_root(self):
+        xml_str = trafilatura.extract(
+            self._html_content,
+            output_format="xml",
+            include_formatting=True,
+            include_links=False,
+            url=self._url,
+        )
+        if not xml_str:
+            return None
+        try:
+            return etree.fromstring(xml_str.encode("utf-8"))
+        except etree.XMLSyntaxError:
+            return None
+
+    @staticmethod
+    def _tag_name(element):
+        tag = element.tag
+        return tag.split("}")[-1] if "}" in tag else tag
 
     @cached_property
     def significant_words(self):
+        root = self._extract_xml_root()
+        if root is None:
+            return self.SIGNIFICANT_WORDS
+
         words = []
-        for paragraph in self._article.main_text:
-            for text, annotations in paragraph:
-                if self._contains_any(annotations, *self.SIGNIFICANT_TAGS):
+        for element in root.iter():
+            if self._tag_name(element) == "head":
+                text = (element.text or "").strip()
+                if text:
                     words.extend(self.tokenize_words(text))
 
-        if words:
-            return tuple(words)
-        else:
-            return self.SIGNIFICANT_WORDS
+        return tuple(words) if words else self.SIGNIFICANT_WORDS
 
     @cached_property
     def stigma_words(self):
-        words = []
-        for paragraph in self._article.main_text:
-            for text, annotations in paragraph:
-                if self._contains_any(annotations, "a", "strike", "s"):
-                    words.extend(self.tokenize_words(text))
-
-        if words:
-            return tuple(words)
-        else:
-            return self.STIGMA_WORDS
-
-    def _contains_any(self, sequence, *args):
-        if sequence is None:
-            return False
-
-        for item in args:
-            if item in sequence:
-                return True
-
-        return False
+        return self.STIGMA_WORDS
 
     @cached_property
     def document(self):
-        # "a", "abbr", "acronym", "b", "big", "blink", "blockquote", "cite", "code",
-        # "dd", "del", "dfn", "dir", "dl", "dt", "em", "h", "h1", "h2", "h3", "h4",
-        # "h5", "h6", "i", "ins", "kbd", "li", "marquee", "menu", "ol", "pre", "q",
-        # "s", "samp", "strike", "strong", "sub", "sup", "tt", "u", "ul", "var",
-
-        annotated_text = self._article.main_text
+        root = self._extract_xml_root()
+        if root is None:
+            return ObjectDocumentModel([])
 
         paragraphs = []
-        for paragraph in annotated_text:
-            sentences = []
+        for element in root.iter():
+            tag = self._tag_name(element)
+            text = (element.text or "").strip()
+            if not text:
+                continue
 
-            current_text = ""
-            for text, annotations in paragraph:
-                if annotations and ("h1" in annotations or "h2" in annotations or "h3" in annotations):
-                    sentences.append(Sentence(text, self._tokenizer, is_heading=True))
-                # skip <pre> nodes
-                elif not (annotations and "pre" in annotations):
-                    current_text += " " + text
-
-            new_sentences = self.tokenize_sentences(current_text)
-            sentences.extend(Sentence(s, self._tokenizer) for s in new_sentences)
-            paragraphs.append(Paragraph(sentences))
+            if tag == "head":
+                paragraphs.append(Paragraph([Sentence(text, self._tokenizer, is_heading=True)]))
+            elif tag == "p":
+                sentences = [
+                    Sentence(s, self._tokenizer)
+                    for s in self.tokenize_sentences(text)
+                ]
+                if sentences:
+                    paragraphs.append(Paragraph(sentences))
 
         return ObjectDocumentModel(paragraphs)
