@@ -1,11 +1,12 @@
 # -*- coding: utf8 -*-
 
 from functools import cached_property
+from ...utils import to_unicode
 
 
 class Sentence(object):
     def __init__(self, text, tokenizer, is_heading=False):
-        self._text = text.decode('utf-8').strip() if isinstance(text, bytes) else str(text).strip()
+        self._text = to_unicode(text).strip()
         self._tokenizer = tokenizer
         self._is_heading = bool(is_heading)
 

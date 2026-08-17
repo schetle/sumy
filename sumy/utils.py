@@ -23,6 +23,12 @@ def read_stop_words(filename):
         return frozenset(w.decode('utf-8').rstrip() for w in open_file.readlines())
 
 
+def to_unicode(value):
+    if isinstance(value, bytes):
+        return value.decode('utf-8')
+    return str(value)
+
+
 class ItemsCount(object):
     def __init__(self, value):
         self._value = value

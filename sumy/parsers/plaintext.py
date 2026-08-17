@@ -2,6 +2,7 @@
 
 from functools import cached_property
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
+from ..utils import to_unicode
 from .parser import DocumentParser
 
 
@@ -17,7 +18,7 @@ class PlaintextParser(DocumentParser):
 
     def __init__(self, text, tokenizer):
         super(PlaintextParser, self).__init__(tokenizer)
-        self._text = (text.decode('utf-8') if isinstance(text, bytes) else text).strip()
+        self._text = to_unicode(text).strip()
 
     @cached_property
     def significant_words(self):

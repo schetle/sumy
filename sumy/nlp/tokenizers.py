@@ -2,6 +2,7 @@
 
 import re
 import nltk
+from ..utils import to_unicode
 
 
 class Tokenizer(object):
@@ -38,13 +39,13 @@ class Tokenizer(object):
         extra_abbreviations = self.LANGUAGE_EXTRA_ABREVS.get(self._language, [])
         self._sentence_tokenizer._params.abbrev_types.update(extra_abbreviations)
         sentences = self._sentence_tokenizer.tokenize(
-            paragraph.decode('utf-8') if isinstance(paragraph, bytes) else paragraph
+            to_unicode(paragraph)
         )
         return tuple(map(str.strip, sentences))
 
     def to_words(self, sentence):
         words = nltk.word_tokenize(
-            sentence.decode('utf-8') if isinstance(sentence, bytes) else sentence
+            to_unicode(sentence)
         )
         return tuple(filter(self._is_word, words))
 
