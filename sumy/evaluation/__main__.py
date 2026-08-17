@@ -167,9 +167,11 @@ def handle_arguments(method, reference_summary_path, length, language, document_
 
     items_count = ItemsCount(length)
 
-    content = input_stream.read()
-    if input_stream is not sys.stdin:
-        input_stream.close()
+    try:
+        content = input_stream.read()
+    finally:
+        if input_stream is not sys.stdin:
+            input_stream.close()
 
     parser = parser_cls(content, Tokenizer(language))
 

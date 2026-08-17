@@ -76,14 +76,16 @@ def handle_arguments(method, length, language, stopwords_path, document_format, 
 
     items_count = ItemsCount(length)
 
-    if stopwords_path:
-        stop_words = read_stop_words(stopwords_path)
-    else:
-        stop_words = get_stop_words(language)
+    try:
+        if stopwords_path:
+            stop_words = read_stop_words(stopwords_path)
+        else:
+            stop_words = get_stop_words(language)
 
-    content = input_stream.read()
-    if input_stream is not default_input_stream:
-        input_stream.close()
+        content = input_stream.read()
+    finally:
+        if input_stream is not default_input_stream:
+            input_stream.close()
 
     parser = parser_cls(content, Tokenizer(language))
     stemmer = Stemmer(language)
