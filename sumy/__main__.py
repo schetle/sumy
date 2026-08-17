@@ -6,8 +6,7 @@ import click
 from . import __version__
 from .utils import ItemsCount, get_stop_words, read_stop_words
 from .nlp.tokenizers import Tokenizer
-from .parsers.html import HtmlParser
-from .parsers.plaintext import PlaintextParser
+from ._cli_common import HEADERS, PARSERS
 from .summarizers.luhn import LuhnSummarizer
 from .summarizers.edmundson import EdmundsonSummarizer
 from .summarizers.lsa import LsaSummarizer
@@ -16,14 +15,6 @@ from .summarizers.lex_rank import LexRankSummarizer
 from .summarizers.sum_basic import SumBasicSummarizer
 from .summarizers.kl import KLSummarizer
 from .nlp.stemmers import Stemmer
-
-HEADERS = {
-    "User-Agent": "Sumy (Automatic text summarizer) Version/%s" % __version__,
-}
-PARSERS = {
-    "html": HtmlParser,
-    "plaintext": PlaintextParser,
-}
 
 AVAILABLE_METHODS = {
     "luhn": LuhnSummarizer,
