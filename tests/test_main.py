@@ -75,3 +75,45 @@ def test_handle_arguments_plaintext():
 def test_handle_arguments_wrong_format(runner):
     result = runner.invoke(main, ["lsa", "--format", "text"], input="Some text.")
     assert result.exit_code != 0
+
+
+def test_handle_arguments_from_file(tmp_path):
+    text_file = tmp_path / "doc.txt"
+    text_file.write_bytes(
+        b"Python is a high-level programming language. "
+        b"It was created by Guido van Rossum. "
+        b"Python is widely used in data science."
+    )
+    summarizer, parser, items_count = handle_arguments(
+        method="lsa",
+        length="1",
+        language="english",
+        stopwords_path=None,
+        document_format=None,
+        url=None,
+        file_path=str(text_file),
+    )
+    assert summarizer is not None
+    assert parser is not None
+    assert items_count is not None
+
+
+def test_handle_arguments_custom_stopwords(tmp_path):
+    stopwords_file = tmp_path / "stopwords.txt"
+    stopwords_file.write_bytes(b"the\na\nan\n")
+    summarizer, parser, items_count = handle_arguments(
+        method="lsa",
+        length="1",
+        language="english",
+        stopwords_path=str(stopwords_file),
+        document_format=None,
+        url=None,
+        file_path=None,
+        default_input_stream=StringIO(
+            "Python is a high-level programming language. "
+            "It was created by Guido van Rossum."
+        ),
+    )
+    assert summarizer is not None
+    assert parser is not None
+    assert items_count is not None
