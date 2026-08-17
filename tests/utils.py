@@ -1,7 +1,5 @@
 # -*- coding: utf8 -*-
 
-from io import StringIO
-
 from os.path import dirname, join, abspath
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.models.dom import ObjectDocumentModel, Paragraph, Sentence
