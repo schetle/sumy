@@ -22,9 +22,8 @@ class HtmlParser(DocumentParser):
 
     @classmethod
     def from_url(cls, url, tokenizer):
-        response = urllib.request.urlopen(url)
-        data = response.read()
-        response.close()
+        with urllib.request.urlopen(url) as response:
+            data = response.read()
         return cls(data, tokenizer, url)
 
     def __init__(self, html_content, tokenizer, url=None):
