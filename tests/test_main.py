@@ -1,53 +1,77 @@
-# -*- coding: utf8 -*-
-
-
-import unittest
-
-from docopt import docopt, DocoptExit
-from sumy.__main__ import __doc__ as main_doc
-from sumy.__main__ import handle_arguments, __version__
+import pytest
+from click.testing import CliRunner
+from sumy.__main__ import main, handle_arguments, __version__
 from io import StringIO
 
 
-class TestMain(unittest.TestCase):
-    DEFAULT_ARGS = {
-        '--file': None,
-        '--format': None,
-        '--help': False,
-        '--language': 'english',
-        '--length': '20%',
-        '--stopwords': None,
-        '--url': None,
-        '--version': False,
-        'edmundson': False,
-        'lex-rank': False,
-        'lsa': True,
-        'luhn': False,
-        'text-rank': False,
-        'sum-basic': False,
-        'kl': False,
-    }
+@pytest.fixture
+def runner():
+    return CliRunner()
 
-    def test_ok_args(self):
-        docopt(str(main_doc), 'luhn --url=URL --format=FORMAT'.split(), version=__version__)
 
-    def test_args_none(self):
-        self.assertRaises(DocoptExit, docopt, str(main_doc), None, version=__version__)
+def test_help(runner):
+    result = runner.invoke(main, ["--help"])
+    assert result.exit_code == 0
+    assert "Sumy" in result.output
+    assert "METHOD" in result.output or "luhn" in result.output
 
-    def test_args_just_command(self):
-        args = docopt(str(main_doc), ['lsa'], version=__version__)
-        self.assertEqual(self.DEFAULT_ARGS, args)
 
-    def test_args_two_commands(self):
-        self.assertRaises(DocoptExit, docopt, str(main_doc), 'lsa luhn'.split(), version=__version__)
+def test_version(runner):
+    result = runner.invoke(main, ["--version"])
+    assert result.exit_code == 0
+    assert __version__ in result.output
 
-    def test_args_url_and_file(self):
-        self.assertRaises(DocoptExit, docopt, str(main_doc), 'lsa --url=URL --file=FILE'.split(), version=__version__)
 
-    def test_handle_default_arguments(self):
-        handle_arguments(self.DEFAULT_ARGS, default_input_stream=StringIO("Whatever."))
+def test_valid_method_from_stdin(runner):
+    text = (
+        "Python is a high-level programming language. "
+        "It was created by Guido van Rossum. "
+        "Python is widely used in data science and web development."
+    )
+    result = runner.invoke(main, ["lsa", "--length", "1"], input=text)
+    assert result.exit_code == 0
+    assert len(result.output.strip()) > 0
 
-    def test_handle_wrong_format(self):
-        wrong_args = self.DEFAULT_ARGS.copy()
-        wrong_args.update({'--url': 'URL', '--format': 'text'})
-        self.assertRaises(ValueError, handle_arguments, wrong_args, default_input_stream=StringIO("Whatever."))
+
+def test_invalid_method(runner):
+    result = runner.invoke(main, ["invalid-method"])
+    assert result.exit_code != 0
+
+
+def test_invalid_format(runner):
+    result = runner.invoke(main, ["lsa", "--format", "badformat"])
+    assert result.exit_code != 0
+
+
+def test_all_methods_accepted(runner):
+    methods = ["luhn", "edmundson", "lsa", "text-rank", "lex-rank", "sum-basic", "kl"]
+    text = (
+        "Python is a high-level programming language. "
+        "It was created by Guido van Rossum. "
+        "Python is widely used in data science and web development. "
+        "The language has a large standard library."
+    )
+    for method in methods:
+        result = runner.invoke(main, [method, "--length", "1"], input=text)
+        assert result.exit_code == 0, f"Method {method!r} failed: {result.output}"
+
+
+def test_handle_arguments_plaintext():
+    summarizer, parser, items_count = handle_arguments(
+        method="lsa",
+        length="20%",
+        language="english",
+        stopwords_path=None,
+        document_format=None,
+        url=None,
+        file_path=None,
+        default_input_stream=StringIO("Whatever sentence here."),
+    )
+    assert summarizer is not None
+    assert parser is not None
+    assert items_count is not None
+
+
+def test_handle_arguments_wrong_format(runner):
+    result = runner.invoke(main, ["lsa", "--format", "text"], input="Some text.")
+    assert result.exit_code != 0

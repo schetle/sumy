@@ -34,9 +34,11 @@ class TestTokenizer(unittest.TestCase):
         tokenizer = Tokenizer("english")
         words = tokenizer.to_words("I am a very nice sentence with comma, but..")
 
+        # NLTK 3.9+ tokenizes "but.." as separate tokens "but" and ".."
+        # so "but" (all letters) passes the _is_word filter
         expected = (
             "I", "am", "a", "very", "nice", "sentence",
-            "with", "comma",
+            "with", "comma", "but",
         )
         self.assertEqual(expected, words)
 

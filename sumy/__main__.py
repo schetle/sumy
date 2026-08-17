@@ -60,7 +60,9 @@ def main(method, length, language, stopwords_path, document_format, url, file_pa
 
 
 def handle_arguments(method, length, language, stopwords_path, document_format, url, file_path,
-                     default_input_stream=sys.stdin):
+                     default_input_stream=None):
+    if default_input_stream is None:
+        default_input_stream = sys.stdin
     if url is not None:
         parser_cls = PARSERS[document_format or "html"]
         request = urllib.request.Request(url, headers=HEADERS)
