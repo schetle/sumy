@@ -33,6 +33,7 @@ class HtmlParser(DocumentParser):
         self._html_content = html_content
         self._url = url
 
+    @cached_property
     def _extract_xml_root(self):
         xml_str = trafilatura.extract(
             self._html_content,
@@ -55,7 +56,7 @@ class HtmlParser(DocumentParser):
 
     @cached_property
     def significant_words(self):
-        root = self._extract_xml_root()
+        root = self._extract_xml_root
         if root is None:
             return self.SIGNIFICANT_WORDS
 
@@ -74,7 +75,7 @@ class HtmlParser(DocumentParser):
 
     @cached_property
     def document(self):
-        root = self._extract_xml_root()
+        root = self._extract_xml_root
         if root is None:
             return ObjectDocumentModel([])
 
