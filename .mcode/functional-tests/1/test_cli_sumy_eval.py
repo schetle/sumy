@@ -1,13 +1,15 @@
 """
 Functional tests for sumy_eval CLI evaluation metrics.
 """
-import os
+import shutil
 import subprocess
 import tempfile
+from pathlib import Path
 import pytest
 
-SUMY_EVAL = "/tmp/sumy-venv/bin/sumy_eval"
-TEST_ARTICLE = "/l2l/workspace/sumy/tests/data/articles/svd_converges.txt"
+SUMY_EVAL = shutil.which("sumy_eval") or "/tmp/sumy-venv/bin/sumy_eval"
+_DATA_ROOT = Path(__file__).parent.parent.parent.parent / "tests" / "data"
+TEST_ARTICLE = str(_DATA_ROOT / "articles" / "svd_converges.txt")
 
 
 def run_sumy_eval(*args, input_text=None):

@@ -1,7 +1,10 @@
 """
 Functional tests for PlaintextParser and HtmlParser programmatic APIs.
 """
+from pathlib import Path
 import pytest
+
+_DATA_ROOT = Path(__file__).parent.parent.parent.parent / "tests" / "data"
 
 
 class TestPlaintextParser:
@@ -65,7 +68,7 @@ class TestPlaintextParser:
 class TestHtmlParser:
     """HtmlParser parses HTML bytes into a document with sentences"""
 
-    HTML_FIXTURE = "/l2l/workspace/sumy/tests/data/snippets/paragraphs.html"
+    HTML_FIXTURE = str(_DATA_ROOT / "snippets" / "paragraphs.html")
 
     @pytest.fixture(scope="module")
     def html_bytes(self):

@@ -1,11 +1,12 @@
 """
 Functional tests for sumy CLI help and version output.
 """
+import shutil
 import subprocess
 import pytest
 
-SUMY = "/tmp/sumy-venv/bin/sumy"
-SUMY_EVAL = "/tmp/sumy-venv/bin/sumy_eval"
+SUMY = shutil.which("sumy") or "/tmp/sumy-venv/bin/sumy"
+SUMY_EVAL = shutil.which("sumy_eval") or "/tmp/sumy-venv/bin/sumy_eval"
 
 
 def run_cli(*args, input_text=None, executable=SUMY):

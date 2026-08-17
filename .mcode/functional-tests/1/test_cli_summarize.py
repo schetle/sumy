@@ -1,11 +1,14 @@
 """
 Functional tests for sumy CLI summarization with stdin and file input.
 """
+import shutil
 import subprocess
+from pathlib import Path
 import pytest
 
-SUMY = "/tmp/sumy-venv/bin/sumy"
-TEST_ARTICLE = "/l2l/workspace/sumy/tests/data/articles/svd_converges.txt"
+SUMY = shutil.which("sumy") or "/tmp/sumy-venv/bin/sumy"
+_DATA_ROOT = Path(__file__).parent.parent.parent.parent / "tests" / "data"
+TEST_ARTICLE = str(_DATA_ROOT / "articles" / "svd_converges.txt")
 SAMPLE_TEXT = (
     "The quick brown fox jumps over the lazy dog. "
     "Text summarization is the process of reducing a text to its key points. "
