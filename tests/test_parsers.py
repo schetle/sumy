@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.parsers.html import HtmlParser
@@ -117,3 +118,38 @@ class TestHtmlParser(unittest.TestCase):
         stigma = parser.stigma_words
         self.assertIsInstance(stigma, tuple)
         self.assertGreater(len(stigma), 0)
+
+    def test_html_empty_extraction_returns_empty_document(self):
+        with patch('sumy.parsers.html.trafilatura.extract', return_value=None):
+            parser = HtmlParser.from_string('<html><body>text</body></html>',
+                                            'http://example.com',
+                                            Tokenizer('english'))
+            document = parser.document
+            self.assertEqual(len(document.paragraphs), 0)
+            sig = parser.significant_words
+            self.assertIsInstance(sig, tuple)
+            self.assertGreater(len(sig), 0)
+
+    def test_html_malformed_xml_returns_empty_document(self):
+        with patch('sumy.parsers.html.trafilatura.extract', return_value='<not valid xml <<<'):
+            parser = HtmlParser.from_string('<html><body>text</body></html>',
+                                            'http://example.com',
+                                            Tokenizer('english'))
+            document = parser.document
+            self.assertEqual(len(document.paragraphs), 0)
+            sig = parser.significant_words
+            self.assertIsInstance(sig, tuple)
+            self.assertGreater(len(sig), 0)
+
+    def test_html_significant_words_returns_default_when_extraction_fails(self):
+        empty_html = "<html><head><title>T</title></head><body></body></html>"
+        parser = HtmlParser.from_string(empty_html, None, Tokenizer("czech"))
+        sig = parser.significant_words
+        self.assertIsInstance(sig, tuple)
+        self.assertIs(sig, parser.SIGNIFICANT_WORDS)
+
+    def test_html_document_returns_empty_model_when_extraction_fails(self):
+        empty_html = "<html><head><title>T</title></head><body></body></html>"
+        parser = HtmlParser.from_string(empty_html, None, Tokenizer("czech"))
+        doc = parser.document
+        self.assertEqual(len(doc.paragraphs), 0)
