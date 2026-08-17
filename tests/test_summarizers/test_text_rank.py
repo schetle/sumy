@@ -1,13 +1,10 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
 
 import unittest
 
 from sumy.summarizers.text_rank import TextRankSummarizer
 from sumy.nlp.stemmers import Stemmer
-from sumy._compat import to_unicode
 from ..utils import build_document
 
 
@@ -34,8 +31,8 @@ class TestTextRank(unittest.TestCase):
 
         returned = summarizer(document, 10)
         self.assertEqual(len(returned), 2)
-        self.assertEqual(to_unicode(returned[0]), "I am that 1. sentence")
-        self.assertEqual(to_unicode(returned[1]), "And I am 2. winning prize")
+        self.assertEqual(str(returned[0]), "I am that 1. sentence")
+        self.assertEqual(str(returned[1]), "And I am 2. winning prize")
 
     def test_stop_words_correctly_removed(self):
         summarizer = TextRankSummarizer()
@@ -76,7 +73,7 @@ class TestTextRank(unittest.TestCase):
 
         returned = summarizer(document, 1)
         self.assertEqual(len(returned), 1)
-        self.assertEqual(to_unicode(returned[0]), "And I am 2. sentence - winning sentence")
+        self.assertEqual(str(returned[0]), "And I am 2. sentence - winning sentence")
 
     def test_sentences_rating(self):
         document = build_document([

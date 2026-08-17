@@ -23,17 +23,14 @@ Options:
 
 """
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import sys
+import urllib.request
 
 from itertools import chain
 from docopt import docopt
 from .. import __version__
 from ..utils import ItemsCount, get_stop_words
 from ..models import TfDocumentModel
-from .._compat import urllib, to_string
 from ..nlp.tokenizers import Tokenizer
 from ..parsers.html import HtmlParser
 from ..parsers.plaintext import PlaintextParser
@@ -47,7 +44,7 @@ from ..summarizers.sum_basic import SumBasicSummarizer
 from ..summarizers.kl import KLSummarizer
 from ..nlp.stemmers import Stemmer
 from . import precision, recall, f_score, cosine_similarity, unit_overlap
-from . import rouge_1, rouge_2, rouge_l_sentence_level, rouge_l_summary_level 
+from . import rouge_1, rouge_2, rouge_l_sentence_level, rouge_l_summary_level
 
 
 HEADERS = {
@@ -159,7 +156,7 @@ AVAILABLE_EVALUATIONS = (
 
 
 def main(args=None):
-    args = docopt(to_string(__doc__), args, version=__version__)
+    args = docopt(str(__doc__), args, version=__version__)
     summarizer, document, items_count, reference_summary = handle_arguments(args)
 
     evaluated_sentences = summarizer(document, items_count)
@@ -188,8 +185,8 @@ def handle_arguments(args):
 
     if args["--url"] is not None:
         parser = PARSERS["html"]
-        request = urllib.Request(args["--url"], headers=HEADERS)
-        input_stream = urllib.urlopen(request)
+        request = urllib.request.Request(args["--url"], headers=HEADERS)
+        input_stream = urllib.request.urlopen(request)
     elif args["--file"] is not None:
         parser = PARSERS.get(document_format, PlaintextParser)
         input_stream = open(args["--file"], "rb")

@@ -1,14 +1,12 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
 
 import unittest
 
 from docopt import docopt, DocoptExit
 from sumy.__main__ import __doc__ as main_doc
-from sumy.__main__ import handle_arguments, to_string, __version__
-from .utils import StringIO
+from sumy.__main__ import handle_arguments, __version__
+from io import StringIO
 
 
 class TestMain(unittest.TestCase):
@@ -31,20 +29,20 @@ class TestMain(unittest.TestCase):
     }
 
     def test_ok_args(self):
-        docopt(to_string(main_doc), 'luhn --url=URL --format=FORMAT'.split(), version=__version__)
+        docopt(str(main_doc), 'luhn --url=URL --format=FORMAT'.split(), version=__version__)
 
     def test_args_none(self):
-        self.assertRaises(DocoptExit, docopt, to_string(main_doc), None, version=__version__)
+        self.assertRaises(DocoptExit, docopt, str(main_doc), None, version=__version__)
 
     def test_args_just_command(self):
-        args = docopt(to_string(main_doc), ['lsa'], version=__version__)
+        args = docopt(str(main_doc), ['lsa'], version=__version__)
         self.assertEqual(self.DEFAULT_ARGS, args)
 
     def test_args_two_commands(self):
-        self.assertRaises(DocoptExit, docopt, to_string(main_doc), 'lsa luhn'.split(), version=__version__)
+        self.assertRaises(DocoptExit, docopt, str(main_doc), 'lsa luhn'.split(), version=__version__)
 
     def test_args_url_and_file(self):
-        self.assertRaises(DocoptExit, docopt, to_string(main_doc), 'lsa --url=URL --file=FILE'.split(), version=__version__)
+        self.assertRaises(DocoptExit, docopt, str(main_doc), 'lsa --url=URL --file=FILE'.split(), version=__version__)
 
     def test_handle_default_arguments(self):
         handle_arguments(self.DEFAULT_ARGS, default_input_stream=StringIO("Whatever."))
