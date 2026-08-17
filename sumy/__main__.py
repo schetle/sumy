@@ -98,4 +98,8 @@ def build_summarizer(summarizer_class, stop_words, stemmer, parser):
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(e)
+        sys.exit(1)

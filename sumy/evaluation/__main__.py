@@ -177,4 +177,8 @@ def handle_arguments(method, reference_summary_path, length, language, document_
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(e)
+        sys.exit(1)
