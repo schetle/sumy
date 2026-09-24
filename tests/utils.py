@@ -49,4 +49,7 @@ def build_document_from_string(string):
 
 
 def build_sentence(sentence_as_string, is_heading=False):
+    # If already a Sentence, return it as-is
+    if isinstance(sentence_as_string, Sentence):
+        return sentence_as_string
     return Sentence(sentence_as_string, _TOKENIZER, is_heading)
