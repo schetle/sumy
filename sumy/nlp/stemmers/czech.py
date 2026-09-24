@@ -1,5 +1,3 @@
-# -*- coding: utf8 -*-
-
 """
 Czech stemmer
 Copyright © 2010 Luís Gomes <luismsgomes@gmail.com>.
@@ -11,21 +9,17 @@ Usage:
     czech_stemmer.py light|aggressive
 """
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import re
 import sys
 
 from warnings import warn
-from ..._compat import unicode
 
 
 WORD_PATTERN = re.compile(r"^\w+$", re.UNICODE)
 
 
 def stem_word(word, aggressive=False):
-    if not isinstance(word, unicode):
+    if not isinstance(word, str):
         word = word.decode("utf8")
 
     if not WORD_PATTERN.match(word):
@@ -202,3 +196,4 @@ if __name__ == '__main__':
     for line in sys.stdin:
         words = tuple(w.decode("utf8") + " " + stem_word(w, aggressive_stemming) for w in line.split())
         print(*map(lambda s: s.encode("utf8"), words))
+
