@@ -1,13 +1,10 @@
-# -*- coding: utf8 -*-
+from urllib import request as urllib
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+from lxml import html as lxml_html
+from readability import Document
 
-from breadability.readable import Article
-from .._compat import urllib
-from ..utils import cached_property
-from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
+from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 
 
 class HtmlParser(DocumentParser):
@@ -40,67 +37,102 @@ class HtmlParser(DocumentParser):
 
     def __init__(self, html_content, tokenizer, url=None):
         super(HtmlParser, self).__init__(tokenizer)
-        self._article = Article(html_content, url)
+        self._html_content = html_content
+        if isinstance(html_content, bytes):
+            self._html_content = html_content.decode("utf8")
+        self._url = url
+        self._article = Document(self._html_content)
 
-    @cached_property
+    @property
     def significant_words(self):
+        summary_html = self._article.summary()
+        tree = lxml_html.fromstring(summary_html)
         words = []
-        for paragraph in self._article.main_text:
-            for text, annotations in paragraph:
-                if self._contains_any(annotations, *self.SIGNIFICANT_TAGS):
-                    words.extend(self.tokenize_words(text))
-
+        
+        for element in self._iter_text_elements(tree):
+            if self._is_significant_element(element):
+                words.extend(self.tokenize_words(element.text or ""))
+        
         if words:
             return tuple(words)
         else:
             return self.SIGNIFICANT_WORDS
 
-    @cached_property
+    @property
     def stigma_words(self):
+        summary_html = self._article.summary()
+        tree = lxml_html.fromstring(summary_html)
         words = []
-        for paragraph in self._article.main_text:
-            for text, annotations in paragraph:
-                if self._contains_any(annotations, "a", "strike", "s"):
-                    words.extend(self.tokenize_words(text))
-
+        
+        for element in self._iter_elements_with_tags(tree):
+            if "a" in element.tag or "strike" in element.tag or "s" in element.tag:
+                words.extend(self.tokenize_words(element.text or ""))
+        
         if words:
             return tuple(words)
         else:
             return self.STIGMA_WORDS
 
-    def _contains_any(self, sequence, *args):
-        if sequence is None:
-            return False
+    def _iter_text_elements(self, tree):
+        """Iterate over elements that contain significant text."""
+        for element in tree.iter():
+            if element.text and element.text.strip():
+                yield element
 
-        for item in args:
-            if item in sequence:
+    def _iter_elements_with_tags(self, tree):
+        """Iterate over elements that might have stigma tags."""
+        for element in tree.iter():
+            if element.text and element.text.strip():
+                yield element
+
+    def _is_significant_element(self, element):
+        """Check if element has significant tags."""
+        # Check the element's own tag
+        if element.tag in self.SIGNIFICANT_TAGS:
+            return True
+        # Check parent tags for heading context
+        parent = element.getparent()
+        if parent is not None:
+            if parent.tag in ("h1", "h2", "h3"):
                 return True
-
         return False
 
-    @cached_property
+    @property
     def document(self):
-        # "a", "abbr", "acronym", "b", "big", "blink", "blockquote", "cite", "code",
-        # "dd", "del", "dfn", "dir", "dl", "dt", "em", "h", "h1", "h2", "h3", "h4",
-        # "h5", "h6", "i", "ins", "kbd", "li", "marquee", "menu", "ol", "pre", "q",
-        # "s", "samp", "strike", "strong", "sub", "sup", "tt", "u", "ul", "var",
-
-        annotated_text = self._article.main_text
-
+        summary_html = self._article.summary()
+        tree = lxml_html.fromstring(summary_html)
+        
         paragraphs = []
-        for paragraph in annotated_text:
-            sentences = []
-
-            current_text = ""
-            for text, annotations in paragraph:
-                if annotations and ("h1" in annotations or "h2" in annotations or "h3" in annotations):
-                    sentences.append(Sentence(text, self._tokenizer, is_heading=True))
-                # skip <pre> nodes
-                elif not (annotations and "pre" in annotations):
-                    current_text += " " + text
-
-            new_sentences = self.tokenize_sentences(current_text)
-            sentences.extend(Sentence(s, self._tokenizer) for s in new_sentences)
-            paragraphs.append(Paragraph(sentences))
-
+        current_sentences = []
+        current_headings = []
+        
+        for element in tree.iter():
+            if element.tag == "h1" or element.tag == "h2" or element.tag == "h3":
+                if element.text and element.text.strip():
+                    current_headings.append(Sentence(element.text.strip(), self._tokenizer, is_heading=True))
+            elif element.tag == "p":
+                if element.text and element.text.strip():
+                    text = element.text.strip()
+                    sentences = self.tokenize_sentences(text)
+                    for s in sentences:
+                        current_sentences.append(Sentence(s, self._tokenizer))
+                # Process any nested elements within the paragraph
+                for child in element:
+                    if child.text and child.text.strip():
+                        text = child.text.strip()
+                        sentences = self.tokenize_sentences(text)
+                        for s in sentences:
+                            current_sentences.append(Sentence(s, self._tokenizer))
+                # Create paragraph with accumulated sentences
+                if current_sentences or current_headings:
+                    all_sentences = current_headings + current_sentences
+                    paragraphs.append(Paragraph(all_sentences))
+                    current_sentences = []
+                    current_headings = []
+        
+        # Handle any remaining content
+        if current_sentences or current_headings:
+            all_sentences = current_headings + current_sentences
+            paragraphs.append(Paragraph(all_sentences))
+        
         return ObjectDocumentModel(paragraphs)
