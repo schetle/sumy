@@ -18,6 +18,8 @@ class HtmlParser(DocumentParser):
         "em",
     )
 
+    STIGMA_TAGS = ("a", "strike", "s")
+
     @classmethod
     def from_string(cls, string, url, tokenizer):
         return cls(string, tokenizer, url)
@@ -64,8 +66,8 @@ class HtmlParser(DocumentParser):
         tree = lxml_html.fromstring(summary_html)
         words = []
         
-        for element in self._iter_elements_with_tags(tree):
-            if "a" in element.tag or "strike" in element.tag or "s" in element.tag:
+        for element in self._iter_text_elements(tree):
+            if element.tag in self.STIGMA_TAGS:
                 words.extend(self.tokenize_words(element.text or ""))
         
         if words:
@@ -75,12 +77,6 @@ class HtmlParser(DocumentParser):
 
     def _iter_text_elements(self, tree):
         """Iterate over elements that contain significant text."""
-        for element in tree.iter():
-            if element.text and element.text.strip():
-                yield element
-
-    def _iter_elements_with_tags(self, tree):
-        """Iterate over elements that might have stigma tags."""
         for element in tree.iter():
             if element.text and element.text.strip():
                 yield element
@@ -112,18 +108,22 @@ class HtmlParser(DocumentParser):
                     heading = Sentence(element.text.strip(), self._tokenizer, is_heading=True)
                     current_headings.append(heading)
             elif element.tag == "p":
+                # Collect text from paragraph and its children
+                text_parts = []
                 if element.text and element.text.strip():
-                    text = element.text.strip()
+                    text_parts.append(element.text.strip())
+                for child in element:
+                    if child.text and child.text.strip():
+                        text_parts.append(child.text.strip())
+                    if child.tail and child.tail.strip():
+                        text_parts.append(child.tail.strip())
+                
+                if text_parts:
+                    text = " ".join(text_parts)
                     sentences = self.tokenize_sentences(text)
                     for s in sentences:
                         current_sentences.append(Sentence(s, self._tokenizer))
-                # Process any nested elements within the paragraph
-                for child in element:
-                    if child.text and child.text.strip():
-                        text = child.text.strip()
-                        sentences = self.tokenize_sentences(text)
-                        for s in sentences:
-                            current_sentences.append(Sentence(s, self._tokenizer))
+                
                 # Create paragraph with accumulated sentences
                 if current_sentences or current_headings:
                     all_sentences = current_headings + current_sentences
