@@ -1,8 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 from ..models.dom import Sentence
 
 
@@ -218,8 +213,8 @@ def _union_lcs(evaluated_sentences, reference_sentence):
 	between reference sentence ri and candidate summary C. For example, if 
 	r_i= w1 w2 w3 w4 w5, and C contains two sentences: c1 = w1 w2 w6 w7 w8 and 
 	c2 = w1 w3 w8 w9 w5, then the longest common subsequence of r_i and c1 is 
-	“w1 w2” and the longest common subsequence of r_i and c2 is “w1 w3 w5”. The 
-	union longest common subsequence of r_i, c1, and c2 is “w1 w2 w3 w5” and 
+	"w1 w2" and the longest common subsequence of r_i and c2 is "w1 w3 w5". The 
+	union longest common subsequence of r_i, c1, and c2 is "w1 w2 w3 w5" and 
 	LCS_u(r_i, C) = 4/5.
 
 	:param evaluated_sentences: 

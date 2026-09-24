@@ -1,8 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import unittest
 import pytest
 import sumy.summarizers.lsa as lsa_module
@@ -12,7 +7,6 @@ from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.nlp.stemmers import Stemmer
 from sumy.utils import get_stop_words
-from sumy._compat import to_unicode
 from ..utils import build_document, load_resource
 
 
@@ -55,7 +49,7 @@ class TestLsa(unittest.TestCase):
 
         sentences = summarizer(document, 10)
         self.assertEqual(len(sentences), 1)
-        self.assertEqual(to_unicode(sentences[0]), "I am the sentence you like")
+        self.assertEqual(str(sentences[0]), "I am the sentence you like")
 
     def test_document(self):
         document = build_document(
@@ -69,8 +63,8 @@ class TestLsa(unittest.TestCase):
 
         sentences = summarizer(document, 2)
         self.assertEqual(len(sentences), 2)
-        self.assertEqual(to_unicode(sentences[0]), "I am the sentence you like")
-        self.assertEqual(to_unicode(sentences[1]), "This sentence is better than that above")
+        self.assertEqual(str(sentences[0]), "I am the sentence you like")
+        self.assertEqual(str(sentences[1]), "This sentence is better than that above")
 
     def test_real_example(self):
         """Source: http://www.prevko.cz/dite/skutecne-pribehy-deti"""

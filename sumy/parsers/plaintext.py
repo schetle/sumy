@@ -1,9 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
-from .._compat import to_unicode
 from ..utils import cached_property
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
@@ -21,7 +15,7 @@ class PlaintextParser(DocumentParser):
 
     def __init__(self, text, tokenizer):
         super(PlaintextParser, self).__init__(tokenizer)
-        self._text = to_unicode(text).strip()
+        self._text = text.strip() if isinstance(text, str) else text.decode("utf8").strip()
 
     @cached_property
     def significant_words(self):
@@ -68,7 +62,7 @@ class PlaintextParser(DocumentParser):
             if isinstance(line, Sentence):
                 if text:
                     sentences = self.tokenize_sentences(text)
-                    sentence_objects += map(self._to_sentence, sentences)
+                    sentence_objects += [self._to_sentence(s) for s in sentences]
 
                 sentence_objects.append(line)
                 text = ""
@@ -78,7 +72,7 @@ class PlaintextParser(DocumentParser):
         text = text.strip()
         if text:
             sentences = self.tokenize_sentences(text)
-            sentence_objects += map(self._to_sentence, sentences)
+            sentence_objects += [self._to_sentence(s) for s in sentences]
 
         return sentence_objects
 

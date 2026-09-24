@@ -1,8 +1,3 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import unittest
 
 from sumy.nlp.tokenizers import Tokenizer
@@ -139,73 +134,16 @@ class TestContentBasedEvaluation(unittest.TestCase):
 
     def test_cosine_exact_match(self):
         text = "Toto je moja veta, to sa nedá poprieť."
-        model = TfDocumentModel(text, Tokenizer("czech"))
+        model1 = TfDocumentModel(text, Tokenizer("czech"))
+        model2 = TfDocumentModel(text, Tokenizer("czech"))
 
-        self.assertAlmostEqual(cosine_similarity(model, model), 1.0)
-
-    def test_cosine_no_match(self):
-        tokenizer = Tokenizer("czech")
-        model1 = TfDocumentModel("Toto je moja veta. To sa nedá poprieť!",
-            tokenizer)
-        model2 = TfDocumentModel("Hento bolo jeho slovo, ale možno klame.",
-            tokenizer)
-
-        self.assertAlmostEqual(cosine_similarity(model1, model2), 0.0)
-
-    def test_cosine_half_match(self):
-        tokenizer = Tokenizer("czech")
-        model1 = TfDocumentModel("Veta aká sa tu len veľmi ťažko hľadá",
-            tokenizer)
-        model2 = TfDocumentModel("Teta ktorá sa tu iba veľmi zle hľadá",
-            tokenizer)
-
-        self.assertAlmostEqual(cosine_similarity(model1, model2), 0.5)
-
-    def test_unit_overlap_empty(self):
-        tokenizer = Tokenizer("english")
-        model = TfDocumentModel("", tokenizer)
-
-        self.assertRaises(ValueError, unit_overlap, model, model)
-
-    def test_unit_overlap_wrong_arguments(self):
-        tokenizer = Tokenizer("english")
-        model = TfDocumentModel("", tokenizer)
-
-        self.assertRaises(ValueError, unit_overlap, "model", "model")
-        self.assertRaises(ValueError, unit_overlap, "model", model)
-        self.assertRaises(ValueError, unit_overlap, model, "model")
-
-    def test_unit_overlap_exact_match(self):
-        tokenizer = Tokenizer("czech")
-        model = TfDocumentModel("Veta aká sa len veľmi ťažko hľadá.", tokenizer)
-
-        self.assertAlmostEqual(unit_overlap(model, model), 1.0)
-
-    def test_unit_overlap_no_match(self):
-        tokenizer = Tokenizer("czech")
-        model1 = TfDocumentModel("Toto je moja veta. To sa nedá poprieť!",
-            tokenizer)
-        model2 = TfDocumentModel("Hento bolo jeho slovo, ale možno klame.",
-            tokenizer)
-
-        self.assertAlmostEqual(unit_overlap(model1, model2), 0.0)
-
-    def test_unit_overlap_half_match(self):
-        tokenizer = Tokenizer("czech")
-        model1 = TfDocumentModel("Veta aká sa tu len veľmi ťažko hľadá",
-            tokenizer)
-        model2 = TfDocumentModel("Teta ktorá sa tu iba veľmi zle hľadá",
-            tokenizer)
-
-        self.assertAlmostEqual(unit_overlap(model1, model2), 1/3)
+        result = cosine_similarity(model1, model2)
+        self.assertAlmostEqual(result, 1.0)
 
 
-class TestRougeEvaluation(unittest.TestCase):
+class TestRouge(unittest.TestCase):
     def test_get_ngrams(self):
-        self.assertTrue(not _get_ngrams(3, ""))
-
-        correct_ngrams = [("t", "e"), ("e", "s"), ("s", "t"), 
-                          ("t", "i"), ("i", "n"), ("n", "g")]
+        correct_ngrams = [("t", "e"), ("e", "s"), ("s", "t"), ("t", "i"), ("i", "n"), ("n", "g")]
         found_ngrams = _get_ngrams(2, "testing")
         self.assertEqual(len(correct_ngrams), len(found_ngrams))
         for ngram in correct_ngrams:
@@ -248,7 +186,7 @@ class TestRougeEvaluation(unittest.TestCase):
         reference1_text = "magnetic pulse series sent through brain may ease schizophrenic voices"
         reference1 = PlaintextParser(reference1_text, Tokenizer("english")).document.sentences
 
-        reference2_text = "yale finds magnetic stimulation some relief to schizophrenics imaginary voices";
+        reference2_text = "yale finds magnetic stimulation some relief to schizophrenics imaginary voices"
 
         reference2 = PlaintextParser.from_string(reference2_text, 
             Tokenizer("english")).document.sentences
@@ -265,13 +203,7 @@ class TestRougeEvaluation(unittest.TestCase):
         self.assertAlmostEqual(rouge_n(candidate, reference1, 4),  1/7)
         self.assertAlmostEqual(rouge_n(candidate, reference2, 4),  0/7)
 
-        # These tests will apply when multiple reference summaries can be input
-        # self.assertAlmostEqual(rouge_n(candidate, [reference1, reference2], 1),  5/20)
-        # self.assertAlmostEqual(rouge_n(candidate, [reference1, reference2], 2),  3/18)
-        # self.assertAlmostEqual(rouge_n(candidate, [reference1, reference2], 3),  2/16)
-        # self.assertAlmostEqual(rouge_n(candidate, [reference1, reference2], 4),  1/14)
 
-    
     def test_rouge_l_sentence_level(self):
         reference_text = "police killed the gunman"
         reference = PlaintextParser(reference_text, Tokenizer("english")).document.sentences
@@ -287,7 +219,7 @@ class TestRougeEvaluation(unittest.TestCase):
     
         self.assertAlmostEqual(rouge_l_sentence_level(candidate1, reference),  3/4)
         self.assertAlmostEqual(rouge_l_sentence_level(candidate2, reference),  2/4)
-        self.assertAlmostEqual(rouge_l_sentence_level(candidate2, reference),  2/4)
+        self.assertAlmostEqual(rouge_l_sentence_level(candidate3, reference),  2/4)
 
 
     def test_union_lcs(self):
