@@ -107,9 +107,10 @@ class HtmlParser(DocumentParser):
         current_headings = []
         
         for element in tree.iter():
-            if element.tag == "h1" or element.tag == "h2" or element.tag == "h3":
+            if element.tag in ("h1", "h2", "h3"):
                 if element.text and element.text.strip():
-                    current_headings.append(Sentence(element.text.strip(), self._tokenizer, is_heading=True))
+                    heading = Sentence(element.text.strip(), self._tokenizer, is_heading=True)
+                    current_headings.append(heading)
             elif element.tag == "p":
                 if element.text and element.text.strip():
                     text = element.text.strip()

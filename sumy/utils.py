@@ -1,5 +1,22 @@
-from functools import cached_property
 from os.path import dirname, abspath, join, exists
+
+
+def cached_property(getter):
+    """
+    Decorator that converts a method into memoized property.
+    The decorator works as expected only for classes with
+    attribute '__dict__' and immutable properties.
+    For __slots__ classes, we use a simpler approach.
+    """
+    attr_name = "_cached_property_" + getter.__name__
+    
+    @property
+    def decorator(self):
+        if not hasattr(self, attr_name):
+            setattr(self, attr_name, getter(self))
+        return getattr(self, attr_name)
+    
+    return decorator
 
 
 def expand_resource_path(path):
