@@ -62,7 +62,7 @@ class PlaintextParser(DocumentParser):
             if isinstance(line, Sentence):
                 if text:
                     sentences = self.tokenize_sentences(text)
-                    sentence_objects += map(self._to_sentence, sentences)
+                    sentence_objects += list(map(self._to_sentence, sentences))
 
                 sentence_objects.append(line)
                 text = ""
@@ -72,7 +72,7 @@ class PlaintextParser(DocumentParser):
         text = text.strip()
         if text:
             sentences = self.tokenize_sentences(text)
-            sentence_objects += map(self._to_sentence, sentences)
+            sentence_objects += list(map(self._to_sentence, sentences))
 
         return sentence_objects
 
