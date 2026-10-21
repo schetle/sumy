@@ -2,9 +2,19 @@
 __pycache__/
 *.py[co]
 *.egg-info
+*.egg-info/
+build/
+dist/
 
 # tests
 .coverage
+.tox/
+.ruff_cache/
+.pytest_cache/
+
+# virtual environments
+.venv/
+venv/
 
 # working folders
 /experiments/
