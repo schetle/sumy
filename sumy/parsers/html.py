@@ -1,10 +1,11 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+from urllib import request as urllib
 
+# NOTE: breadability has had no release since ~2014 and is effectively
+# unmaintained. It is kept here as a known risk; `readability-lxml` is a
+# documented (not implemented) fallback candidate for a future, separate effort.
 from breadability.readable import Article
-from .._compat import urllib
 from ..utils import cached_property
 from ..models.dom import Sentence, Paragraph, ObjectDocumentModel
 from .parser import DocumentParser
