@@ -26,6 +26,9 @@ class KLSummarizer(AbstractSummarizer):
     def _get_all_words_in_doc(self, sentences):
         return [w for s in sentences for w in s.words]
 
+    def _get_all_content_words_in_sentences(self, sentences):
+        return [w for words in sentences for w in words]
+
     def _get_content_words_in_sentence(self, sentence):
         normalized_words = self._normalize_words(sentence.words)   
         normalized_content_words = self._filter_out_stop_words(normalized_words)
@@ -109,15 +112,20 @@ class KLSummarizer(AbstractSummarizer):
 
         # get all content words once for efficiency
         sentences_as_words = [self._get_content_words_in_sentence(s) for s in sentences]
-        
+
+        # content words (normalized & stop-word-filtered, same as word_freq's
+        # keys) of the sentences already added to the summary, kept in lock
+        # step with `summary` so joint_freq/word_freq share the same keys
+        summary_as_words = []
+
         # Removes one sentence per iteration by adding to summary
         while len(sentences_list) > 0:
             # will store all the kls values for this pass
             kls = []
-            
+
             # converts summary to word list
-            summary_as_word_list = self._get_all_words_in_doc(summary)
-            
+            summary_as_word_list = self._get_all_content_words_in_sentences(summary_as_words)
+
             for s in sentences_as_words:
                 # calculates the joint frequency through combining the word lists
                 joint_freq = self._joint_freq(s, summary_as_word_list)
@@ -128,8 +136,9 @@ class KLSummarizer(AbstractSummarizer):
             # to consider and then add it into the summary
             indexToRemove = self._find_index_of_best_sentence(kls)
             best_sentence = sentences_list.pop(indexToRemove)
-            del sentences_as_words[indexToRemove]
+            best_sentence_words = sentences_as_words.pop(indexToRemove)
             summary.append(best_sentence)
+            summary_as_words.append(best_sentence_words)
 
             # value is the iteration in which it was removed multiplied by -1 so that the first sentences removed (the most important) have highest values
             ratings[best_sentence] =  -1 * len(ratings)
