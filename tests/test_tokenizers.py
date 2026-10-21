@@ -1,8 +1,5 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import unittest
 
 from sumy.nlp.tokenizers import Tokenizer
@@ -36,9 +33,12 @@ class TestTokenizer(unittest.TestCase):
         tokenizer = Tokenizer("english")
         words = tokenizer.to_words("I am a very nice sentence with comma, but..")
 
+        # NOTE: modern NLTK's word tokenizer splits the trailing ".."
+        # off of "but" instead of treating "but.." as a single token,
+        # so "but" is correctly recognized as a word on its own.
         expected = (
             "I", "am", "a", "very", "nice", "sentence",
-            "with", "comma",
+            "with", "comma", "but",
         )
         self.assertEqual(expected, words)
 
@@ -55,6 +55,40 @@ class TestTokenizer(unittest.TestCase):
             "This is next sentence.",
             '"I\'m bored", said Pepek.',
             "Ou jee, duffman is here.",
+        )
+        self.assertEqual(expected, sentences)
+
+    def test_sentence_boundary_detection_english(self):
+        # Regression test for the punkt -> punkt_tab NLTK data migration:
+        # common English abbreviations must not be mistaken for sentence
+        # boundaries, while real sentence boundaries must still be found.
+        tokenizer = Tokenizer("english")
+        sentences = tokenizer.to_sentences(
+            "Dr. Smith went to Washington, D.C. on Monday. "
+            "He met Mr. Jones there. "
+            "The U.S. economy grew by 3 percent. "
+            "Mrs. Lee was pleased."
+        )
+
+        expected = (
+            "Dr. Smith went to Washington, D.C. on Monday.",
+            "He met Mr. Jones there.",
+            "The U.S. economy grew by 3 percent.",
+            "Mrs. Lee was pleased.",
+        )
+        self.assertEqual(expected, sentences)
+
+    def test_sentence_boundary_detection_czech(self):
+        # Same regression check as above but for a non-English punkt_tab
+        # language model to make sure per-language data loads correctly.
+        tokenizer = Tokenizer("czech")
+        sentences = tokenizer.to_sentences(
+            "Dr. Novák šel do práce. Bylo to v pondělí."
+        )
+
+        expected = (
+            "Dr. Novák šel do práce.",
+            "Bylo to v pondělí.",
         )
         self.assertEqual(expected, sentences)
 
