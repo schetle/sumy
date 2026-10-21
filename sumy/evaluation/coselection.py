@@ -1,9 +1,5 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
-
 def f_score(evaluated_sentences, reference_sentences, weight=1.0):
     """
     Computation of F-Score measure. It is computed as
