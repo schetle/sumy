@@ -68,6 +68,22 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(document.paragraphs[4].headings), 0)
         self.assertEqual(len(document.paragraphs[4].sentences), 1)
 
+    def test_parse_plaintext_from_bytes(self):
+        # sumy's CLI (sumy/__main__.py) opens --file input in binary mode, so
+        # PlaintextParser must decode bytes input instead of stringifying it
+        # (str(b"...") would yield a "b'...'" repr, not the decoded text).
+        parser = PlaintextParser.from_string(
+            "Ako sa máš? Ja dobre!".encode("utf-8"),
+            Tokenizer("czech"),
+        )
+
+        document = parser.document
+
+        self.assertEqual(len(document.paragraphs), 1)
+        self.assertEqual(
+            str(document.paragraphs[0].sentences[0]), "Ako sa máš?"
+        )
+
 
 class TestHtmlParser(unittest.TestCase):
     def test_annotated_text(self):
