@@ -1,13 +1,9 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import unittest
 
 from sumy.models.dom._sentence import Sentence
 from sumy.summarizers.kl import KLSummarizer
-from sumy._compat import to_unicode
 from ..utils import build_document, build_document_from_string
 from sumy.nlp.tokenizers import Tokenizer
 
@@ -36,6 +32,28 @@ class TestKL(unittest.TestCase):
 
         returned = summarizer(document, 10)
         self.assertEqual(len(returned), 1)
+
+    def test_multiple_sentences_with_capitalized_stop_words(self):
+        # Regression test: _compute_ratings used to build the running
+        # summary's word list from raw, unnormalized sentence.words while
+        # word_freq (and the per-sentence candidate lists) used normalized,
+        # stop-word-filtered words. A capitalized stop word (e.g. a
+        # sentence-initial "At") that ended up in an already-selected
+        # summary sentence was never present (case-sensitively) in
+        # word_freq, causing a KeyError in _kl_divergence. See the fix in
+        # KLSummarizer._compute_ratings/_get_all_content_words_in_sentences.
+        sentences = [
+            Sentence("Many scientists have studied climate change for decades.", Tokenizer("english")),
+            Sentence("At the same time, policymakers have struggled to agree on solutions.", Tokenizer("english")),
+            Sentence("However, recent technological advances offer new hope for reducing emissions.", Tokenizer("english")),
+            Sentence("Solar and wind power have become significantly cheaper in the last ten years.", Tokenizer("english")),
+        ]
+        document = build_document(sentences)
+        summarizer = self._build_summarizer(self.COMMON_STOP_WORDS)
+
+        returned = summarizer(document, 2)
+
+        self.assertEqual(len(returned), 2)
 
     def test_compute_word_freq(self):
         

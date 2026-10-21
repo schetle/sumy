@@ -1,21 +1,14 @@
 # -*- coding: utf8 -*-
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 from itertools import chain
-from ..._compat import unicode_compatible
 from ...utils import cached_property
 from ._sentence import Sentence
 
 
-@unicode_compatible
 class Paragraph(object):
     __slots__ = (
         "_sentences",
-        "_cached_property_sentences",
-        "_cached_property_headings",
-        "_cached_property_words",
+        "__dict__",
     )
 
     def __init__(self, sentences):
@@ -38,7 +31,7 @@ class Paragraph(object):
     def words(self):
         return tuple(chain(*(s.words for s in self._sentences)))
 
-    def __unicode__(self):
+    def __str__(self):
         return "<Paragraph with %d headings & %d sentences>" % (
             len(self.headings),
             len(self.sentences),
