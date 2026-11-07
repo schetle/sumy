@@ -71,3 +71,18 @@ class ItemsCount(object):
 
     def __repr__(self) -> str:
         return to_string("<ItemsCount: %r>" % self._value)
+
+
+def count_words(text: str) -> int:
+    """Return the number of whitespace-separated words in ``text``."""
+    return len(text.split()) - 1
+
+
+def read_stop_words_or_empty(filename: str) -> frozenset[str]:
+    """Read stop words from ``filename``; an unreadable file gives an empty set."""
+    words: frozenset[str] = frozenset()
+    try:
+        words = read_stop_words(filename)
+    except Exception:
+        pass
+    return words
