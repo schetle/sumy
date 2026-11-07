@@ -5,12 +5,16 @@ from __future__ import division, print_function, unicode_literals
 
 import sys
 
+from collections.abc import Callable, Sequence
 from functools import wraps
 from os.path import dirname, abspath, join, exists
+from typing import Any, TypeVar
 from ._compat import to_string, to_unicode, string_types
 
+T = TypeVar("T")
 
-def cached_property(getter):
+
+def cached_property(getter: Callable[[Any], T]) -> property:
     """
     Decorator that converts a method into memoized property.
     The decorator works as expected only for classes with
@@ -28,29 +32,29 @@ def cached_property(getter):
     return property(decorator)
 
 
-def expand_resource_path(path):
+def expand_resource_path(path: str) -> str:
     directory = dirname(sys.modules["sumy"].__file__)
     directory = abspath(directory)
     return join(directory, to_string("data"), to_string(path))
 
 
-def get_stop_words(language):
+def get_stop_words(language: str) -> frozenset[str]:
     path = expand_resource_path("stopwords/%s.txt" % language)
     if not exists(path):
         raise LookupError("Stop-words are not available for language %s." % language)
     return read_stop_words(path)
 
 
-def read_stop_words(filename):
+def read_stop_words(filename: str) -> frozenset[str]:
     with open(filename, "rb") as open_file:
         return frozenset(to_unicode(w.rstrip()) for w in open_file.readlines())
 
 
 class ItemsCount(object):
-    def __init__(self, value):
+    def __init__(self, value: str | int | float) -> None:
         self._value = value
 
-    def __call__(self, sequence):
+    def __call__(self, sequence: Sequence[T]) -> Sequence[T] | None:
         if isinstance(self._value, string_types):
             if self._value.endswith("%"):
                 total_count = len(sequence)
@@ -65,5 +69,20 @@ class ItemsCount(object):
         else:
             ValueError("Unsuported value of items count '%s'." % self._value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return to_string("<ItemsCount: %r>" % self._value)
+
+
+def count_words(text: str) -> int:
+    """Return the number of whitespace-separated words in ``text``."""
+    return len(text.split()) - 1
+
+
+def read_stop_words_or_empty(filename: str) -> frozenset[str]:
+    """Read stop words from ``filename``; an unreadable file gives an empty set."""
+    words: frozenset[str] = frozenset()
+    try:
+        words = read_stop_words(filename)
+    except Exception:
+        pass
+    return words
