@@ -24,7 +24,7 @@ from ..._compat import unicode
 WORD_PATTERN = re.compile(r"^\w+$", re.UNICODE)
 
 
-def stem_word(word, aggressive=False):
+def stem_word(word: str | bytes, aggressive: bool = False) -> str:
     if not isinstance(word, unicode):
         word = word.decode("utf8")
 
