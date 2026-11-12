@@ -1,4 +1,4 @@
-import glob, os, subprocess, sys, venv, tempfile
+import glob, os, subprocess, venv
 import pytest
 
 VENV = os.path.join(os.environ.get("WORKSPACE_DIR", "/l2l/workspace"), ".venv-sumy", "bin")

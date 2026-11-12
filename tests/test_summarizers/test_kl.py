@@ -100,4 +100,15 @@ class TestKL(unittest.TestCase):
         kl_correct = 0.1920419931617981
         self.assertTrue(abs(summarizer._kl_divergence(w1, w2) - kl_correct) < EPS)
 
+    def test_summarize_capitalized_words(self):
+        document = build_document_from_string("""
+            Extractive summarization selects Sentences from a Document.
+            The Summary should contain Important sentences only.
+            Another Sentence mentions Extractive methods again.
+            Final sentence closes the Document.
+        """)
+        summarizer = KLSummarizer()
+        summarizer.stop_words = self.COMMON_STOP_WORDS
 
+        sentences = summarizer(document, 2)
+        self.assertEqual(len(sentences), 2)

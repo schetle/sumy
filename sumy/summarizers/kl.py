@@ -47,9 +47,8 @@ class KLSummarizer(AbstractSummarizer):
 
     def _get_all_content_words_in_doc(self, sentences):
         all_words = self._get_all_words_in_doc(sentences)
-        content_words = self._filter_out_stop_words(all_words)
-        normalized_content_words = self._normalize_words(content_words)
-        return normalized_content_words
+        normalized_words = self._normalize_words(all_words)
+        return self._filter_out_stop_words(normalized_words)
         
     def _compute_tf(self, sentences):
         '''
@@ -104,7 +103,7 @@ class KLSummarizer(AbstractSummarizer):
     def _compute_ratings(self, sentences):
         word_freq = self._compute_tf(sentences)
         ratings = {}
-        summary = []
+        summary_as_word_list = []
 
         # make it a list so that it can be modified
         sentences_list = list(sentences)
@@ -117,9 +116,6 @@ class KLSummarizer(AbstractSummarizer):
             # will store all the kls values for this pass
             kls = []
             
-            # converts summary to word list
-            summary_as_word_list = self._get_all_words_in_doc(summary)
-            
             for s in sentences_as_words:
                 # calculates the joint frequency through combining the word lists
                 joint_freq = self._joint_freq(s, summary_as_word_list)
@@ -130,8 +126,8 @@ class KLSummarizer(AbstractSummarizer):
             # to consider and then add it into the summary
             indexToRemove = self._find_index_of_best_sentence(kls)
             best_sentence = sentences_list.pop(indexToRemove)
-            del sentences_as_words[indexToRemove]
-            summary.append(best_sentence)
+            # keep summary words normalized like the candidate sentences' words
+            summary_as_word_list.extend(sentences_as_words.pop(indexToRemove))
 
             # value is the iteration in which it was removed multiplied by -1 so that the first sentences removed (the most important) have highest values
             ratings[best_sentence] =  -1 * len(ratings)
