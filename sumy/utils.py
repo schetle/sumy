@@ -1,4 +1,15 @@
 # -*- coding: utf8 -*-
+"""
+Utility helpers shared across the sumy package.
+
+Public helpers:
+
+- cached_property: decorator turning a method into a memoized property.
+- expand_resource_path: resolves a path inside the bundled "data" directory.
+- get_stop_words: loads the stop-words of a language from bundled resources.
+- read_stop_words: reads a stop-words file into a frozenset of strings.
+- ItemsCount: callable that trims a sequence to a count or a percentage.
+"""
 
 from __future__ import absolute_import
 from __future__ import division, print_function, unicode_literals
