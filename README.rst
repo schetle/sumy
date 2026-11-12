@@ -132,3 +132,7 @@ Run tests via
 .. code-block:: bash
 
     $ py.test-2.6 && py.test-3.2 && py.test-2.7 && py.test-3.3 && py.test-3.4
+
+Usage
+-----
+See the example above for summarizing a web page or plain text file. Pick the language and the number of sentences to extract, then iterate over the summarizer output.

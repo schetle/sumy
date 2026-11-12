@@ -3,6 +3,10 @@
 Changelog
 =========
 
+Unreleased
+----------
+- Documentation touch-ups: added module docstring to ``sumy.utils``, ``CONTRIBUTING.rst`` and a Usage note in README.
+
 0.3.0 (2014-06-07)
 ------------------
 - Added possibility to specify format of input document for URL & stdin. Thanks to `@Lucas-C <https://github.com/Lucas-C>`_.
