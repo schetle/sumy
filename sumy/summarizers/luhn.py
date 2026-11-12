@@ -3,30 +3,35 @@
 from __future__ import absolute_import
 from __future__ import division, print_function, unicode_literals
 
+from typing import FrozenSet, Iterable, List, Sequence, Tuple, TYPE_CHECKING
+
 from ..models import TfDocumentModel
-from ._summarizer import AbstractSummarizer
+from ._summarizer import AbstractSummarizer, SentencesCount
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
 
 
 class LuhnSummarizer(AbstractSummarizer):
-    max_gap_size = 4
+    max_gap_size: int = 4
     # TODO: better recognition of significant words (automatic)
-    significant_percentage = 1
-    _stop_words = frozenset()
+    significant_percentage: float = 1
+    _stop_words: FrozenSet[str] = frozenset()
 
     @property
-    def stop_words(self):
+    def stop_words(self) -> FrozenSet[str]:
         return self._stop_words
 
     @stop_words.setter
-    def stop_words(self, words):
+    def stop_words(self, words: Iterable[str]) -> None:
         self._stop_words = frozenset(map(self.normalize_word, words))
 
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: "ObjectDocumentModel", sentences_count: SentencesCount) -> Tuple["Sentence", ...]:
         words = self._get_significant_words(document.words)
         return self._get_best_sentences(document.sentences,
             sentences_count, self.rate_sentence, words)
 
-    def _get_significant_words(self, words):
+    def _get_significant_words(self, words: Iterable[str]) -> Tuple[str, ...]:
         words = map(self.normalize_word, words)
         words = tuple(self.stem_word(w) for w in words if w not in self._stop_words)
 
@@ -39,11 +44,11 @@ class LuhnSummarizer(AbstractSummarizer):
         # take only words contained multiple times in document
         return tuple(t for t in words if model.term_frequency(t) > 1)
 
-    def rate_sentence(self, sentence, significant_stems):
+    def rate_sentence(self, sentence: "Sentence", significant_stems: Iterable[str]) -> float:
         ratings = self._get_chunk_ratings(sentence, significant_stems)
         return max(ratings) if ratings else 0
 
-    def _get_chunk_ratings(self, sentence, significant_stems):
+    def _get_chunk_ratings(self, sentence: "Sentence", significant_stems: Iterable[str]) -> Tuple[float, ...]:
         chunks = []
         NONSIGNIFICANT_CHUNK = [0]*self.max_gap_size
 
@@ -65,7 +70,7 @@ class LuhnSummarizer(AbstractSummarizer):
 
         return tuple(map(self._get_chunk_rating, chunks))
 
-    def _get_chunk_rating(self, chunk):
+    def _get_chunk_rating(self, chunk: List[int]) -> float:
         chunk = self.__remove_trailing_zeros(chunk)
         words_count = len(chunk)
         assert words_count > 0
@@ -76,7 +81,7 @@ class LuhnSummarizer(AbstractSummarizer):
         else:
             return significant_words**2 / words_count
 
-    def __remove_trailing_zeros(self, collection):
+    def __remove_trailing_zeros(self, collection: List[int]) -> List[int]:
         """Removes trailing zeroes from indexable collection of numbers"""
         index = len(collection) - 1
         while index >= 0 and collection[index] == 0:

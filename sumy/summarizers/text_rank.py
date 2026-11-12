@@ -7,27 +7,31 @@ import math
 
 from itertools import combinations
 from collections import defaultdict
-from ._summarizer import AbstractSummarizer
+from typing import DefaultDict, FrozenSet, Iterable, List, Sequence, Tuple, TYPE_CHECKING
+from ._summarizer import AbstractSummarizer, SentencesCount
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
 
 
 class TextRankSummarizer(AbstractSummarizer):
     """Source: https://github.com/adamfabish/Reduction"""
 
-    _stop_words = frozenset()
+    _stop_words: FrozenSet[str] = frozenset()
 
     @property
-    def stop_words(self):
+    def stop_words(self) -> FrozenSet[str]:
         return self._stop_words
 
     @stop_words.setter
-    def stop_words(self, words):
+    def stop_words(self, words: Iterable[str]) -> None:
         self._stop_words = frozenset(map(self.normalize_word, words))
 
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: "ObjectDocumentModel", sentences_count: SentencesCount) -> Tuple["Sentence", ...]:
         ratings = self.rate_sentences(document)
         return self._get_best_sentences(document.sentences, sentences_count, ratings)
 
-    def rate_sentences(self, document):
+    def rate_sentences(self, document: "ObjectDocumentModel") -> DefaultDict["Sentence", float]:
         sentences_words = [(s, self._to_words_set(s)) for s in document.sentences]
         ratings = defaultdict(float)
 
@@ -38,11 +42,11 @@ class TextRankSummarizer(AbstractSummarizer):
 
         return ratings
 
-    def _to_words_set(self, sentence):
+    def _to_words_set(self, sentence: "Sentence") -> List[str]:
         words = map(self.normalize_word, sentence.words)
         return [self.stem_word(w) for w in words if w not in self._stop_words]
 
-    def _rate_sentences_edge(self, words1, words2):
+    def _rate_sentences_edge(self, words1: Sequence[str], words2: Sequence[str]) -> float:
         rank = 0
         for w1 in words1:
             for w2 in words2:

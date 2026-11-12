@@ -4,8 +4,13 @@ from __future__ import absolute_import
 from __future__ import division, print_function, unicode_literals
 import math
 
-from ._summarizer import AbstractSummarizer
+from typing import Dict, Iterable, List, Sequence, Tuple, TYPE_CHECKING
+
+from ._summarizer import AbstractSummarizer, SentencesCount
 from ..utils import get_stop_words
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
 
 
 class KLSummarizer(AbstractSummarizer):
@@ -15,43 +20,43 @@ class KLSummarizer(AbstractSummarizer):
     Source: http://www.aclweb.org/anthology/N09-1041
     """
 
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: "ObjectDocumentModel", sentences_count: SentencesCount) -> Tuple["Sentence", ...]:
         ratings = self._get_ratings(document)
         return self._get_best_sentences(document.sentences, sentences_count, ratings)
 
-    def _get_ratings(self, document):
+    def _get_ratings(self, document: "ObjectDocumentModel") -> Dict["Sentence", int]:
         sentences = document.sentences
 
         ratings = self._compute_ratings(sentences)
         return ratings
 
-    def _get_all_words_in_doc(self, sentences):
+    def _get_all_words_in_doc(self, sentences: Iterable["Sentence"]) -> List[str]:
         return [w for s in sentences for w in s.words]
 
-    def _get_content_words_in_sentence(self, sentence):
+    def _get_content_words_in_sentence(self, sentence: "Sentence") -> List[str]:
         normalized_words = self._normalize_words(sentence.words)   
         normalized_content_words = self._filter_out_stop_words(normalized_words)
         return normalized_content_words
 
-    def _normalize_words(self, words):
+    def _normalize_words(self, words: Iterable[str]) -> List[str]:
         return [self.normalize_word(w) for w in words]
 
-    def _filter_out_stop_words(self, words):
+    def _filter_out_stop_words(self, words: Iterable[str]) -> List[str]:
         return [w for w in words if w not in self.stop_words]
 
-    def _compute_word_freq(self, list_of_words):
+    def _compute_word_freq(self, list_of_words: Iterable[str]) -> Dict[str, int]:
         word_freq = {}
         for w in list_of_words:
             word_freq[w] = word_freq.get(w, 0) + 1
         return word_freq
 
-    def _get_all_content_words_in_doc(self, sentences):
+    def _get_all_content_words_in_doc(self, sentences: Iterable["Sentence"]) -> List[str]:
         all_words = self._get_all_words_in_doc(sentences)
         content_words = self._filter_out_stop_words(all_words)
         normalized_content_words = self._normalize_words(content_words)
         return normalized_content_words
         
-    def _compute_tf(self, sentences):
+    def _compute_tf(self, sentences: Iterable["Sentence"]) -> Dict[str, float]:
         '''
         Computes the normalized term frequency as explained in http://www.tfidf.com/
         '''
@@ -61,7 +66,7 @@ class KLSummarizer(AbstractSummarizer):
         content_word_tf = dict((k, v / content_words_count) for (k, v) in content_words_freq.items())
         return content_word_tf
 
-    def _joint_freq(self, word_list_1, word_list_2):
+    def _joint_freq(self, word_list_1: Sequence[str], word_list_2: Sequence[str]) -> Dict[str, float]:
         # combined length of the word lists
         total_len = len(word_list_1) + len(word_list_2)
 
@@ -84,7 +89,7 @@ class KLSummarizer(AbstractSummarizer):
 
         return joint
 
-    def _kl_divergence(self, summary_freq, doc_freq):
+    def _kl_divergence(self, summary_freq: Dict[str, float], doc_freq: Dict[str, float]) -> float:
         '''
         Note: Could import scipy.stats and use scipy.stats.entropy(doc_freq, summary_freq)
         but this gives equivalent value without the import
@@ -94,14 +99,14 @@ class KLSummarizer(AbstractSummarizer):
             sum_val += doc_freq[w] * math.log(doc_freq[w] / summary_freq[w])
         return sum_val
 
-    def _find_index_of_best_sentence(self, kls):
+    def _find_index_of_best_sentence(self, kls: Sequence[float]) -> int:
         '''
         the best sentence is the one with the smallest kl_divergence
         '''
         indexToRemove = kls.index(min(kls))
         return indexToRemove
 
-    def _compute_ratings(self, sentences):
+    def _compute_ratings(self, sentences: Sequence["Sentence"]) -> Dict["Sentence", int]:
         word_freq = self._compute_tf(sentences)
         ratings = {}
         summary = []

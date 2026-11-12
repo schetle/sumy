@@ -5,13 +5,19 @@ from __future__ import division, print_function, unicode_literals
 
 import math
 
+from typing import Dict, FrozenSet, Iterable, List, Sequence, Tuple, TYPE_CHECKING
+
 try:
     import numpy
 except ImportError:
     numpy = None
 
-from ._summarizer import AbstractSummarizer
+from ._summarizer import AbstractSummarizer, SentencesCount
 from .._compat import Counter
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+    from ..models.dom import ObjectDocumentModel, Sentence
 
 
 class LexRankSummarizer(AbstractSummarizer):
@@ -19,19 +25,19 @@ class LexRankSummarizer(AbstractSummarizer):
     LexRank: Graph-based Centrality as Salience in Text Summarization
     Source: http://tangra.si.umich.edu/~radev/lexrank/lexrank.pdf
     """
-    threshold = 0.1
-    epsilon = 0.1
-    _stop_words = frozenset()
+    threshold: float = 0.1
+    epsilon: float = 0.1
+    _stop_words: FrozenSet[str] = frozenset()
 
     @property
-    def stop_words(self):
+    def stop_words(self) -> FrozenSet[str]:
         return self._stop_words
 
     @stop_words.setter
-    def stop_words(self, words):
+    def stop_words(self, words: Iterable[str]) -> None:
         self._stop_words = frozenset(map(self.normalize_word, words))
 
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: "ObjectDocumentModel", sentences_count: SentencesCount) -> Tuple["Sentence", ...]:
         self._ensure_dependencies_installed()
 
         sentences_words = [self._to_words_set(s) for s in document.sentences]
@@ -45,15 +51,15 @@ class LexRankSummarizer(AbstractSummarizer):
         return self._get_best_sentences(document.sentences, sentences_count, ratings)
 
     @staticmethod
-    def _ensure_dependencies_installed():
+    def _ensure_dependencies_installed() -> None:
         if numpy is None:
             raise ValueError("LexRank summarizer requires NumPy. Please, install it by command 'pip install numpy'.")
 
-    def _to_words_set(self, sentence):
+    def _to_words_set(self, sentence: "Sentence") -> List[str]:
         words = map(self.normalize_word, sentence.words)
         return [self.stem_word(w) for w in words if w not in self._stop_words]
 
-    def _compute_tf(self, sentences):
+    def _compute_tf(self, sentences: Sequence[Sequence[str]]) -> List[Dict[str, float]]:
         tf_values = map(Counter, sentences)
 
         tf_metrics = []
@@ -69,11 +75,11 @@ class LexRankSummarizer(AbstractSummarizer):
         return tf_metrics
 
     @staticmethod
-    def _find_tf_max(terms):
+    def _find_tf_max(terms: Dict[str, int]) -> int:
         return max(terms.values()) if terms else 1
 
     @staticmethod
-    def _compute_idf(sentences):
+    def _compute_idf(sentences: Sequence[Sequence[str]]) -> Dict[str, float]:
         idf_metrics = {}
         sentences_count = len(sentences)
 
@@ -85,7 +91,13 @@ class LexRankSummarizer(AbstractSummarizer):
 
         return idf_metrics
 
-    def _create_matrix(self, sentences, threshold, tf_metrics, idf_metrics):
+    def _create_matrix(
+            self,
+            sentences: Sequence[Sequence[str]],
+            threshold: float,
+            tf_metrics: Sequence[Dict[str, float]],
+            idf_metrics: Dict[str, float]
+    ) -> "ndarray":
         """
         Creates matrix of shape |sentences|×|sentences|.
         """
@@ -114,7 +126,13 @@ class LexRankSummarizer(AbstractSummarizer):
         return matrix
 
     @staticmethod
-    def _compute_cosine(sentence1, sentence2, tf1, tf2, idf_metrics):
+    def _compute_cosine(
+            sentence1: Sequence[str],
+            sentence2: Sequence[str],
+            tf1: Dict[str, float],
+            tf2: Dict[str, float],
+            idf_metrics: Dict[str, float]
+    ) -> float:
         common_words = frozenset(sentence1) & frozenset(sentence2)
 
         numerator = 0.0
@@ -130,7 +148,7 @@ class LexRankSummarizer(AbstractSummarizer):
             return 0.0
 
     @staticmethod
-    def power_method(matrix, epsilon):
+    def power_method(matrix: "ndarray", epsilon: float) -> "ndarray":
         transposed_matrix = matrix.T
         sentences_count = len(matrix)
         p_vector = numpy.array([1.0 / sentences_count] * sentences_count)

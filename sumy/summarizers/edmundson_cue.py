@@ -3,21 +3,31 @@
 from __future__ import absolute_import
 from __future__ import division, print_function, unicode_literals
 
-from ._summarizer import AbstractSummarizer
+from typing import Dict, FrozenSet, Iterable, Tuple, TYPE_CHECKING
+from ._summarizer import AbstractSummarizer, SentencesCount, Stemmer
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
 
 
 class EdmundsonCueMethod(AbstractSummarizer):
-    def __init__(self, stemmer, bonus_words, stigma_words):
+    _bonus_words: FrozenSet[str]
+    _stigma_words: FrozenSet[str]
+
+    def __init__(self, stemmer: Stemmer, bonus_words: FrozenSet[str],
+            stigma_words: FrozenSet[str]) -> None:
         super(EdmundsonCueMethod, self).__init__(stemmer)
         self._bonus_words = bonus_words
         self._stigma_words = stigma_words
 
-    def __call__(self, document, sentences_count, bunus_word_weight, stigma_word_weight):
+    def __call__(self, document: "ObjectDocumentModel", sentences_count: SentencesCount,
+            bunus_word_weight: float, stigma_word_weight: float) -> Tuple["Sentence", ...]:
         return self._get_best_sentences(document.sentences,
             sentences_count, self._rate_sentence, bunus_word_weight,
             stigma_word_weight)
 
-    def _rate_sentence(self, sentence, bunus_word_weight, stigma_word_weight):
+    def _rate_sentence(self, sentence: "Sentence", bunus_word_weight: float,
+            stigma_word_weight: float) -> float:
         # count number of bonus/stigma words in sentece
         words = map(self.stem_word, sentence.words)
         bonus_words_count, stigma_words_count = self._count_words(words)
@@ -29,7 +39,7 @@ class EdmundsonCueMethod(AbstractSummarizer):
         # rating of sentence is (positive - negative) rating
         return bonus_rating - stigma_rating
 
-    def _count_words(self, words):
+    def _count_words(self, words: Iterable[str]) -> Tuple[int, int]:
         """
         Counts number of bonus/stigma words.
 
@@ -49,7 +59,8 @@ class EdmundsonCueMethod(AbstractSummarizer):
 
         return bonus_words_count, stigma_words_count
 
-    def rate_sentences(self, document, bunus_word_weight=1, stigma_word_weight=1):
+    def rate_sentences(self, document: "ObjectDocumentModel", bunus_word_weight: float = 1,
+            stigma_word_weight: float = 1) -> Dict["Sentence", float]:
         rated_sentences = {}
         for sentence in document.sentences:
             rated_sentences[sentence] = self._rate_sentence(sentence,

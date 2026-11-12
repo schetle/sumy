@@ -5,23 +5,29 @@ from __future__ import division, print_function, unicode_literals
 
 from operator import attrgetter
 from itertools import chain
+from typing import Dict, FrozenSet, Tuple, TYPE_CHECKING
 from .._compat import ffilter
-from ._summarizer import AbstractSummarizer
+from ._summarizer import AbstractSummarizer, SentencesCount, Stemmer
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
 
 
 class EdmundsonTitleMethod(AbstractSummarizer):
-    def __init__(self, stemmer, null_words):
+    _null_words: FrozenSet[str]
+
+    def __init__(self, stemmer: Stemmer, null_words: FrozenSet[str]) -> None:
         super(EdmundsonTitleMethod, self).__init__(stemmer)
         self._null_words = null_words
 
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: "ObjectDocumentModel", sentences_count: SentencesCount) -> Tuple["Sentence", ...]:
         sentences = document.sentences
         significant_words = self._compute_significant_words(document)
 
         return self._get_best_sentences(sentences, sentences_count,
             self._rate_sentence, significant_words)
 
-    def _compute_significant_words(self, document):
+    def _compute_significant_words(self, document: "ObjectDocumentModel") -> FrozenSet[str]:
         heading_words = map(attrgetter("words"), document.headings)
 
         significant_words = chain(*heading_words)
@@ -30,14 +36,14 @@ class EdmundsonTitleMethod(AbstractSummarizer):
 
         return frozenset(significant_words)
 
-    def _is_null_word(self, word):
+    def _is_null_word(self, word: str) -> bool:
         return word in self._null_words
 
-    def _rate_sentence(self, sentence, significant_words):
+    def _rate_sentence(self, sentence: "Sentence", significant_words: FrozenSet[str]) -> int:
         words = map(self.stem_word, sentence.words)
         return sum(w in significant_words for w in words)
 
-    def rate_sentences(self, document):
+    def rate_sentences(self, document: "ObjectDocumentModel") -> Dict["Sentence", float]:
         significant_words = self._compute_significant_words(document)
 
         rated_sentences = {}

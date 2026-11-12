@@ -4,8 +4,13 @@ from __future__ import absolute_import
 from __future__ import division, print_function, unicode_literals
 import math
 
-from ._summarizer import AbstractSummarizer
+from typing import Dict, Iterable, List, Sequence, Tuple, TYPE_CHECKING
+
+from ._summarizer import AbstractSummarizer, SentencesCount
 from ..utils import get_stop_words
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
 
 
 class SumBasicSummarizer(AbstractSummarizer):
@@ -16,38 +21,38 @@ class SumBasicSummarizer(AbstractSummarizer):
 
     """
 
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: "ObjectDocumentModel", sentences_count: SentencesCount) -> Tuple["Sentence", ...]:
         sentences = document.sentences
         ratings = self._compute_ratings(sentences)
         return self._get_best_sentences(document.sentences, sentences_count, ratings)
 
-    def _get_all_words_in_doc(self, sentences):
+    def _get_all_words_in_doc(self, sentences: Iterable["Sentence"]) -> List[str]:
         return [w for s in sentences for w in s.words]
 
-    def _get_content_words_in_sentence(self, sentence):
+    def _get_content_words_in_sentence(self, sentence: "Sentence") -> List[str]:
         normalized_words = self._normalize_words(sentence.words)   
         normalized_content_words = self._filter_out_stop_words(normalized_words)
         return normalized_content_words
 
-    def _normalize_words(self, words):
+    def _normalize_words(self, words: Iterable[str]) -> List[str]:
         return [self.normalize_word(w) for w in words]
 
-    def _filter_out_stop_words(self, words):
+    def _filter_out_stop_words(self, words: Iterable[str]) -> List[str]:
         return [w for w in words if w not in self.stop_words]
 
-    def _compute_word_freq(self, list_of_words):
+    def _compute_word_freq(self, list_of_words: Iterable[str]) -> Dict[str, int]:
         word_freq = {}
         for w in list_of_words:
             word_freq[w] = word_freq.get(w, 0) + 1
         return word_freq
 
-    def _get_all_content_words_in_doc(self, sentences):
+    def _get_all_content_words_in_doc(self, sentences: Iterable["Sentence"]) -> List[str]:
         all_words = self._get_all_words_in_doc(sentences)
         content_words = self._filter_out_stop_words(all_words)
         normalized_content_words = self._normalize_words(content_words)
         return normalized_content_words
 
-    def _compute_tf(self, sentences):
+    def _compute_tf(self, sentences: Iterable["Sentence"]) -> Dict[str, float]:
         '''
         Computes the normalized term frequency as explained in http://www.tfidf.com/
         '''
@@ -57,7 +62,8 @@ class SumBasicSummarizer(AbstractSummarizer):
         content_word_tf = dict((k, v / content_words_count) for (k, v) in content_words_freq.items())
         return content_word_tf
 
-    def _compute_average_probability_of_words(self, word_freq_in_doc, content_words_in_sentence):
+    def _compute_average_probability_of_words(self, word_freq_in_doc: Dict[str, float],
+            content_words_in_sentence: Sequence[str]) -> float:
         content_words_count = len(content_words_in_sentence)
         if content_words_count > 0:
             word_freq_sum = sum([word_freq_in_doc[w] for w in content_words_in_sentence])
@@ -66,13 +72,13 @@ class SumBasicSummarizer(AbstractSummarizer):
         else: 
             return 0
 
-    def _update_tf(self, word_freq, words_to_update):
+    def _update_tf(self, word_freq: Dict[str, float], words_to_update: Iterable[str]) -> Dict[str, float]:
         for w in words_to_update:
             word_freq[w] *= word_freq[w]
         return word_freq
 
 
-    def _find_index_of_best_sentence(self, word_freq, sentences_as_words):
+    def _find_index_of_best_sentence(self, word_freq: Dict[str, float], sentences_as_words: Sequence[Sequence[str]]) -> int:
         min_possible_freq = -1
         max_value = min_possible_freq
         best_sentence_index = 0
@@ -84,7 +90,7 @@ class SumBasicSummarizer(AbstractSummarizer):
         return best_sentence_index
 
 
-    def _compute_ratings(self, sentences):
+    def _compute_ratings(self, sentences: Sequence["Sentence"]) -> Dict["Sentence", int]:
         word_freq = self._compute_tf(sentences)
         ratings = {}
         

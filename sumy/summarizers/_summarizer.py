@@ -6,31 +6,50 @@ from __future__ import division, print_function, unicode_literals
 
 from collections import namedtuple
 from operator import attrgetter
+from typing import Any, Callable, Iterable, Mapping, TYPE_CHECKING, Tuple, Union
 from ..utils import ItemsCount
 from .._compat import to_unicode
 from ..nlp.stemmers import null_stemmer
+
+if TYPE_CHECKING:
+    from ..models.dom import ObjectDocumentModel, Sentence
+
+
+# stemmer is any callable converting a (normalized) word to its stem
+Stemmer = Callable[[str], str]
+# number of sentences to select: absolute count, percentage string (e.g. "20%") or ItemsCount
+SentencesCount = Union[int, str, ItemsCount]
 
 
 SentenceInfo = namedtuple("SentenceInfo", ("sentence", "order", "rating",))
 
 
 class AbstractSummarizer(object):
-    def __init__(self, stemmer=null_stemmer):
+    _stemmer: Stemmer
+
+    def __init__(self, stemmer: Stemmer = null_stemmer) -> None:
         if not callable(stemmer):
             raise ValueError("Stemmer has to be a callable object")
 
         self._stemmer = stemmer
 
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: "ObjectDocumentModel", sentences_count: SentencesCount) -> Tuple["Sentence", ...]:
         raise NotImplementedError("This method should be overriden in subclass")
 
-    def stem_word(self, word):
+    def stem_word(self, word: str) -> str:
         return self._stemmer(self.normalize_word(word))
 
-    def normalize_word(self, word):
+    def normalize_word(self, word: str) -> str:
         return to_unicode(word).lower()
 
-    def _get_best_sentences(self, sentences, count, rating, *args, **kwargs):
+    def _get_best_sentences(
+            self,
+            sentences: Iterable["Sentence"],
+            count: SentencesCount,
+            rating: Union[Mapping["Sentence", float], Callable[..., float]],
+            *args: Any,
+            **kwargs: Any
+    ) -> Tuple["Sentence", ...]:
         rate = rating
         if isinstance(rating, dict):
             assert not args and not kwargs

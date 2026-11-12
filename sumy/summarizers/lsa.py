@@ -6,6 +6,7 @@ from __future__ import division, print_function, unicode_literals
 import math
 
 from warnings import warn
+from typing import Dict, FrozenSet, Iterable, List, Sequence, Tuple, TYPE_CHECKING
 
 try:
     import numpy
@@ -16,23 +17,27 @@ try:
     from numpy.linalg import svd as singular_value_decomposition
 except ImportError:
     singular_value_decomposition = None
-from ._summarizer import AbstractSummarizer
+from ._summarizer import AbstractSummarizer, SentencesCount
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+    from ..models.dom import ObjectDocumentModel, Sentence
 
 
 class LsaSummarizer(AbstractSummarizer):
-    MIN_DIMENSIONS = 3
-    REDUCTION_RATIO = 1/1
-    _stop_words = frozenset()
+    MIN_DIMENSIONS: int = 3
+    REDUCTION_RATIO: float = 1/1
+    _stop_words: FrozenSet[str] = frozenset()
 
     @property
-    def stop_words(self):
+    def stop_words(self) -> FrozenSet[str]:
         return self._stop_words
 
     @stop_words.setter
-    def stop_words(self, words):
+    def stop_words(self, words: Iterable[str]) -> None:
         self._stop_words = frozenset(map(self.normalize_word, words))
 
-    def __call__(self, document, sentences_count):
+    def __call__(self, document: "ObjectDocumentModel", sentences_count: SentencesCount) -> Tuple["Sentence", ...]:
         self._ensure_dependecies_installed()
 
         dictionary = self._create_dictionary(document)
@@ -48,18 +53,18 @@ class LsaSummarizer(AbstractSummarizer):
         return self._get_best_sentences(document.sentences, sentences_count,
             lambda s: next(ranks))
 
-    def _ensure_dependecies_installed(self):
+    def _ensure_dependecies_installed(self) -> None:
         if numpy is None:
             raise ValueError("LSA summarizer requires NumPy. Please, install it by command 'pip install numpy'.")
 
-    def _create_dictionary(self, document):
+    def _create_dictionary(self, document: "ObjectDocumentModel") -> Dict[str, int]:
         """Creates mapping key = word, value = row index"""
         words = map(self.normalize_word, document.words)
         unique_words = frozenset(self.stem_word(w) for w in words if w not in self._stop_words)
 
         return dict((w, i) for i, w in enumerate(unique_words))
 
-    def _create_matrix(self, document, dictionary):
+    def _create_matrix(self, document: "ObjectDocumentModel", dictionary: Dict[str, int]) -> "ndarray":
         """
         Creates matrix of shape |unique words|×|sentences| where cells
         contains number of occurences of words (rows) in senteces (cols).
@@ -86,7 +91,7 @@ class LsaSummarizer(AbstractSummarizer):
 
         return matrix
 
-    def _compute_term_frequency(self, matrix, smooth=0.4):
+    def _compute_term_frequency(self, matrix: "ndarray", smooth: float = 0.4) -> "ndarray":
         """
         Computes TF metrics for each sentence (column) in the given matrix.
         You can read more about smoothing parameter at URL below:
@@ -105,7 +110,7 @@ class LsaSummarizer(AbstractSummarizer):
 
         return matrix
 
-    def _compute_ranks(self, sigma, v_matrix):
+    def _compute_ranks(self, sigma: "ndarray", v_matrix: "ndarray") -> List[float]:
         assert len(sigma) == v_matrix.shape[0], "Matrices should be multiplicable"
 
         dimensions = max(LsaSummarizer.MIN_DIMENSIONS,
