@@ -3,6 +3,11 @@
 Changelog
 =========
 
+0.3.1 (2026-11-12)
+------------------
+- Added docstrings to public functions in ``sumy/utils.py`` (``expand_resource_path``, ``get_stop_words`` and ``read_stop_words``).
+- Added test that checks all public functions in ``sumy.utils`` have a docstring.
+
 0.3.0 (2014-06-07)
 ------------------
 - Added possibility to specify format of input document for URL & stdin. Thanks to `@Lucas-C <https://github.com/Lucas-C>`_.

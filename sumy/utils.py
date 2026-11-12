@@ -35,12 +35,29 @@ def cached_property(getter):
 
 
 def expand_resource_path(path):
+    """
+    Returns the absolute path to a resource bundled in the ``data``
+    directory of the ``sumy`` package.
+
+    :param path: Path of the resource relative to the ``data`` directory,
+        e.g. ``"stopwords/english.txt"``.
+    :returns: Absolute path to the resource. The existence of the file is
+        not checked.
+    :raises KeyError: When the ``sumy`` package has not been imported.
+    """
     directory = dirname(sys.modules["sumy"].__file__)
     directory = abspath(directory)
     return join(directory, to_string("data"), to_string(path))
 
 
 def get_stop_words(language):
+    """
+    Returns the stop-words bundled with sumy for the given language.
+
+    :param language: Name of the language, e.g. ``"english"``.
+    :returns: Immutable set of stop-words as unicode strings.
+    :raises LookupError: When stop-words are not available for the language.
+    """
     path = expand_resource_path("stopwords/%s.txt" % language)
     if not exists(path):
         raise LookupError("Stop-words are not available for language %s." % language)
@@ -48,6 +65,14 @@ def get_stop_words(language):
 
 
 def read_stop_words(filename):
+    """
+    Reads stop-words from a file with one stop-word per line.
+
+    :param filename: Path to the file, which is read in binary mode.
+    :returns: Immutable set of stop-words as unicode strings. Trailing
+        whitespace of each line is stripped.
+    :raises IOError: When the file can't be opened or read.
+    """
     with open(filename, "rb") as open_file:
         return frozenset(to_unicode(w.rstrip()) for w in open_file.readlines())
 
