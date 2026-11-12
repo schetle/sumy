@@ -11,10 +11,3 @@ __pycache__/
 
 # IDE files
 .idea
-
-# virtualenvs and test artifacts
-.venv/
-venv/
-.pytest_cache/
-*.pyc
-*.pyo
