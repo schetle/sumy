@@ -6,7 +6,7 @@ from __future__ import division, print_function, unicode_literals
 import math
 
 from pprint import pformat
-from collections import Sequence
+from collections.abc import Sequence
 from .._compat import to_unicode, unicode, string_types, Counter
 
 
