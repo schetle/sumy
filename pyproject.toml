@@ -73,3 +73,8 @@ sumy = ["data/stopwords/*.txt", "py.typed"]
 
 [tool.setuptools.dynamic]
 readme = {file = ["README.rst", "CHANGELOG.rst"], content-type = "text/x-rst"}
+
+# Takes precedence over the legacy [pytest] section in setup.cfg, which
+# modern pytest refuses to load.
+[tool.pytest.ini_options]
+addopts = "--quiet --tb=short --color=yes --cov=sumy --cov-report=term-missing --no-cov-on-fail"
