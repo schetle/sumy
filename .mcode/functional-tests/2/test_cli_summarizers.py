@@ -1,8 +1,7 @@
 import os, subprocess, sys
 import pytest
 
-REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-TXT = os.path.join(REPO, "tests", "data", "articles", "svd_converges.txt")
+from conftest import REPO, TXT
 SHIM = ("import collections, collections.abc, sys\n"
         "[setattr(collections, n, getattr(collections.abc, n)) for n in ('Sequence','Mapping','Set','Iterable')]\n"
         "from sumy.__main__ import main\n"

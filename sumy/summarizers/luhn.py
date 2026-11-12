@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 from __future__ import division, print_function, unicode_literals
 
-from typing import FrozenSet, Iterable, List, Sequence, Tuple, TYPE_CHECKING
+from typing import FrozenSet, Iterable, List, Tuple, TYPE_CHECKING
 
 from ..models import TfDocumentModel
 from ._summarizer import AbstractSummarizer, SentencesCount

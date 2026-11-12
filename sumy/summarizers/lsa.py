@@ -6,7 +6,7 @@ from __future__ import division, print_function, unicode_literals
 import math
 
 from warnings import warn
-from typing import Dict, FrozenSet, Iterable, List, Sequence, Tuple, TYPE_CHECKING
+from typing import Dict, FrozenSet, Iterable, List, Tuple, TYPE_CHECKING
 
 try:
     import numpy

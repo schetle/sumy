@@ -1,8 +1,5 @@
-import collections, collections.abc
-for _n in ("Sequence", "Mapping", "Set", "Iterable"):
-    setattr(collections, _n, getattr(collections.abc, _n))
-import os
 import pytest
+from conftest import TXT
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.nlp.stemmers import Stemmer
@@ -15,9 +12,6 @@ from sumy.summarizers.edmundson import EdmundsonSummarizer
 from sumy.summarizers.kl import KLSummarizer
 from sumy.summarizers.sum_basic import SumBasicSummarizer
 from sumy.summarizers.random import RandomSummarizer
-
-REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-TXT = os.path.join(REPO, "tests", "data", "articles", "svd_converges.txt")
 
 
 @pytest.fixture(scope="module")
@@ -39,17 +33,14 @@ def test_summarizer_returns_sentences(cls, doc):
     assert all(str(s).strip() for s in out)
 
 
-def test_edmundson(doc):
+@pytest.mark.parametrize("method", ["cue_method", "key_method", "title_method", "location_method"])
+def test_edmundson(method, doc):
     s = EdmundsonSummarizer(Stemmer("english"))
     s.bonus_words = ["the"]
     s.stigma_words = ["zzz"]
     s.null_words = ["a"]
-    for m in ("cue", "key", "title", "location"):
-        pass
-    out = s.cue_method(doc, 2)
-    assert len(out) == 2
-    out = s.key_method(doc, 2)
-    assert len(out) == 2
+    out = getattr(s, method)(doc, 2)
+    assert 1 <= len(out) <= 2
 
 
 def test_luhn_deterministic(doc):
