@@ -1,5 +1,4 @@
-import os, subprocess, sys
-import pytest
+import os, subprocess
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 PY = os.path.join(ROOT, ".venv", "bin", "python")
 SUMY = os.path.join(ROOT, ".venv", "bin", "sumy")
