@@ -1,4 +1,10 @@
 # -*- coding: utf8 -*-
+"""Utility helpers shared across sumy.
+
+Provides the ``cached_property`` decorator, helpers for locating bundled
+resources and loading stop words, and the ``ItemsCount`` helper for
+specifying how many items (absolute or percentage) a summary should contain.
+"""
 
 from __future__ import absolute_import
 from __future__ import division, print_function, unicode_literals
