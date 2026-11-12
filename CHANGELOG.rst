@@ -3,6 +3,11 @@
 Changelog
 =========
 
+Unreleased
+----------
+- Packaging metadata moved to ``pyproject.toml`` (PEP 621); ``setup.py`` is now a thin shim. Requires Python 3.9+.
+- Dropped the version-suffixed console scripts (``sumy-3.x``, ``sumy_eval-3.x``); only ``sumy`` and ``sumy_eval`` are installed.
+
 0.3.0 (2014-06-07)
 ------------------
 - Added possibility to specify format of input document for URL & stdin. Thanks to `@Lucas-C <https://github.com/Lucas-C>`_.

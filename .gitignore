@@ -11,3 +11,11 @@ __pycache__/
 
 # IDE files
 .idea
+
+# packaging
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.coverage
