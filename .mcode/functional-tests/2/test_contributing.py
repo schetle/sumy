@@ -1,4 +1,4 @@
-import os, re, subprocess
+import os, subprocess
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 VENV_PY = os.path.join(os.environ.get("MCODE_DIR", ""), "scratch", "venv39", "bin", "python")
