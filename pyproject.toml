@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "sumy"
 version = "0.3.0"
 description = "Module for automatic summarization of text documents and HTML pages."
-readme = {file = ["README.rst", "CHANGELOG.rst"], content-type = "text/x-rst"}
+dynamic = ["readme"]
 requires-python = ">=3.9"
 authors = [{name = "Michal Belica", email = "miso.belica@gmail.com"}]
 license = "Apache-2.0"
@@ -70,3 +70,6 @@ include = ["sumy*"]
 
 [tool.setuptools.package-data]
 sumy = ["data/stopwords/*.txt", "py.typed"]
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.rst", "CHANGELOG.rst"], content-type = "text/x-rst"}
