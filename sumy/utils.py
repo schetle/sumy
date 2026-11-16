@@ -33,12 +33,17 @@ def cached_property(getter: Callable[[Any], Any]) -> property:
 
 
 def expand_resource_path(path: str) -> str:
+    """Return the absolute path of a file inside the sumy package's data directory."""
     directory = dirname(sys.modules["sumy"].__file__)
     directory = abspath(directory)
     return join(directory, to_string("data"), to_string(path))
 
 
 def get_stop_words(language: str) -> frozenset[str]:
+    """
+    Return the stop words bundled with sumy for the given language as a frozenset.
+    Raises LookupError if no stop-words file exists for that language.
+    """
     path = expand_resource_path("stopwords/%s.txt" % language)
     if not exists(path):
         raise LookupError("Stop-words are not available for language %s." % language)
@@ -46,6 +51,7 @@ def get_stop_words(language: str) -> frozenset[str]:
 
 
 def read_stop_words(filename: str) -> frozenset[str]:
+    """Read a stop-words file (one word per line) and return its words as a frozenset of unicode strings."""
     with open(filename, "rb") as open_file:
         return frozenset(to_unicode(w.rstrip()) for w in open_file.readlines())
 
