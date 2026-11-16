@@ -1,0 +1,5 @@
+Sumy is a tool that summarizes text. The summarizer reads text and ranks every sentence.
+Luhn ranks sentences by clusters of significant words, and the summarizer returns the best sentences.
+Dr. Smith likes cats. The weather was fine yesterday.
+"Is the summarizer useful?" asked Mr. Jones. He said the summarizer ranks sentences well.
+Nothing else matters here.
