@@ -12,6 +12,7 @@ Usage:
 """
 
 from __future__ import absolute_import
+from __future__ import annotations
 from __future__ import division, print_function, unicode_literals
 
 import re
@@ -24,7 +25,7 @@ from ..._compat import unicode
 WORD_PATTERN = re.compile(r"^\w+$", re.UNICODE)
 
 
-def stem_word(word, aggressive=False):
+def stem_word(word: str | bytes, aggressive: bool = False) -> str:
     if not isinstance(word, unicode):
         word = word.decode("utf8")
 
@@ -53,7 +54,7 @@ def stem_word(word, aggressive=False):
     return stem
 
 
-def _remove_case(word):
+def _remove_case(word: str) -> str:
     if len(word) > 7 and word.endswith("atech"):
         return word[:-5]
 
@@ -88,7 +89,7 @@ def _remove_case(word):
     return word
 
 
-def _remove_possessives(word):
+def _remove_possessives(word: str) -> str:
     if len(word) > 5:
         if word[-2:] in ("ov", "ův"):
             return word[:-2]
@@ -97,14 +98,14 @@ def _remove_possessives(word):
     return word
 
 
-def _remove_comparative(word):
+def _remove_comparative(word: str) -> str:
     if len(word) > 5:
         if word[-3:] in ("ejš", "ějš"):
             return _palatalize(word[:-2])
     return word
 
 
-def _remove_diminutive(word):
+def _remove_diminutive(word: str) -> str:
     if len(word) > 7 and word.endswith("oušek"):
         return word[:-5]
     if len(word) > 6:
@@ -131,7 +132,7 @@ def _remove_diminutive(word):
     return word
 
 
-def _remove_augmentative(word):
+def _remove_augmentative(word: str) -> str:
     if len(word) > 6 and word.endswith("ajzn"):
         return word[:-4]
     if len(word) > 5 and word[-3:] in ("izn", "isk"):
@@ -141,7 +142,7 @@ def _remove_augmentative(word):
     return word
 
 
-def _remove_derivational(word):
+def _remove_derivational(word: str) -> str:
     if len(word) > 8 and word.endswith("obinec"):
         return word[:-6]
     if len(word) > 7:
@@ -178,7 +179,7 @@ def _remove_derivational(word):
     return word
 
 
-def _palatalize(word):
+def _palatalize(word: str) -> str:
     if word[-2:] in ("ci", "ce", "či", "če"):
         return word[:-2] + "k"
 
