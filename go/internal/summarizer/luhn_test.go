@@ -29,11 +29,7 @@ func buildDoc(t *testing.T, sentences ...string) []Sentence {
 
 func luhn(stop ...string) *Luhn {
 	l := NewLuhn()
-	m := map[string]struct{}{}
-	for _, w := range stop {
-		m[w] = struct{}{}
-	}
-	l.SetStopWords(m)
+	l.SetStopWords(set(stop...))
 	return l
 }
 
