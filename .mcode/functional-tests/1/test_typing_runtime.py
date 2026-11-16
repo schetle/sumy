@@ -2,7 +2,7 @@ import subprocess, sys, os, tempfile
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 TEXT = "The cat sat on the mat. The dog chased the cat around the garden. Birds sing in the morning. The mat was red and soft. A dog is a loyal animal."
 
-def run(args, inp=None):
+def run(args):
     return subprocess.run([sys.executable] + args, cwd=REPO, capture_output=True, text=True, timeout=120)
 
 def tmpfile(text):
@@ -14,9 +14,7 @@ def py(code):
     return run(["-c", code])
 
 def test_cli_lsa_summary():
-    with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f:
-        f.write(TEXT)
-    r = run(["-m", "sumy", "lsa", "--length=2", "--file=" + f.name])
+    r = run(["-m", "sumy", "lsa", "--length=2", "--file=" + tmpfile(TEXT)])
     assert r.returncode == 0, r.stderr
     assert len(r.stdout.strip().splitlines()) == 2
 
@@ -59,8 +57,6 @@ print('ok')
 def test_utils_behaviour():
     r = py("""
 from sumy.utils import *
-@cached_property_wrap if False else (lambda f: f)
-def _x(): pass
 n=[0]
 class A:
     @cached_property
@@ -76,8 +72,7 @@ assert 'the' in read_stop_words(expand_resource_path('stopwords/english.txt'))
 s=[1,2,3,4]
 assert ItemsCount(2)(s)==[1,2] and ItemsCount('50%')(s)==[1,2] and ItemsCount('1%')(s)==[1] and ItemsCount('3')(s)==[1,2,3] and ItemsCount(2.0)(s)==[1,2]
 assert repr(ItemsCount('5%'))=="<ItemsCount: '5%'>"
-import collections.abc, sumy.models.tf
 print('ok')
-""".replace("@cached_property_wrap if False else (lambda f: f)\ndef _x(): pass\n",""))
+""")
     assert r.returncode == 0, r.stderr
     assert "ok" in r.stdout
