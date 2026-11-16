@@ -19,7 +19,7 @@ def txt(tmp_path):
     p = tmp_path / "a.txt"; p.write_text(TEXT); return str(p)
 
 def test_version():
-    r = run(["--version"]); assert r.returncode == 0 and r.stdout.strip() == "0.1.0"
+    r = run(["--version"]); assert r.returncode == 0 and r.stdout.strip() == "0.3.0"
 
 def test_help():
     r = run(["--help"]); assert r.returncode == 0 and "--length" in r.stdout
