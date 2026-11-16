@@ -203,21 +203,7 @@ func (t *Tokenizer) endsWithAbbreviation(pre []rune) bool {
 		return true
 	}
 	for _, a := range t.abbrevs {
-		if len(a) > len(pre) {
-			continue
-		}
-		off := len(pre) - len(a)
-		match := true
-		for x, r := range a {
-			if unicode.ToLower(pre[off+x]) != r {
-				match = false
-				break
-			}
-		}
-		if !match {
-			continue
-		}
-		if off == 0 || !(unicode.IsLetter(pre[off-1]) || unicode.IsDigit(pre[off-1])) {
+		if abbrevAt(pre, len(pre)-len(a), a) {
 			return true
 		}
 	}
@@ -233,22 +219,26 @@ func (t *Tokenizer) insideAbbreviation(rs []rune, i int) bool {
 				continue
 			}
 			off := i - p
-			if off < 0 || off+len(a) > len(rs) {
-				continue
-			}
-			match := true
-			for x, ar := range a {
-				if unicode.ToLower(rs[off+x]) != ar {
-					match = false
-					break
-				}
-			}
-			if match && (off == 0 || !(unicode.IsLetter(rs[off-1]) || unicode.IsDigit(rs[off-1]))) {
+			if abbrevAt(rs, off, a) {
 				return true
 			}
 		}
 	}
 	return false
+}
+
+// abbrevAt reports whether the lower-cased abbreviation a occurs in rs at off,
+// case-insensitively and starting at a word boundary.
+func abbrevAt(rs []rune, off int, a []rune) bool {
+	if off < 0 || off+len(a) > len(rs) {
+		return false
+	}
+	for x, r := range a {
+		if unicode.ToLower(rs[off+x]) != r {
+			return false
+		}
+	}
+	return off == 0 || !(unicode.IsLetter(rs[off-1]) || unicode.IsDigit(rs[off-1]))
 }
 
 // isDottedAcronym matches letter(.letter)+ such as "U.S" or "e.g".
