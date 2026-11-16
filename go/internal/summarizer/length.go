@@ -19,9 +19,6 @@ var DefaultLength = Length{n: 20, percent: true}
 // Count returns an absolute sentence count.
 func Count(n int) Length { return Length{n: n} }
 
-// Percent returns a percentage of the document's sentences.
-func Percent(p int) Length { return Length{n: p, percent: true} }
-
 // ParseLength parses "5" (count) or "20%" (percentage).
 func ParseLength(s string) (Length, error) {
 	s = strings.TrimSpace(s)
