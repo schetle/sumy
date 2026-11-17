@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: pip install -e ".[LSA,LexRank,dev]"
+      - name: Download NLTK data
+        run: python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
+      - name: Ruff
+        run: ruff check .
+      - name: Pytest
+        run: pytest
