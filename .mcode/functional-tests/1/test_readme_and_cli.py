@@ -1,5 +1,7 @@
-import os, subprocess, sys
-import docutils.core, docutils.utils
+import os
+import subprocess
+import docutils.core
+import docutils.io
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 TEXT = "Natural language processing is a field of computer science. It studies how computers understand human language. Summarization reduces a document to its most important sentences. Many algorithms exist, such as LSA, LexRank and TextRank."
