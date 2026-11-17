@@ -285,7 +285,7 @@ class TestRougeEvaluation(unittest.TestCase):
         candidate2 = PlaintextParser(candidate2_text, Tokenizer("english")).document.sentences
 
         candidate3_text = "the gunman police killed"
-        PlaintextParser(candidate3_text, Tokenizer("english")).document.sentences
+        PlaintextParser(candidate3_text, Tokenizer("english"))
 
         self.assertAlmostEqual(rouge_l_sentence_level(candidate1, reference),  3/4)
         self.assertAlmostEqual(rouge_l_sentence_level(candidate2, reference),  2/4)
