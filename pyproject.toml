@@ -75,7 +75,18 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 120
 target-version = "py312"
-extend-exclude = ["experiments"]
+# Legacy modules are modernized in later milestones; remove entries as they land.
+extend-exclude = [
+    "experiments",
+    "sumy/_compat.py",
+    "sumy/nlp",
+    "sumy/parsers",
+    "sumy/summarizers",
+    "tests/test_parsers.py",
+    "tests/test_stemmers.py",
+    "tests/test_tokenizers.py",
+    "tests/test_summarizers",
+]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B"]
