@@ -1,5 +1,3 @@
-# -*- coding: utf8 -*-
-
 """
 Sumy - evaluation of automatic text summary.
 
@@ -21,19 +19,19 @@ Options:
     --version            Displays version of application.
     --help               Displays this text.
 
-"""
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
+"""  # noqa: E501
 
 import sys
-
+import urllib.request
+from collections.abc import Mapping, Sequence
 from itertools import chain
+from typing import Any
+
 from docopt import docopt
+
 from .. import __version__
 from ..utils import ItemsCount, get_stop_words
 from ..models import TfDocumentModel
-from .._compat import urllib, to_string
 from ..nlp.tokenizers import Tokenizer
 from ..parsers.html import HtmlParser
 from ..parsers.plaintext import PlaintextParser
@@ -47,11 +45,11 @@ from ..summarizers.sum_basic import SumBasicSummarizer
 from ..summarizers.kl import KLSummarizer
 from ..nlp.stemmers import Stemmer
 from . import precision, recall, f_score, cosine_similarity, unit_overlap
-from . import rouge_1, rouge_2, rouge_l_sentence_level, rouge_l_summary_level 
+from . import rouge_1, rouge_2, rouge_l_sentence_level, rouge_l_summary_level
 
 
 HEADERS = {
-    "User-Agent": "Sumy (Automatic text summarizer) Version/%s" % __version__,
+    "User-Agent": f"Sumy (Automatic text summarizer) Version/{__version__}",
 }
 PARSERS = {
     "html": HtmlParser,
@@ -59,18 +57,18 @@ PARSERS = {
 }
 
 
-def build_random(parser, language):
+def build_random(parser: Any, language: str) -> Any:
     return RandomSummarizer()
 
 
-def build_luhn(parser, language):
+def build_luhn(parser: Any, language: str) -> Any:
     summarizer = LuhnSummarizer(Stemmer(language))
     summarizer.stop_words = get_stop_words(language)
 
     return summarizer
 
 
-def build_edmundson(parser, language):
+def build_edmundson(parser: Any, language: str) -> Any:
     summarizer = EdmundsonSummarizer(Stemmer(language))
     summarizer.null_words = get_stop_words(language)
     summarizer.bonus_words = parser.significant_words
@@ -79,42 +77,42 @@ def build_edmundson(parser, language):
     return summarizer
 
 
-def build_lsa(parser, language):
+def build_lsa(parser: Any, language: str) -> Any:
     summarizer = LsaSummarizer(Stemmer(language))
     summarizer.stop_words = get_stop_words(language)
 
     return summarizer
 
 
-def build_text_rank(parser, language):
+def build_text_rank(parser: Any, language: str) -> Any:
     summarizer = TextRankSummarizer(Stemmer(language))
     summarizer.stop_words = get_stop_words(language)
 
     return summarizer
 
 
-def build_lex_rank(parser, language):
+def build_lex_rank(parser: Any, language: str) -> Any:
     summarizer = LexRankSummarizer(Stemmer(language))
     summarizer.stop_words = get_stop_words(language)
 
     return summarizer
 
 
-def build_sum_basic(parser, language):
+def build_sum_basic(parser: Any, language: str) -> Any:
     summarizer = SumBasicSummarizer(Stemmer(language))
     summarizer.stop_words = get_stop_words(language)
 
     return summarizer
 
 
-def build_kl(parser, language):
+def build_kl(parser: Any, language: str) -> Any:
     summarizer = KLSummarizer(Stemmer(language))
     summarizer.stop_words = get_stop_words(language)
 
     return summarizer
 
 
-def evaluate_cosine_similarity(evaluated_sentences, reference_sentences):
+def evaluate_cosine_similarity(evaluated_sentences: Sequence[Any], reference_sentences: Sequence[Any]) -> float:
     evaluated_words = tuple(chain(*(s.words for s in evaluated_sentences)))
     reference_words = tuple(chain(*(s.words for s in reference_sentences)))
     evaluated_model = TfDocumentModel(evaluated_words)
@@ -123,7 +121,7 @@ def evaluate_cosine_similarity(evaluated_sentences, reference_sentences):
     return cosine_similarity(evaluated_model, reference_model)
 
 
-def evaluate_unit_overlap(evaluated_sentences, reference_sentences):
+def evaluate_unit_overlap(evaluated_sentences: Sequence[Any], reference_sentences: Sequence[Any]) -> float:
     evaluated_words = tuple(chain(*(s.words for s in evaluated_sentences)))
     reference_words = tuple(chain(*(s.words for s in reference_sentences)))
     evaluated_model = TfDocumentModel(evaluated_words)
@@ -158,13 +156,12 @@ AVAILABLE_EVALUATIONS = (
 )
 
 
-def main(args=None):
-    args = docopt(to_string(__doc__), args, version=__version__)
+def main(args: list[str] | None = None) -> None:
+    args = docopt(__doc__, args, version=__version__)
     summarizer, document, items_count, reference_summary = handle_arguments(args)
 
     evaluated_sentences = summarizer(document, items_count)
-    reference_document = PlaintextParser.from_string(reference_summary,
-        Tokenizer(args["--language"]))
+    reference_document = PlaintextParser.from_string(reference_summary, Tokenizer(args["--language"]))
     reference_sentences = reference_document.document.sentences
 
     for name, evaluate_document, evaluate in AVAILABLE_EVALUATIONS:
@@ -172,24 +169,24 @@ def main(args=None):
             result = evaluate(evaluated_sentences, document.sentences)
         else:
             result = evaluate(evaluated_sentences, reference_sentences)
-        print("%s: %f" % (name, result))
+        print(f"{name}: {result:f}")
 
 
-def handle_arguments(args):
+def handle_arguments(args: Mapping[str, Any]) -> tuple[Any, Any, ItemsCount, str]:
     document_format = args["--format"]
     if document_format is not None and document_format not in PARSERS:
-        raise ValueError("Unsupported format of input document. Possible values are: %s. Given: %s." % (
-            ", ".join(PARSERS.keys()),
-            document_format,
-        ))
+        raise ValueError(
+            f"Unsupported format of input document. Possible values are: {', '.join(PARSERS.keys())}. "
+            f"Given: {document_format}."
+        )
 
     parser = PARSERS["plaintext"]
     input_stream = sys.stdin
 
     if args["--url"] is not None:
         parser = PARSERS["html"]
-        request = urllib.Request(args["--url"], headers=HEADERS)
-        input_stream = urllib.urlopen(request)
+        request = urllib.request.Request(args["--url"], headers=HEADERS)
+        input_stream = urllib.request.urlopen(request)
     elif args["--file"] is not None:
         parser = PARSERS.get(document_format, PlaintextParser)
         input_stream = open(args["--file"], "rb")

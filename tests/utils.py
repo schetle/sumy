@@ -1,33 +1,33 @@
-# -*- coding: utf8 -*-
+from io import StringIO
+from os.path import abspath, dirname, join
 
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
-
-from os.path import dirname, join, abspath
-from sumy.nlp.tokenizers import Tokenizer
-from sumy._compat import to_string, to_unicode
 from sumy.models.dom import ObjectDocumentModel, Paragraph, Sentence
+from sumy.nlp.tokenizers import Tokenizer
+
+__all__ = [
+    "StringIO",
+    "build_document",
+    "build_document_from_string",
+    "build_sentence",
+    "expand_resource_path",
+    "load_resource",
+]
 
 
 _TOKENIZER = Tokenizer("czech")
 
 
-def expand_resource_path(path):
-    return join(abspath(dirname(__file__)), to_string("data"), to_string(path))
+def expand_resource_path(path: str) -> str:
+    return join(abspath(dirname(__file__)), "data", path)
 
 
-def load_resource(path):
+def load_resource(path: str) -> str:
     path = expand_resource_path(path)
     with open(path, "rb") as file:
-        return to_unicode(file.read())
+        return file.read().decode("utf8")
 
 
-def build_document(*sets_of_sentences):
+def build_document(*sets_of_sentences: tuple[str, ...]) -> ObjectDocumentModel:
     paragraphs = []
     for sentences in sets_of_sentences:
         sentence_instances = []
@@ -40,7 +40,7 @@ def build_document(*sets_of_sentences):
     return ObjectDocumentModel(paragraphs)
 
 
-def build_document_from_string(string):
+def build_document_from_string(string: str) -> ObjectDocumentModel:
     sentences = []
     paragraphs = []
 
@@ -58,5 +58,5 @@ def build_document_from_string(string):
     return ObjectDocumentModel(paragraphs)
 
 
-def build_sentence(sentence_as_string, is_heading=False):
+def build_sentence(sentence_as_string: str, is_heading: bool = False) -> Sentence:
     return Sentence(sentence_as_string, _TOKENIZER, is_heading)
