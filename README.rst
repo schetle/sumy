@@ -1,3 +1,5 @@
+.. This is a Python 3.12 modernization of sumy.
+
 .. _Python: http://www.python.org/
 
 =========================
