@@ -1,7 +1,7 @@
 import unittest
 
-from sumy.nlp.tokenizers import Tokenizer
 from sumy.models import TfDocumentModel
+from sumy.nlp.tokenizers import Tokenizer
 
 
 class TestTfModel(unittest.TestCase):

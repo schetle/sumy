@@ -30,18 +30,18 @@ from typing import IO, Any
 from docopt import docopt
 
 from . import __version__
-from .utils import ItemsCount, get_stop_words, read_stop_words
+from .nlp.stemmers import Stemmer
 from .nlp.tokenizers import Tokenizer
 from .parsers.html import HtmlParser
 from .parsers.plaintext import PlaintextParser
-from .summarizers.luhn import LuhnSummarizer
 from .summarizers.edmundson import EdmundsonSummarizer
-from .summarizers.lsa import LsaSummarizer
-from .summarizers.text_rank import TextRankSummarizer
-from .summarizers.lex_rank import LexRankSummarizer
-from .summarizers.sum_basic import SumBasicSummarizer
 from .summarizers.kl import KLSummarizer
-from .nlp.stemmers import Stemmer
+from .summarizers.lex_rank import LexRankSummarizer
+from .summarizers.lsa import LsaSummarizer
+from .summarizers.luhn import LuhnSummarizer
+from .summarizers.sum_basic import SumBasicSummarizer
+from .summarizers.text_rank import TextRankSummarizer
+from .utils import ItemsCount, get_stop_words, read_stop_words
 
 HEADERS = {
     "User-Agent": f"Sumy (Automatic text summarizer) Version/{__version__}",

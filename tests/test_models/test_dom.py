@@ -1,7 +1,8 @@
 import unittest
 
-from sumy.nlp.tokenizers import Tokenizer
 from sumy.models.dom import Paragraph, Sentence
+from sumy.nlp.tokenizers import Tokenizer
+
 from ..utils import build_document, build_document_from_string
 
 

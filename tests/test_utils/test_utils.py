@@ -1,6 +1,7 @@
 import unittest
 
-from sumy.utils import get_stop_words, read_stop_words, ItemsCount
+from sumy.utils import ItemsCount, get_stop_words, read_stop_words
+
 from ..utils import expand_resource_path
 
 

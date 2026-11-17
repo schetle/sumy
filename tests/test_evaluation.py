@@ -1,14 +1,19 @@
 import unittest
 
+from sumy.evaluation import (
+    cosine_similarity,
+    f_score,
+    precision,
+    recall,
+    rouge_l_sentence_level,
+    rouge_l_summary_level,
+    rouge_n,
+    unit_overlap,
+)
+from sumy.evaluation.rouge import _get_ngrams, _get_word_ngrams, _len_lcs, _recon_lcs, _split_into_words, _union_lcs
+from sumy.models import TfDocumentModel
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.parsers.plaintext import PlaintextParser
-from sumy.models.dom._sentence import Sentence
-from sumy.models import TfDocumentModel
-from sumy.evaluation import precision, recall, f_score
-from sumy.evaluation import cosine_similarity, unit_overlap
-from sumy.evaluation import rouge_n, rouge_l_sentence_level, rouge_l_summary_level
-from sumy.evaluation.rouge import _get_ngrams, _split_into_words, _get_word_ngrams, _len_lcs, _recon_lcs, _union_lcs
-
 
 
 class TestCoselectionEvaluation(unittest.TestCase):
@@ -245,7 +250,7 @@ class TestRougeEvaluation(unittest.TestCase):
         reference1_text = "magnetic pulse series sent through brain may ease schizophrenic voices"
         reference1 = PlaintextParser(reference1_text, Tokenizer("english")).document.sentences
 
-        reference2_text = "yale finds magnetic stimulation some relief to schizophrenics imaginary voices";
+        reference2_text = "yale finds magnetic stimulation some relief to schizophrenics imaginary voices"
 
         reference2 = PlaintextParser.from_string(reference2_text,
             Tokenizer("english")).document.sentences
@@ -280,7 +285,7 @@ class TestRougeEvaluation(unittest.TestCase):
         candidate2 = PlaintextParser(candidate2_text, Tokenizer("english")).document.sentences
 
         candidate3_text = "the gunman police killed"
-        candidate3 = PlaintextParser(candidate3_text, Tokenizer("english")).document.sentences
+        PlaintextParser(candidate3_text, Tokenizer("english")).document.sentences
 
         self.assertAlmostEqual(rouge_l_sentence_level(candidate1, reference),  3/4)
         self.assertAlmostEqual(rouge_l_sentence_level(candidate2, reference),  2/4)
