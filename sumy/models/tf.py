@@ -6,13 +6,14 @@ from __future__ import division, print_function, unicode_literals
 import math
 
 from pprint import pformat
-from collections import Sequence
+from collections.abc import KeysView, Sequence
+from typing import Any
 from .._compat import to_unicode, unicode, string_types, Counter
 
 
 class TfDocumentModel(object):
     """Term-Frequency document model (term = word)."""
-    def __init__(self, words, tokenizer=None):
+    def __init__(self, words: str | Sequence[str], tokenizer: Any = None) -> None:
         if isinstance(words, string_types) and tokenizer is None:
             raise ValueError(
                 "Tokenizer has to be given if ``words`` is not a sequence.")
@@ -26,7 +27,7 @@ class TfDocumentModel(object):
         self._max_frequency = max(self._terms.values()) if self._terms else 1
 
     @property
-    def magnitude(self):
+    def magnitude(self) -> float:
         """
         Lenght/norm/magnitude of vector representation of document.
         This is usually denoted by ||d||.
@@ -34,10 +35,10 @@ class TfDocumentModel(object):
         return math.sqrt(sum(t**2 for t in self._terms.values()))
 
     @property
-    def terms(self):
+    def terms(self) -> KeysView[str]:
         return self._terms.keys()
 
-    def most_frequent_terms(self, count=0):
+    def most_frequent_terms(self, count: int = 0) -> tuple[str, ...]:
         """
         Returns ``count`` of terms sorted by their frequency
         in descending order.
@@ -57,7 +58,7 @@ class TfDocumentModel(object):
             raise ValueError(
                 "Only non-negative values are allowed for count of terms.")
 
-    def term_frequency(self, term):
+    def term_frequency(self, term: str) -> int:
         """
         Returns frequency of term in document.
 
@@ -66,7 +67,7 @@ class TfDocumentModel(object):
         """
         return self._terms.get(term, 0)
 
-    def normalized_term_frequency(self, term, smooth=0.0):
+    def normalized_term_frequency(self, term: str, smooth: float = 0.0) -> float:
         """
         Returns normalized frequency of term in document.
         http://nlp.stanford.edu/IR-book/html/htmledition/maximum-tf-normalization-1.html
@@ -84,5 +85,5 @@ class TfDocumentModel(object):
         frequency = self.term_frequency(term) / self._max_frequency
         return smooth + (1.0 - smooth)*frequency
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<TfDocumentModel %s>" % pformat(self._terms)
