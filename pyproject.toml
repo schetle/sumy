@@ -75,17 +75,17 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 120
 target-version = "py312"
-# Legacy modules are modernized in later milestones; remove entries as they land.
+# Temporary excludes: each entry is removed by the milestone that modernizes it.
 extend-exclude = [
-    "experiments",
-    "sumy/_compat.py",
-    "sumy/nlp",
-    "sumy/parsers",
-    "sumy/summarizers",
-    "tests/test_parsers.py",
-    "tests/test_stemmers.py",
-    "tests/test_tokenizers.py",
-    "tests/test_summarizers",
+    "experiments",  # out of scope, never linted
+    "sumy/_compat.py",  # Milestone 4 (frozen until its last importer, sumy/nlp, is modernized)
+    "sumy/nlp",  # Milestone 4 (tokenizers and stemmers)
+    "sumy/parsers",  # Milestone 3
+    "sumy/summarizers",  # Milestone 2
+    "tests/test_parsers.py",  # Milestone 3
+    "tests/test_stemmers.py",  # Milestone 4
+    "tests/test_tokenizers.py",  # Milestone 4
+    "tests/test_summarizers",  # Milestone 2
 ]
 
 [tool.ruff.lint]
