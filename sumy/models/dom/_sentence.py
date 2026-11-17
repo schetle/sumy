@@ -1,15 +1,13 @@
 from typing import Any
 
-from ...utils import cached_property
+from ...utils import cached_property, decode_utf8
 
 
 class Sentence:
     __slots__ = ("_text", "_cached_property_words", "_tokenizer", "_is_heading",)
 
     def __init__(self, text: str | bytes, tokenizer: Any, is_heading: bool = False) -> None:
-        if isinstance(text, bytes):
-            text = text.decode("utf8")
-        self._text = str(text).strip()
+        self._text = str(decode_utf8(text)).strip()
         self._tokenizer = tokenizer
         self._is_heading = bool(is_heading)
 

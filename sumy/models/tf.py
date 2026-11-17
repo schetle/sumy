@@ -4,6 +4,8 @@ from collections.abc import Iterable, Sequence
 from pprint import pformat
 from typing import Any
 
+from ..utils import decode_utf8
+
 
 class TfDocumentModel:
     """Term-Frequency document model (term = word)."""
@@ -12,7 +14,7 @@ class TfDocumentModel:
             raise ValueError(
                 "Tokenizer has to be given if ``words`` is not a sequence.")
         elif isinstance(words, (str, bytes)):
-            text = words.decode("utf8") if isinstance(words, bytes) else words
+            text = decode_utf8(words)
             words = tokenizer.to_words(text)
         elif not isinstance(words, Sequence):
             raise ValueError(

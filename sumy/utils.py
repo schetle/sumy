@@ -36,9 +36,13 @@ def get_stop_words(language: str) -> frozenset[str]:
     return read_stop_words(path)
 
 
+def decode_utf8(value: str | bytes) -> str:
+    return value.decode("utf8") if isinstance(value, bytes) else value
+
+
 def read_stop_words(filename: str) -> frozenset[str]:
     with open(filename, "rb") as open_file:
-        return frozenset(w.rstrip().decode("utf8") for w in open_file.readlines())
+        return frozenset(decode_utf8(w.rstrip()) for w in open_file.readlines())
 
 
 class ItemsCount:
