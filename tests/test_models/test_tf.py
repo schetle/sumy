@@ -1,25 +1,20 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import unittest
 
-from sumy.nlp.tokenizers import Tokenizer
 from sumy.models import TfDocumentModel
+from sumy.nlp.tokenizers import Tokenizer
 
 
 class TestTfModel(unittest.TestCase):
-    def test_no_tokenizer_with_string(self):
+    def test_no_tokenizer_with_string(self) -> None:
         self.assertRaises(ValueError, TfDocumentModel, "text without tokenizer")
 
-    def test_pretokenized_words(self):
+    def test_pretokenized_words(self) -> None:
         model = TfDocumentModel(("wA", "WB", "wB", "WA"))
 
         terms = tuple(sorted(model.terms))
         self.assertEqual(terms, ("wa", "wb"))
 
-    def test_pretokenized_words_frequencies(self):
+    def test_pretokenized_words_frequencies(self) -> None:
         model = TfDocumentModel(("wC", "wC", "WC", "wA", "WB", "wB"))
 
         self.assertEqual(model.term_frequency("wa"), 1)
@@ -29,14 +24,14 @@ class TestTfModel(unittest.TestCase):
 
         self.assertEqual(model.most_frequent_terms(), ("wc", "wb", "wa"))
 
-    def test_magnitude(self):
+    def test_magnitude(self) -> None:
         tokenizer = Tokenizer("english")
         text = "wA wB wC wD"
         model = TfDocumentModel(text, tokenizer)
 
         self.assertAlmostEqual(model.magnitude, 2.0)
 
-    def test_terms(self):
+    def test_terms(self) -> None:
         tokenizer = Tokenizer("english")
         text = "wA wB wC wD wB wD wE"
         model = TfDocumentModel(text, tokenizer)
@@ -44,7 +39,7 @@ class TestTfModel(unittest.TestCase):
         terms = tuple(sorted(model.terms))
         self.assertEqual(terms, ("wa", "wb", "wc", "wd", "we"))
 
-    def test_term_frequency(self):
+    def test_term_frequency(self) -> None:
         tokenizer = Tokenizer("english")
         text = "wA wB wC wA wA wC wD wCwB"
         model = TfDocumentModel(text, tokenizer)
@@ -57,7 +52,7 @@ class TestTfModel(unittest.TestCase):
         self.assertEqual(model.term_frequency("we"), 0)
         self.assertEqual(model.term_frequency("missing"), 0)
 
-    def test_most_frequent_terms(self):
+    def test_most_frequent_terms(self) -> None:
         tokenizer = Tokenizer("english")
         text = "wE wD wC wB wA wE WD wC wB wE wD WE wC wD wE"
         model = TfDocumentModel(text, tokenizer)
@@ -69,20 +64,20 @@ class TestTfModel(unittest.TestCase):
         self.assertEqual(model.most_frequent_terms(5), ("we", "wd", "wc", "wb", "wa"))
         self.assertEqual(model.most_frequent_terms(), ("we", "wd", "wc", "wb", "wa"))
 
-    def test_most_frequent_terms_empty(self):
+    def test_most_frequent_terms_empty(self) -> None:
         tokenizer = Tokenizer("english")
         model = TfDocumentModel("", tokenizer)
 
         self.assertEqual(model.most_frequent_terms(), ())
         self.assertEqual(model.most_frequent_terms(10), ())
 
-    def test_most_frequent_terms_negative_count(self):
+    def test_most_frequent_terms_negative_count(self) -> None:
         tokenizer = Tokenizer("english")
         model = TfDocumentModel("text", tokenizer)
 
         self.assertRaises(ValueError, model.most_frequent_terms, -1)
 
-    def test_normalized_words_frequencies(self):
+    def test_normalized_words_frequencies(self) -> None:
         words = "a b c d e c b d c e e d e d e".split()
         model = TfDocumentModel(tuple(words))
 
@@ -95,7 +90,7 @@ class TestTfModel(unittest.TestCase):
 
         self.assertEqual(model.most_frequent_terms(), ("e", "d", "c", "b", "a"))
 
-    def test_normalized_words_frequencies_with_smoothing_term(self):
+    def test_normalized_words_frequencies_with_smoothing_term(self) -> None:
         words = "a b c d e c b d c e e d e d e".split()
         model = TfDocumentModel(tuple(words))
 

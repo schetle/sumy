@@ -1,21 +1,16 @@
-# -*- coding: utf8 -*-
-
-from __future__ import absolute_import
-from __future__ import division, print_function, unicode_literals
-
 import unittest
+
 import pytest
 
 from sumy import _compat as compat
 
-
-BYTES_STRING = "ľščťžáýíééäúňô €đ€Ł¤".encode("utf8")
+BYTES_STRING = "ľščťžáýíééäúňô €đ€Ł¤".encode()
 UNICODE_STRING = "ľščťžáýíééäúňô €đ€Ł¤"
 NATIVE_STRING = compat.to_string(UNICODE_STRING)
 
 
 @compat.unicode_compatible
-class O(object):
+class O:  # noqa: E742
     def __unicode__(self):
         return UNICODE_STRING
 
@@ -39,7 +34,7 @@ class TestObject(unittest.TestCase):
         if compat.PY3:
             pytest.skip("Python 3 doesn't support method `__unicode__`")
 
-        returned = unicode(self.o)
+        returned = unicode(self.o)  # noqa: F821
         self.assertStringsEqual(UNICODE_STRING, returned)
 
     def test_to_bytes(self):

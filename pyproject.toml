@@ -1,0 +1,95 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sumy"
+version = "0.3.0"
+description = "Module for automatic summarization of text documents and HTML pages."
+readme = "README.rst"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Michal Belica", email = "miso.belica@gmail.com" }]
+keywords = [
+    "data mining",
+    "automatic summarization",
+    "data reduction",
+    "web-data extraction",
+    "NLP",
+    "natural language processing",
+    "latent semantic analysis",
+    "LSA",
+    "TextRank",
+    "LexRank",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Natural Language :: Czech",
+    "Natural Language :: Slovak",
+    "Natural Language :: English",
+    "Natural Language :: German",
+    "Natural Language :: French",
+    "Topic :: Education",
+    "Topic :: Internet",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Text Processing :: Filters",
+    "Topic :: Text Processing :: Linguistic",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+dependencies = [
+    "docopt-ng",
+    "nltk>=3.9",
+    "breadability",
+    "lxml",
+    "requests",
+]
+
+[project.optional-dependencies]
+LSA = ["numpy"]
+LexRank = ["numpy"]
+dev = ["pytest", "pytest-cov", "ruff", "numpy"]
+
+[project.urls]
+Homepage = "https://github.com/miso-belica/sumy"
+
+[project.scripts]
+sumy = "sumy.__main__:main"
+sumy_eval = "sumy.evaluation.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["sumy*"]
+
+[tool.setuptools.package-data]
+sumy = ["data/stopwords/*.txt"]
+
+[tool.pytest.ini_options]
+addopts = "--quiet --tb=short"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+# Temporary excludes: each entry is removed by the milestone that modernizes it.
+extend-exclude = [
+    "experiments",  # out of scope, never linted
+    "sumy/_compat.py",  # Milestone 4 (frozen until its last importer, sumy/nlp, is modernized)
+    "sumy/nlp",  # Milestone 4 (tokenizers and stemmers)
+    "sumy/parsers",  # Milestone 3
+    "sumy/summarizers",  # Milestone 2
+    "tests/test_parsers.py",  # Milestone 3
+    "tests/test_stemmers.py",  # Milestone 4
+    "tests/test_tokenizers.py",  # Milestone 4
+    "tests/test_summarizers",  # Milestone 2
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
