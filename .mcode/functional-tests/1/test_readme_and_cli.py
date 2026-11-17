@@ -8,8 +8,8 @@ import docutils.utils
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
-def _run(*args, stdin=None):
-    return subprocess.run([sys.executable, "-m", "sumy", *args], input=stdin,
+def _run(*args):
+    return subprocess.run([sys.executable, "-m", "sumy", *args],
                           capture_output=True, text=True, timeout=120, cwd=ROOT)
 
 def _render():
